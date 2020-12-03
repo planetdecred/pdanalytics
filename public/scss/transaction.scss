@@ -1,0 +1,21 @@
+.script-data-star {
+  z-index: 1;
+  text-align: center;
+  cursor: pointer;
+}
+
+.script-data-star > span {
+  color: coral;
+  user-select: none;
+}
+
+.script-data {
+  z-index: -1;
+  border-top: 1px solid #ccc;
+  font-family: $font-family-sans-serif;
+}
+
+.invalidated-tx {
+  background-color: rgba(151, 125, 163, 0.3);
+  opacity: 0.5;
+}

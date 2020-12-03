@@ -1,0 +1,54 @@
+// colors
+$blue: #007bff;
+$green: #2ed6a1;
+$body-bg: #f3f5f6;
+$inverse-bg-white: #2f3338;
+
+// layout
+$border-radius: .125rem;
+
+// grid
+// Grid columns
+//
+// Set the number of columns and specify the width of the gutters.
+$grid-columns: 24;
+$grid-gutter-width: 15px;
+$container-max-widths: ();
+$container-max-widths: map-merge(
+  (
+    sm: 540px,
+    md: 720px,
+    lg: 1180px,
+    xl: 1260px
+  ),
+  $container-max-widths
+);
+
+// typography
+$font-family-sans-serif: "source-sans-pro-v9-latin-regular", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+$font-family-monospace: "inconsolata-v15-latin-regular", SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !default;
+
+// progress bar
+$progress-height: 1.25rem;
+$progress-bg: #ddd;
+$progress-bar-bg: #74e06b;
+$progress-bar-color: #333;
+
+// nav
+$nav-pills-border-radius: .2rem;
+$nav-link-padding-y: .3rem;
+$nav-link-padding-x: .45rem;
+
+// transaction type colors
+$regular-light: #2970FF;
+$ticket-light: #2ED6A1;
+$vote-light: #c600c0;
+$rev-light: #ED6D47;
+
+// card background colors
+// primary background color is white, so can use bootstrap bg-white, which has
+/// a darkBG override in themes.scss
+$card-bg-secondary: #f8f8f9;
+$card-bg-secondary-dark: #222326;
+
+$dark-link-hover-color: #94ffca;
