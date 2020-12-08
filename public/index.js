@@ -1,11 +1,8 @@
 import 'regenerator-runtime/runtime'
 /* global require */
-// import ws from './js/services/messagesocket_service'
-import './js/services/desktop_notification_service'
 import { Application } from 'stimulus'
 import { definitionsFromContext } from 'stimulus/webpack-helpers'
 import { darkEnabled } from './js/services/theme_service'
-// import globalEventBus from './js/services/event_bus_service'
 
 require('./scss/application.scss')
 
