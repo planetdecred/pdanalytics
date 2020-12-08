@@ -1,4 +1,4 @@
-module github.com/platnetdecred/pdanalytics
+module github.com/planetdecred/pdanalytics
 
 go 1.13
 
@@ -17,13 +17,13 @@ require (
 	github.com/google/gops v0.3.13
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/jrick/logrotate v1.0.0
-	github.com/platnetdecred/pdanalytics/attackcost v0.0.0-00010101000000-000000000000
-	github.com/platnetdecred/pdanalytics/stakingreward v0.0.0-00010101000000-000000000000
-	github.com/platnetdecred/pdanalytics/web v0.0.0-00010101000000-000000000000
+	github.com/planetdecred/pdanalytics/attackcost v0.0.0-00010101000000-000000000000
+	github.com/planetdecred/pdanalytics/stakingreward v0.0.0-00010101000000-000000000000
+	github.com/planetdecred/pdanalytics/web v0.0.0-00010101000000-000000000000
 )
 
 replace (
-	github.com/platnetdecred/pdanalytics/attackcost => ./pkgs/attackcost
-	github.com/platnetdecred/pdanalytics/stakingreward => ./pkgs/stakingreward
-	github.com/platnetdecred/pdanalytics/web => ./web
+	github.com/planetdecred/pdanalytics/attackcost => ./pkgs/attackcost
+	github.com/planetdecred/pdanalytics/stakingreward => ./pkgs/stakingreward
+	github.com/planetdecred/pdanalytics/web => ./web
 )

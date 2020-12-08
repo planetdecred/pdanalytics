@@ -11,7 +11,7 @@ import (
 
 	"github.com/decred/slog"
 	"github.com/jrick/logrotate/rotator"
-	"github.com/platnetdecred/pdanalytics/attackcost"
+	"github.com/planetdecred/pdanalytics/attackcost"
 )
 
 // logWriter implements an io.Writer that outputs to both standard output and

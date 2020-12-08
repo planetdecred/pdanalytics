@@ -1,4 +1,4 @@
-module github.com/platnetdecred/pdanalytics/web
+module github.com/planetdecred/pdanalytics/web
 
 go 1.13
 

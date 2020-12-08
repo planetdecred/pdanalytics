@@ -16,9 +16,9 @@ import (
 	"github.com/decred/dcrdata/rpcutils/v3"
 	"github.com/decred/dcrdata/semver"
 	notify "github.com/decred/dcrdata/v5/notification"
-	"github.com/platnetdecred/pdanalytics/attackcost"
-	"github.com/platnetdecred/pdanalytics/stakingreward"
-	"github.com/platnetdecred/pdanalytics/web"
+	"github.com/planetdecred/pdanalytics/attackcost"
+	"github.com/planetdecred/pdanalytics/stakingreward"
+	"github.com/planetdecred/pdanalytics/web"
 
 	"github.com/go-chi/chi"
 	"github.com/google/gops/agent"

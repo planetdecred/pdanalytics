@@ -1,4 +1,4 @@
-module github.com/platnetdecred/pdanalytics/attackcost
+module github.com/planetdecred/pdanalytics/attackcost
 
 go 1.12
 
@@ -29,8 +29,8 @@ require (
 	github.com/google/gops v0.3.13
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/jrick/logrotate v1.0.0
-	github.com/platnetdecred/pdanalytics/web v0.0.0-00010101000000-000000000000
+	github.com/planetdecred/pdanalytics/web v0.0.0-00010101000000-000000000000
 	github.com/prometheus/common v0.15.0
 )
 
-replace github.com/platnetdecred/pdanalytics/web => ../../web
+replace github.com/planetdecred/pdanalytics/web => ../../web

@@ -11,7 +11,7 @@ import (
 	"github.com/decred/dcrdata/db/dbtypes/v2"
 	"github.com/decred/dcrdata/exchanges/v2"
 	"github.com/decred/dcrdata/explorer/types/v2"
-	"github.com/platnetdecred/pdanalytics/web"
+	"github.com/planetdecred/pdanalytics/web"
 )
 
 type attackcost struct {
