@@ -27,7 +27,7 @@
     "@babel/core": "^7.7.5",
     "@babel/plugin-syntax-dynamic-import": "^7.7.4",
     "@babel/preset-env": "^7.7.6",
-    "axios": "^0.19.2",
+    "axios": "0.19.2",
     "babel-eslint": "^10.0.3",
     "babel-loader": "^8.0.6",
     "babel-polyfill": "^6.26.0",
@@ -63,6 +63,7 @@
     "bootstrap": "^4.4.1",
     "dompurify": "^2.0.8",
     "lodash-es": "^4.17.15",
+    "moment": "2.29.1",
     "qrcode": "^1.4.4"
   }
 }

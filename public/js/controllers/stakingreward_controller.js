@@ -1,9 +1,12 @@
 import { Controller } from 'stimulus'
+import axios from 'axios'
+import moment from 'moment'
 
 export default class extends Controller {
   static get targets () {
     return [
       'blockHeight', 'ticketPrice', 'ticketReward', 'rewardPeriod',
+      'startDate', 'endDate',
       'priceDCR', 'dayText', 'amount', 'amountText', 'days', 'daysText',
       'amountRoi', 'percentageRoi', 'tickets', 'amountUsd', 'amountRoiUsd'
     ]
@@ -11,13 +14,13 @@ export default class extends Controller {
 
   async connect () {
     this.height = parseInt(this.data.get('height'))
-    this.ticketPrice = parseInt(this.data.get('ticketPrice'))
+    this.ticketPrice = parseFloat(this.data.get('ticketPrice'))
     this.dcrPrice = parseFloat(this.data.get('dcrprice'))
     this.ticketReward = parseFloat(this.data.get('ticketReward'))
     this.rewardPeriod = parseFloat(this.data.get('rewardPeriod'))
 
     this.blockHeightTarget.textContent = this.height
-    this.ticketPriceTarget.textContent = this.ticketPrice
+    this.ticketPriceTarget.textContent = this.ticketPrice.toFixed(2)
     this.ticketRewardTarget.textContent = this.ticketReward.toFixed(2)
     this.rewardPeriodTarget.textContent = this.rewardPeriod.toFixed(2)
 
@@ -29,23 +32,42 @@ export default class extends Controller {
   }
 
   calculate () {
+    const _this = this
     const amount = parseFloat(this.amountTarget.value)
-    const days = parseFloat(this.daysTarget.value)
-    if (days < this.rewardPeriod) {
-      window.alert(`You must stake for ${this.rewardPeriod} days and above`)
+    if (!(amount > 0)) {
+      window.alert('Amount must be greater than 0')
       return
     }
-    this.ticketsTarget.textContent = parseInt(amount / this.ticketPrice)
-    this.amountTextTarget.textContent = amount
-    this.amountUsdTarget.textContent = (amount * this.dcrPrice).toFixed(2)
-    this.daysTextTarget.textContent = days
+    if (amount < this.ticketPrice) {
+      window.alert(`${amount} DCR is not enough to buy a ticket. Ticket Price: ${this.ticketPrice.toFixed(2)} DCR`)
+      return
+    }
+    let startDate = moment(this.startDateTarget.value)
+    let endDate = moment(this.endDateTarget.value)
 
-    // number of periods
-    const periods = parseInt(days / this.rewardPeriod)
-    const totalPercentage = periods * this.ticketReward
-    const totalAmount = totalPercentage * amount * 1 / 100
-    this.percentageRoiTarget.textContent = totalPercentage.toFixed(2)
-    this.amountRoiTarget.textContent = totalAmount.toFixed(2)
-    this.amountRoiUsdTarget.textContent = (totalAmount * this.dcrPrice).toFixed(2)
+    const days = moment.duration(endDate.diff(startDate)).asDays()
+    if (days < this.rewardPeriod) {
+      window.alert(`You must stake for ${this.rewardPeriod.toFixed(2)} days and above`)
+      return
+    }
+
+    let startDateUnix = new Date(this.startDateTarget.value).getTime()
+    let endDateUnix = new Date(this.endDateTarget.value).getTime()
+    let url = `/staking-reward/get-future-reward?startDate=${startDateUnix}&endDate=${endDateUnix}&startingBalance=${amount}`
+    axios.get(url).then(function (response) {
+      let result = response.data
+
+      _this.ticketsTarget.textContent = parseInt(amount / _this.ticketPrice)
+      _this.amountTextTarget.textContent = amount
+      _this.amountUsdTarget.textContent = (amount * _this.dcrPrice).toFixed(2)
+      _this.daysTextTarget.textContent = days
+
+      // number of periods
+      const totalPercentage = result.reward
+      const totalAmount = totalPercentage * amount * 1 / 100
+      _this.percentageRoiTarget.textContent = totalPercentage.toFixed(2)
+      _this.amountRoiTarget.textContent = totalAmount.toFixed(2)
+      _this.amountRoiUsdTarget.textContent = (totalAmount * _this.dcrPrice).toFixed(2)
+    })
   }
 }
