@@ -38,10 +38,6 @@ export default class extends Controller {
       window.alert('Amount must be greater than 0')
       return
     }
-    if (amount < this.ticketPrice) {
-      window.alert(`${amount} DCR is not enough to buy a ticket. Ticket Price: ${this.ticketPrice.toFixed(2)} DCR`)
-      return
-    }
     let startDate = moment(this.startDateTarget.value)
     let endDate = moment(this.endDateTarget.value)
 
@@ -57,7 +53,7 @@ export default class extends Controller {
     axios.get(url).then(function (response) {
       let result = response.data
 
-      _this.ticketsTarget.textContent = parseInt(amount / _this.ticketPrice)
+      _this.ticketsTarget.textContent = parseInt(amount / result.ticketPrice)
       _this.amountTextTarget.textContent = amount
       _this.amountUsdTarget.textContent = (amount * _this.dcrPrice).toFixed(2)
       _this.daysTextTarget.textContent = days

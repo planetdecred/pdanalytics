@@ -171,12 +171,12 @@ func (exp *calculator) ConnectBlock(w *wire.BlockHeader) error {
 // dcrdata functionality.
 func (exp *calculator) simulateStakingReward(numberOfDays float64, startingDCRBalance float64, integerTicketQty bool,
 	currentStakePercent float64, actualCoinbase float64, currentBlockNum float64,
-	actualTicketPrice float64) (stakingReward float64) {
+	actualTicketPrice float64) (stakingReward, ticketPrice float64) {
 
 	// Calculations are only useful on mainnet.  Short circuit calculations if
 	// on any other version of chain params.
 	if exp.ChainParams.Name != "mainnet" {
-		return 0
+		return 0, 0
 	}
 
 	blocksPerDay := 86400 / exp.ChainParams.TargetTimePerBlock.Seconds()
@@ -186,14 +186,14 @@ func (exp *calculator) simulateStakingReward(numberOfDays float64, startingDCRBa
 	StakeRewardAtBlock := func(blocknum float64) float64 {
 		// Option 1:  RPC Call
 
-		// Subsidy, _ := exp.dcrdChainSvr.GetBlockSubsidy(int64(blocknum), 1)
-		// return dcrutil.Amount(Subsidy.PoS).ToCoin()
+		Subsidy, _ := exp.dcrdChainSvr.GetBlockSubsidy(int64(blocknum), 1)
+		return dcrutil.Amount(Subsidy.PoS).ToCoin()
 
 		// Option 2:  Calculation
-		epoch := math.Floor(blocknum / float64(exp.ChainParams.SubsidyReductionInterval))
-		RewardProportionPerVote := float64(exp.ChainParams.StakeRewardProportion) / (10 * float64(exp.ChainParams.TicketsPerBlock))
-		return RewardProportionPerVote * dcrutil.Amount(exp.ChainParams.BaseSubsidy).ToCoin() *
-			math.Pow(float64(exp.ChainParams.MulSubsidy)/float64(exp.ChainParams.DivSubsidy), epoch)
+		// epoch := math.Floor(blocknum / float64(exp.ChainParams.SubsidyReductionInterval))
+		// RewardProportionPerVote := float64(exp.ChainParams.StakeRewardProportion) / (10 * float64(exp.ChainParams.TicketsPerBlock))
+		// return RewardProportionPerVote * dcrutil.Amount(exp.ChainParams.BaseSubsidy).ToCoin() *
+		// 	math.Pow(float64(exp.ChainParams.MulSubsidy)/float64(exp.ChainParams.DivSubsidy), epoch)
 	}
 
 	MaxCoinSupplyAtBlock := func(blocknum float64) float64 {
@@ -216,6 +216,7 @@ func (exp *calculator) simulateStakingReward(numberOfDays float64, startingDCRBa
 
 		return ProjectedCoinsCirculating / TicketPoolSize
 	}
+	ticketPrice = TheoreticalTicketPrice((currentBlockNum))
 	TicketAdjustmentFactor := actualTicketPrice / TheoreticalTicketPrice(currentBlockNum)
 
 	// Prepare for simulation
@@ -359,15 +360,17 @@ func (exp *calculator) targetTicketReward(w http.ResponseWriter, r *http.Request
 	}
 
 	// accumulated staking reward
-	asr := exp.simulateStakingReward((endDate.Sub(startDate)).Hours()/24, startingBalance, true,
+	asr, ticketPrice := exp.simulateStakingReward((endDate.Sub(startDate)).Hours()/24, startingBalance, true,
 		exp.stakePerc, exp.coinSupply, float64(height), exp.TicketPrice)
 
 	web.RenderJSON(w, struct {
-		Height uint32  `json:"height"`
-		Reward float64 `json:"reward"`
+		Height      uint32  `json:"height"`
+		Reward      float64 `json:"reward"`
+		TicketPrice float64 `json:"ticketPrice"`
 	}{
-		Height: height,
-		Reward: asr,
+		Height:      height,
+		Reward:      asr,
+		TicketPrice: ticketPrice,
 	})
 }
 
