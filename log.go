@@ -42,8 +42,9 @@ var (
 	// application shutdown.
 	logRotator *rotator.Rotator
 
-	attackLog = backendLog.Logger("ATCK")
-	log       = backendLog.Logger("DATD")
+	attackLog    = backendLog.Logger("ATCK")
+	parameterLog = backendLog.Logger("PARA")
+	log          = backendLog.Logger("DATD")
 )
 
 // Initialize package-global logger variables.
@@ -54,6 +55,7 @@ func init() {
 // subsystemLoggers maps each subsystem identifier to its associated logger.
 var subsystemLoggers = map[string]slog.Logger{
 	"ATCK": attackLog,
+	"PARA": parameterLog,
 	"DATD": log,
 }
 

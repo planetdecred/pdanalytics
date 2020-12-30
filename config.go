@@ -92,6 +92,7 @@ type config struct {
 	DisableBlockExplorer          bool `long:"disableblockexplorer" description:"Disables the block explorer and blockchain sync component from running."`
 	EnableAttackCost              int  `long:"attackcost" description:"Enable/Disables the attack cost calculator component from running."`
 	EnableStakingRewardCalculator int  `long:"stakingreward" description:"Enable/Disables the staking reward calculator component from running."`
+	EnableStakingParameters       int  `long:"parameters" description:"Enable/Disables the chain parameter component from running."`
 
 	// API/server
 	APIProto            string  `long:"apiproto" description:"Protocol for API (http or https)" env:"DCRDATA_ENABLE_HTTPS"`
@@ -183,6 +184,7 @@ var (
 
 		EnableAttackCost:              1,
 		EnableStakingRewardCalculator: 1,
+		EnableStakingParameters:       1,
 	}
 )
 

@@ -13,15 +13,15 @@ import (
 
 	"github.com/decred/dcrd/rpcclient/v5"
 	"github.com/decred/dcrdata/exchanges/v2"
+	"github.com/decred/dcrdata/pkgs/parameters"
 	"github.com/decred/dcrdata/rpcutils/v3"
 	"github.com/decred/dcrdata/semver"
 	notify "github.com/decred/dcrdata/v5/notification"
+	"github.com/go-chi/chi"
+	"github.com/google/gops/agent"
 	"github.com/planetdecred/pdanalytics/attackcost"
 	"github.com/planetdecred/pdanalytics/stakingreward"
 	"github.com/planetdecred/pdanalytics/web"
-
-	"github.com/go-chi/chi"
-	"github.com/google/gops/agent"
 )
 
 func main() {
@@ -173,6 +173,14 @@ func _main(ctx context.Context) error {
 		}
 
 		notifier.RegisterBlockHandlerGroup(rewardCalculator.ConnectBlock)
+	}
+
+	if cfg.EnableStakingParameters == 1 {
+		_, err := parameters.New(dcrdClient, webServer, activeChain)
+		if err != nil {
+			log.Error(err)
+			return fmt.Errorf("Failed to create new parameters component, %s", err.Error())
+		}
 	}
 
 	// (*notify.Notifier).processBlock will discard incoming block if PrevHash does not match
