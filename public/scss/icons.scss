@@ -1,0 +1,186 @@
+/* icons */
+@font-face {
+  font-family: 'icomoon';
+  src:
+    url('/fonts/icomoon.ttf?g003m6') format('truetype'),
+    url('/fonts/icomoon.woff?g003m6') format('woff'),
+    url('/fonts/icomoon.svg?g003m6#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+[class^="dcricon-"],
+[class*=" dcricon-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'icomoon', monospace !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.dcricon-qrcode::before {
+  content: "\e9f8";
+}
+
+.dcricon-sun-fill::before {
+  content: "\e901";
+}
+
+.dcricon-sun-stroke::before {
+  content: "\e902";
+}
+
+.dcricon-decred::before {
+  content: "\e900";
+}
+
+.dcricon-download::before {
+  content: "\e95e";
+}
+
+.dcricon-block::before {
+  content: "\e906";
+}
+
+.dcricon-twoblocks::before {
+  content: "\22f0";
+}
+
+.dcricon-affirm::before {
+  content: "\1f3fb";
+}
+
+.dcricon-reject::before {
+  content: "\1f3fc";
+}
+
+.dcricon-missing::before {
+  content: "\1f3fd";
+}
+
+.dcricon-stack::before {
+  content: "\e92e";
+}
+
+.dcricon-ticket::before {
+  content: "\e905";
+}
+
+.dcricon-pickaxe::before {
+  content: "\e903";
+}
+
+.dcricon-tree::before {
+  content: "\e904";
+}
+
+.dcricon-coin-negative::before {
+  content: "\e907";
+}
+
+.dcricon-search::before {
+  content: "\e908";
+}
+
+.dcricon-arrow-up::before {
+  content: "\e911";
+}
+
+.dcricon-arrow-down::before {
+  content: "\e910";
+}
+
+.dcricon-arrow-right {
+  transform: rotate(90deg);
+}
+
+.dcricon-arrow-right::before {
+  content: "\e911";
+}
+
+.dcricon-arrow-left {
+  transform: rotate(-90deg);
+}
+
+.dcricon-arrow-left::before {
+  content: "\e911";
+}
+
+.dcricon-discussion::before {
+  content: "\e912";
+}
+
+.dcricon-back::before {
+  content: "\e913";
+}
+
+.dcricon-expand::before {
+  content: "\e914";
+}
+
+.dcricon-collapse::before {
+  content: "\e915";
+}
+
+.dcricon-copy::before {
+  content: "\e92c";
+}
+
+.dcricon-info::before {
+  content: "\e916";
+}
+
+.exchange-logo {
+  vertical-align: middle;
+  display: inline-block;
+  width: 25px;
+  height: 25px;
+  background: url("/images/exchange-logos-25.svg") no-repeat;
+}
+
+.exchange-logo.bitcoin {
+  background-position: 0 0;
+}
+
+.exchange-logo.coinbase {
+  background-position: 0 -25px;
+}
+
+.exchange-logo.coindesk {
+  background-position: 0 -50px;
+}
+
+.exchange-logo.binance {
+  background-position: 0 -75px;
+}
+
+.exchange-logo.bittrex {
+  background-position: 0 -100px;
+}
+
+.exchange-logo.poloniex {
+  background-position: 0 -125px;
+}
+
+.exchange-logo.huobi {
+  background-position: 0 -150px;
+}
+
+.exchange-logo.dragonex {
+  background-position: 0 -175px;
+}
+
+.exchange-logo.aggregated {
+  background-position: 0 -200px;
+}
+
+.exchange-logo.dcrdex {
+  background-position: 0 -225px;
+}
