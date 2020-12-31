@@ -15,7 +15,6 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
-	"time"
 
 	"github.com/caarlos0/env"
 	"github.com/decred/dcrd/chaincfg/v2"
@@ -47,27 +46,17 @@ var (
 	defaultDaemonRPCCertFile = filepath.Join(dcrdHomeDir, "rpc.cert")
 	defaultMaxLogZips        = 16
 
-	defaultHost                = "localhost"
-	defaultHTTPProfPath        = "/p"
-	defaultAPIProto            = "http"
-	defaultMainnetPort         = "7777"
-	defaultTestnetPort         = "17778"
-	defaultSimnetPort          = "17779"
-	defaultIndentJSON          = "   "
-	defaultCacheControlMaxAge  = 86400
-	defaultInsightReqRateLimit = 20.0
-	defaultMaxCSVAddrs         = 25
-	defaultServerHeader        = "dcrdata"
-
-	defaultExchangeIndex     = "USD"
-	defaultDisabledExchanges = "dragonex,poloniex"
-	defaultRateCertFile      = filepath.Join(defaultHomeDir, "rpc.cert")
+	defaultHost         = "localhost"
+	defaultHTTPProfPath = "/p"
+	defaultAPIProto     = "http"
+	defaultMainnetPort  = "7777"
+	defaultTestnetPort  = "17778"
+	defaultSimnetPort   = "17779"
+	defaultServerHeader = "dcrdata"
 
 	defaultMainnetLink  = "https://explorer.dcrdata.org/"
 	defaultTestnetLink  = "https://testnet.dcrdata.org/"
 	defaultOnionAddress = ""
-
-	maxSyncStatusLimit = 5000
 )
 
 type config struct {
@@ -87,53 +76,11 @@ type config struct {
 	HTTPProfPath string `long:"httpprofprefix" description:"URL path prefix for the HTTP profiler." env:"DCRDATA_HTTP_PROFILER_PREFIX"`
 	CPUProfile   string `long:"cpuprofile" description:"File for CPU profiling." env:"DCRDATA_CPU_PROFILER_FILE"`
 	UseGops      bool   `short:"g" long:"gops" description:"Run with gops diagnostics agent listening. See github.com/google/gops for more information." env:"DCRDATA_USE_GOPS"`
-	ReloadHTML   bool   `long:"reload-html" description:"Reload HTML templates on every request" env:"DCRDATA_RELOAD_HTML"`
-
-	DisableBlockExplorer bool `long:"disableblockexplorer" description:"Disables the block explorer and blockchain sync component from running."`
 
 	// API/server
-	APIProto            string  `long:"apiproto" description:"Protocol for API (http or https)" env:"DCRDATA_ENABLE_HTTPS"`
-	APIListen           string  `long:"apilisten" description:"Listen address for API. default localhost:7777, :17778 testnet, :17779 simnet" env:"DCRDATA_LISTEN_URL"`
-	IndentJSON          string  `long:"indentjson" description:"String for JSON indentation (default is \"   \"), when indentation is requested via URL query."`
-	UseRealIP           bool    `long:"userealip" description:"Use the RealIP middleware from the pressly/chi/middleware package to get the client's real IP from the X-Forwarded-For or X-Real-IP headers, in that order." env:"DCRDATA_USE_REAL_IP"`
-	CacheControlMaxAge  int     `long:"cachecontrol-maxage" description:"Set CacheControl in the HTTP response header to a value in seconds for clients to cache the response. This applies only to FileServer routes." env:"DCRDATA_MAX_CACHE_AGE"`
-	InsightReqRateLimit float64 `long:"insight-limit-rps" description:"Requests/second per client IP for the Insight API's rate limiter." env:"DCRDATA_INSIGHT_RATE_LIMIT"`
-	MaxCSVAddrs         int     `long:"max-api-addrs" description:"Maximum allowed comma-separated addresses for endpoints that accept multiple addresses."`
-	CompressAPI         bool    `long:"compress-api" description:"Use compression for a number of endpoints with commonly large responses."`
-	ServerHeader        string  `long:"server-http-header" description:"Set the HTTP response header Server key value. Valid values are \"off\", \"version\", or a custom string."`
-
-	// Mempool
-	MempoolMinInterval int `long:"mp-min-interval" description:"The minimum time in seconds between mempool reports, regardless of number of new tickets seen." env:"DCRDATA_MEMPOOL_MIN_INTERVAL"`
-	MempoolMaxInterval int `long:"mp-max-interval" description:"The maximum time in seconds between mempool reports (within a couple seconds), regardless of number of new tickets seen." env:"DCRDATA_MEMPOOL_MAX_INTERVAL"`
-	MPTriggerTickets   int `long:"mp-ticket-trigger" description:"The minimum number of new tickets that must be seen to trigger a new mempool report." env:"DCRDATA_MP_TRIGGER_TICKETS"`
-
-	// Politeia/proposals and consensus agendas
-	AgendasDBFileName string `long:"agendadbfile" description:"Agendas DB file name (default is agendas.db)." env:"DCRDATA_AGENDAS_DB_FILE_NAME"`
-	ProposalsFileName string `long:"proposalsdbfile" description:"Proposals DB file name (default is proposals.db)." env:"DCRDATA_PROPOSALS_DB_FILE_NAME"`
-	PoliteiaAPIURL    string `long:"politeiaurl" description:"Defines the root API politeia URL (defaults to https://proposals.decred.org)."`
-	PiPropRepoOwner   string `long:"piproposalsowner" description:"Defines the owner to the github repo where Politeia's proposals are pushed."`
-	PiPropRepoName    string `long:"piproposalsrepo" description:"Defines the name of the github repo where Politeia's proposals are pushed."`
-	DisablePiParser   bool   `long:"disable-piparser" description:"Disables the piparser tool from running."`
-
-	// Caching and optimization.
-	AddrCacheCap     int    `long:"addr-cache-cap" description:"Address cache capacity in bytes."`
-	AddrCacheLimit   int    `long:"addr-cache-address-limit" description:"Maximum number of addresses allowed in the address cache."`
-	AddrCacheUXTOCap int    `long:"addr-cache-utxo-cap" description:"UTXO cache capacity in bytes."`
-	NoDevPrefetch    bool   `long:"no-dev-prefetch" description:"Disable automatic dev fund balance query on new blocks. When true, the query will still be run on demand, but not automatically after new blocks are connected." env:"DCRDATA_DISABLE_DEV_PREFETCH"`
-	ChartsCacheDump  string `long:"chartscache" description:"Defines the file name that holds the charts cache data on system exit."`
-
-	// DB backend
-	PGDBName         string        `long:"pgdbname" description:"PostgreSQL DB name." env:"DCRDATA_PG_DB_NAME"`
-	PGUser           string        `long:"pguser" description:"PostgreSQL DB user." env:"DCRDATA_POSTGRES_USER"`
-	PGPass           string        `long:"pgpass" description:"PostgreSQL DB password." env:"DCRDATA_POSTGRES_PASS"`
-	PGHost           string        `long:"pghost" description:"PostgreSQL server host:port or UNIX socket (e.g. /run/postgresql)." env:"DCRDATA_POSTGRES_HOST_URL"`
-	PGQueryTimeout   time.Duration `short:"T" long:"pgtimeout" description:"Timeout (a time.Duration string) for most PostgreSQL queries used for user initiated queries."`
-	HidePGConfig     bool          `long:"hidepgconfig" description:"Blocks logging of the PostgreSQL db configuration on system start up."`
-	DropIndexes      bool          `long:"drop-inds" short:"D" description:"Drop all table indexes and exit."`
-	PurgeNBestBlocks int           `long:"purge-n-blocks" description:"Purge all data for the N best blocks, using the best block across all DBs if they are out of sync."`
-	SyncAndQuit      bool          `long:"sync-and-quit" description:"Sync to the best block and exit. Do not start the explorer or API." env:"DCRDATA_ENABLE_SYNC_N_QUIT"`
-	ImportSideChains bool          `long:"import-side-chains" description:"(experimental) Enable startup import of side chains retrieved from dcrd via getchaintips." env:"DCRDATA_IMPORT_SIDE_CHAINS"`
-	SyncStatusLimit  int           `long:"sync-status-limit" description:"Sets the number of blocks behind the current best height past which only the syncing status page can be served on the running web server. Value should be greater than 2 but less than 5000."`
+	APIProto     string `long:"apiproto" description:"Protocol for API (http or https)" env:"DCRDATA_ENABLE_HTTPS"`
+	APIListen    string `long:"apilisten" description:"Listen address for API. default localhost:7777, :17778 testnet, :17779 simnet" env:"DCRDATA_LISTEN_URL"`
+	ServerHeader string `long:"server-http-header" description:"Set the HTTP response header Server key value. Valid values are \"off\", \"version\", or a custom string."`
 
 	// RPC client options
 	DcrdUser         string `long:"dcrduser" description:"Daemon RPC user name" env:"DCRDATA_DCRD_USER"`
@@ -141,14 +88,6 @@ type config struct {
 	DcrdServ         string `long:"dcrdserv" description:"Hostname/IP and port of dcrd RPC server to connect to (default localhost:9109, testnet: localhost:19109, simnet: localhost:19556)" env:"DCRDATA_DCRD_URL"`
 	DcrdCert         string `long:"dcrdcert" description:"File containing the dcrd certificate file" env:"DCRDATA_DCRD_CERT"`
 	DisableDaemonTLS bool   `long:"nodaemontls" description:"Disable TLS for the daemon RPC client -- NOTE: This is only allowed if the RPC client is connecting to localhost" env:"DCRDATA_DCRD_DISABLE_TLS"`
-	NoBlockPrefetch  bool   `long:"no-dcrd-block-prefetch" description:"Disable block pre-fetch from dcrd during startup sync."`
-
-	// ExchangeBot settings
-	EnableExchangeBot bool   `long:"exchange-monitor" description:"Enable the exchange monitor" env:"DCRDATA_MONITOR_EXCHANGES"`
-	DisabledExchanges string `long:"disable-exchange" description:"Exchanges to disable. See /exchanges/exchanges.go for available exchanges. Use a comma to separate multiple exchanges" env:"DCRDATA_DISABLE_EXCHANGES"`
-	ExchangeCurrency  string `long:"exchange-currency" description:"The default bitcoin price index. A 3-letter currency code" env:"DCRDATA_EXCHANGE_INDEX"`
-	RateMaster        string `long:"ratemaster" description:"The address of a DCRRates instance. Exchange monitoring will get all data from a DCRRates subscription." env:"DCRDATA_RATE_MASTER"`
-	RateCertificate   string `long:"ratecert" description:"File containing DCRRates TLS certificate file." env:"DCRDATA_RATE_MASTER"`
 
 	// Links
 	MainnetLink  string `long:"mainnet-link" description:"When dcrdata is on testnet, this address will be used to direct a user to a dcrdata on mainnet when appropriate." env:"DCRDATA_MAINNET_LINK"`
@@ -158,26 +97,19 @@ type config struct {
 
 var (
 	defaultConfig = config{
-		HomeDir:             defaultHomeDir,
-		DataDir:             defaultDataDir,
-		LogDir:              defaultLogDir,
-		MaxLogZips:          defaultMaxLogZips,
-		ConfigFile:          defaultConfigFile,
-		DebugLevel:          defaultLogLevel,
-		HTTPProfPath:        defaultHTTPProfPath,
-		APIProto:            defaultAPIProto,
-		IndentJSON:          defaultIndentJSON,
-		CacheControlMaxAge:  defaultCacheControlMaxAge,
-		InsightReqRateLimit: defaultInsightReqRateLimit,
-		MaxCSVAddrs:         defaultMaxCSVAddrs,
-		ServerHeader:        defaultServerHeader,
-		DcrdCert:            defaultDaemonRPCCertFile,
-		ExchangeCurrency:    defaultExchangeIndex,
-		DisabledExchanges:   defaultDisabledExchanges,
-		RateCertificate:     defaultRateCertFile,
-		MainnetLink:         defaultMainnetLink,
-		TestnetLink:         defaultTestnetLink,
-		OnionAddress:        defaultOnionAddress,
+		HomeDir:      defaultHomeDir,
+		DataDir:      defaultDataDir,
+		LogDir:       defaultLogDir,
+		MaxLogZips:   defaultMaxLogZips,
+		ConfigFile:   defaultConfigFile,
+		DebugLevel:   defaultLogLevel,
+		HTTPProfPath: defaultHTTPProfPath,
+		APIProto:     defaultAPIProto,
+		ServerHeader: defaultServerHeader,
+		DcrdCert:     defaultDaemonRPCCertFile,
+		MainnetLink:  defaultMainnetLink,
+		TestnetLink:  defaultTestnetLink,
+		OnionAddress: defaultOnionAddress,
 	}
 )
 
@@ -565,7 +497,7 @@ func loadConfig() (*config, error) {
 
 	// Expand some additional paths.
 	cfg.DcrdCert = cleanAndExpandPath(cfg.DcrdCert)
-	cfg.RateCertificate = cleanAndExpandPath(cfg.RateCertificate)
+	// cfg.RateCertificate = cleanAndExpandPath(cfg.RateCertificate)
 
 	// Clean up the provided mainnet and testnet links, ensuring there is a single
 	// trailing slash.

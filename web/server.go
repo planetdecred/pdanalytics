@@ -6,12 +6,8 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"sync"
 
 	"github.com/decred/dcrd/chaincfg/v2"
-	chainjson "github.com/decred/dcrd/rpc/jsonrpc/types/v2"
-	"github.com/decred/dcrdata/explorer/types/v2"
-	m "github.com/decred/dcrdata/middleware/v3"
 	"github.com/go-chi/chi"
 )
 
@@ -30,10 +26,8 @@ const (
 var ExplorerLinks = &Links{
 	CoinbaseComment: "https://github.com/decred/dcrd/blob/2a18beb4d56fe59d614a7309308d84891a0cba96/chaincfg/genesis.go#L17-L53",
 	POSExplanation:  "https://docs.decred.org/proof-of-stake/overview/",
-	APIDocs:         "https://github.com/decred/dcrdata#apis",
-	InsightAPIDocs:  "https://github.com/decred/dcrdata/blob/master/api/Insight_API_documentation.md",
-	Github:          "https://github.com/decred/dcrdata",
-	License:         "https://github.com/decred/dcrdata/blob/master/LICENSE",
+	Github:          "https://github.com/planetdecred/pdanalytics",
+	License:         "https://github.com/planetdecred/pdanalytics/blob/master/LICENSE",
 	NetParams:       "https://github.com/decred/dcrd/blob/master/chaincfg/params.go",
 	DownloadLink:    "https://decred.org/downloads/",
 }
@@ -76,85 +70,6 @@ func (e ExpStatus) IsFutureBlock() bool {
 func (e ExpStatus) IsSyncing() bool {
 	return e == ExpStatusSyncing
 }
-
-type Server struct {
-	webMux      *chi.Mux
-	cfg         Config
-	Templates   *Templates
-	MenuItems   []MenuItem
-	routes      map[string]route
-	routeGroups []routeGroup
-}
-
-// Links to be passed with common page data.
-type Links struct {
-	CoinbaseComment string
-	POSExplanation  string
-	APIDocs         string
-	InsightAPIDocs  string
-	Github          string
-	License         string
-	NetParams       string
-	DownloadLink    string
-	// Testnet and below are set via dcrdata config.
-	Testnet       string
-	Mainnet       string
-	TestnetSearch string
-	MainnetSearch string
-	OnionURL      string
-}
-
-type MenuItem struct {
-	Href       string
-	HyperText  string
-	Attributes map[string]string
-}
-
-// Cookies contains information from the request cookies.
-type Cookies struct {
-	DarkMode bool
-}
-
-// CommonPageData is the basis for data structs used for HTML templates.
-// explorerUI.commonData returns an initialized instance or CommonPageData,
-// which itself should be used to initialize page data template structs.
-type CommonPageData struct {
-	Tip           *types.WebBasicBlock
-	Version       string
-	ChainParams   *chaincfg.Params
-	BlockTimeUnix int64
-	DevAddress    string
-	Links         *Links
-	MenuItems     []MenuItem
-	NetName       string
-	Cookies       Cookies
-	RequestURI    string
-}
-
-type PageData struct {
-	sync.RWMutex
-	BlockInfo      *types.BlockInfo
-	BlockchainInfo *chainjson.GetBlockChainInfoResult
-	HomeInfo       *types.HomeInfo
-}
-
-// A page number has the information necessary to create numbered pagination
-// links.
-type PageNumber struct {
-	Active bool   `json:"active"`
-	Link   string `json:"link"`
-	Str    string `json:"str"`
-}
-
-func MakePageNumber(active bool, link, str string) PageNumber {
-	return PageNumber{
-		Active: active,
-		Link:   link,
-		Str:    str,
-	}
-}
-
-type PageNumbers []PageNumber
 
 // NewServer
 func NewServer(cfg Config, mux *chi.Mux, chainParams *chaincfg.Params) (*Server, error) {
@@ -252,5 +167,5 @@ func FileServer(r chi.Router, pathRoot, fsRoot string, cacheControlMaxAge int64)
 	muxRoot += "*"
 
 	// Mount the http.HandlerFunc on the pathRoot.
-	r.With(m.CacheControl(cacheControlMaxAge)).Get(muxRoot, hf)
+	r.With(CacheControl(cacheControlMaxAge)).Get(muxRoot, hf)
 }

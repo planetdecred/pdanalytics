@@ -8,7 +8,6 @@ require (
 	github.com/decred/dcrd/dcrutil/v2 v2.0.1
 	github.com/decred/dcrd/rpcclient/v5 v5.0.1
 	github.com/decred/dcrd/wire v1.3.0
-	github.com/decred/dcrdata/exchanges/v2 v2.1.0
 	github.com/decred/dcrdata/rpcutils/v3 v3.0.1
 	github.com/decred/dcrdata/semver v1.0.0
 	github.com/decred/dcrdata/v5 v5.2.2
