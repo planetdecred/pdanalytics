@@ -17,10 +17,10 @@ import (
 	"github.com/caarlos0/env"
 	"github.com/decred/dcrd/chaincfg/v2"
 	"github.com/decred/dcrd/dcrutil/v2"
-	"github.com/decred/dcrdata/v5/netparams"
-	"github.com/decred/dcrdata/v5/version"
 	"github.com/decred/slog"
 	flags "github.com/jessevdk/go-flags"
+	"github.com/planetdecred/pdanalytics/netparams"
+	"github.com/planetdecred/pdanalytics/version"
 )
 
 const (
