@@ -11,9 +11,6 @@ import (
 	"time"
 
 	"github.com/decred/dcrd/rpcclient/v5"
-	"github.com/decred/dcrdata/rpcutils/v3"
-	"github.com/decred/dcrdata/semver"
-	notify "github.com/decred/dcrdata/v5/notification"
 	"github.com/go-chi/chi"
 	"github.com/google/gops/agent"
 )
@@ -72,10 +69,10 @@ func _main(ctx context.Context) error {
 	// SetPreviousBlock and start receiving notifications with Listen. Create
 	// the notifier now so the *rpcclient.NotificationHandlers can be obtained,
 	// using (*Notifier).DcrdHandlers, for the rpcclient.Client constructor.
-	notifier := notify.NewNotifier(ctx)
+	notifier := NewNotifier(ctx)
 
 	// Connect to dcrd RPC server using a websocket.
-	dcrdClient, nodeVer, err := connectNodeRPC(cfg, notifier.DcrdHandlers())
+	dcrdClient, err := connectNodeRPC(cfg, notifier.DcrdHandlers())
 	if err != nil || dcrdClient == nil {
 		return fmt.Errorf("Connection to dcrd failed: %v", err)
 	}
@@ -95,8 +92,7 @@ func _main(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("Unable to get current network from dcrd: %v", err)
 	}
-	log.Infof("Connected to dcrd (JSON-RPC API v%s) on %v",
-		nodeVer.String(), curnet.String())
+	log.Infof("Connected to dcrd (JSON-RPC API) on %v", curnet.String())
 
 	if curnet != activeNet.Net {
 		log.Criticalf("Network of connected node, %s, does not match expected "+
@@ -131,9 +127,15 @@ func _main(ctx context.Context) error {
 	return nil
 }
 
-func connectNodeRPC(cfg *config, ntfnHandlers *rpcclient.NotificationHandlers) (*rpcclient.Client, semver.Semver, error) {
-	return rpcutils.ConnectNodeRPC(cfg.DcrdServ, cfg.DcrdUser, cfg.DcrdPass,
-		cfg.DcrdCert, cfg.DisableDaemonTLS, true, ntfnHandlers)
+func connectNodeRPC(cfg *config, ntfnHandlers *rpcclient.NotificationHandlers) (*rpcclient.Client, error) {
+	connCfg := &rpcclient.ConnConfig{
+		Host:       cfg.DcrdRpcServer,
+		Endpoint:   "ws",
+		User:       cfg.DcrdRpcUser,
+		Pass:       cfg.DcrdRpcPassword,
+		DisableTLS: cfg.DisableDaemonTLS,
+	}
+	return rpcclient.New(connCfg, ntfnHandlers)
 }
 
 func listenAndServeProto(ctx context.Context, wg *sync.WaitGroup, listen, proto string, mux http.Handler) {

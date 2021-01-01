@@ -80,9 +80,9 @@ type config struct {
 	ServerHeader string `long:"server-http-header" description:"Set the HTTP response header Server key value. Valid values are \"off\", \"version\", or a custom string."`
 
 	// RPC client options
-	DcrdUser         string `long:"dcrduser" description:"Daemon RPC user name" env:"DCRDATA_DCRD_USER"`
-	DcrdPass         string `long:"dcrdpass" description:"Daemon RPC password" env:"DCRDATA_DCRD_PASS"`
-	DcrdServ         string `long:"dcrdserv" description:"Hostname/IP and port of dcrd RPC server to connect to (default localhost:9109, testnet: localhost:19109, simnet: localhost:19556)" env:"DCRDATA_DCRD_URL"`
+	DcrdRpcUser      string `long:"dcrduser" description:"Daemon RPC user name" env:"DCRDATA_DCRD_USER"`
+	DcrdRpcPassword  string `long:"dcrdpass" description:"Daemon RPC password" env:"DCRDATA_DCRD_PASS"`
+	DcrdRpcServer    string `long:"dcrdserv" description:"Hostname/IP and port of dcrd RPC server to connect to (default localhost:9109, testnet: localhost:19109, simnet: localhost:19556)" env:"DCRDATA_DCRD_URL"`
 	DcrdCert         string `long:"dcrdcert" description:"File containing the dcrd certificate file" env:"DCRDATA_DCRD_CERT"`
 	DisableDaemonTLS bool   `long:"nodaemontls" description:"Disable TLS for the daemon RPC client -- NOTE: This is only allowed if the RPC client is connecting to localhost" env:"DCRDATA_DCRD_DISABLE_TLS"`
 
@@ -448,7 +448,7 @@ func loadConfig() (*config, error) {
 
 	// Set the host names and ports to the default if the user does not specify
 	// them.
-	cfg.DcrdServ, err = normalizeNetworkAddress(cfg.DcrdServ, defaultHost, activeNet.JSONRPCClientPort)
+	cfg.DcrdRpcServer, err = normalizeNetworkAddress(cfg.DcrdRpcServer, defaultHost, activeNet.JSONRPCClientPort)
 	if err != nil {
 		return loadConfigError(err)
 	}
