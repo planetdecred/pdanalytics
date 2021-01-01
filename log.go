@@ -1,7 +1,3 @@
-// Copyright (c) 2016, 2018 The Decred developers
-// Use of this source code is governed by an ISC
-// license that can be found in the LICENSE file.
-
 package main
 
 import (
@@ -41,7 +37,7 @@ var (
 	// application shutdown.
 	logRotator *rotator.Rotator
 
-	log = backendLog.Logger("DATD")
+	log = backendLog.Logger("PDAN")
 )
 
 // Initialize package-global logger variables.
@@ -50,7 +46,7 @@ func init() {
 
 // subsystemLoggers maps each subsystem identifier to its associated logger.
 var subsystemLoggers = map[string]slog.Logger{
-	"DATD": log,
+	"PDAN": log,
 }
 
 // initLogRotator initializes the logging rotater to write logs to logFile and
