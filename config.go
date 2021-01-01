@@ -8,18 +8,15 @@ package main
 import (
 	"fmt"
 	"net"
-	"net/url"
 	"os"
 	"os/user"
 	"path/filepath"
-	"regexp"
 	"runtime"
 	"strings"
 
 	"github.com/caarlos0/env"
 	"github.com/decred/dcrd/chaincfg/v2"
 	"github.com/decred/dcrd/dcrutil/v2"
-	"github.com/decred/dcrd/wire"
 	"github.com/decred/dcrdata/v5/netparams"
 	"github.com/decred/dcrdata/v5/version"
 	"github.com/decred/slog"
@@ -27,8 +24,8 @@ import (
 )
 
 const (
-	defaultConfigFilename = "dcrdata.conf"
-	defaultLogFilename    = "dcrdata.log"
+	defaultConfigFilename = "pdanalytics.conf"
+	defaultLogFilename    = "pdanalytics.log"
 	defaultDataDirname    = "data"
 	defaultLogLevel       = "info"
 	defaultLogDirname     = "logs"
@@ -38,7 +35,7 @@ var activeNet = &netparams.MainNetParams
 var activeChain = chaincfg.MainNetParams()
 
 var (
-	defaultHomeDir           = dcrutil.AppDataDir("dcrdata", false)
+	defaultHomeDir           = dcrutil.AppDataDir("pdanalytics", false)
 	defaultConfigFile        = filepath.Join(defaultHomeDir, defaultConfigFilename)
 	defaultLogDir            = filepath.Join(defaultHomeDir, defaultLogDirname)
 	defaultDataDir           = filepath.Join(defaultHomeDir, defaultDataDirname)
@@ -52,7 +49,7 @@ var (
 	defaultMainnetPort  = "7777"
 	defaultTestnetPort  = "17778"
 	defaultSimnetPort   = "17779"
-	defaultServerHeader = "dcrdata"
+	defaultServerHeader = "pdanalytics"
 
 	defaultMainnetLink  = "https://explorer.dcrdata.org/"
 	defaultTestnetLink  = "https://testnet.dcrdata.org/"
@@ -505,39 +502,4 @@ func loadConfig() (*config, error) {
 	cfg.TestnetLink = strings.TrimSuffix(cfg.TestnetLink, "/") + "/"
 
 	return &cfg, nil
-}
-
-// netName returns the name used when referring to a decred network. TestNet3
-// correctly returns "testnet3", but not TestNet2. This function may be removed
-// after testnet2 is ancient history.
-func netName(chainParams *netparams.Params) string {
-	// The following switch is to ensure this code is not built for testnet2, as
-	// TestNet2 was removed entirely for dcrd 1.3.0. Compile check!
-	switch chainParams.Net {
-	case wire.TestNet3, wire.MainNet, wire.SimNet:
-	default:
-		log.Warnf("Unknown network: %s", chainParams.Name)
-	}
-	return chainParams.Name
-}
-
-// retrieveRootPath drops all extra characters that are not part of the root path.
-// i.e. with input http://www.mydomain.com/xxxxx, http://www.mydomain.com should
-// be returned.
-func retrieveRootPath(path string) (string, error) {
-	r, err := url.Parse(path)
-	if err != nil {
-		return "", fmt.Errorf("invalid '%s' url used. error: %v", path, err)
-	}
-
-	// If the url scheme or host were not found, a regex expression can be used to
-	// eliminate the unwanted part.
-	if r.Scheme == "" || r.Host == "" {
-		exp := regexp.MustCompile(`([\/?]\S*)`)
-		return exp.ReplaceAllLiteralString(path, ""), nil
-	}
-
-	r.Path = ""     // Drop any set path and the leading slash
-	r.RawQuery = "" // Drop any set Query
-	return r.String(), nil
 }
