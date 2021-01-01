@@ -53,38 +53,38 @@ var (
 
 type config struct {
 	// RPC client options
-	DcrdRpcUser      string `long:"dcrduser" description:"Daemon RPC user name" env:"DCRDATA_DCRD_USER"`
-	DcrdRpcPassword  string `long:"dcrdpass" description:"Daemon RPC password" env:"DCRDATA_DCRD_PASS"`
-	DcrdRpcServer    string `long:"dcrdserv" description:"Hostname/IP and port of dcrd RPC server to connect to (default localhost:9109, testnet: localhost:19109, simnet: localhost:19556)" env:"DCRDATA_DCRD_URL"`
-	DcrdCert         string `long:"dcrdcert" description:"File containing the dcrd certificate file" env:"DCRDATA_DCRD_CERT"`
-	DisableDaemonTLS bool   `long:"nodaemontls" description:"Disable TLS for the daemon RPC client -- NOTE: This is only allowed if the RPC client is connecting to localhost" env:"DCRDATA_DCRD_DISABLE_TLS"`
+	DcrdRpcUser      string `long:"dcrduser" description:"Daemon RPC user name" env:"PDANALYTICS_DCRD_USER"`
+	DcrdRpcPassword  string `long:"dcrdpass" description:"Daemon RPC password" env:"PDANALYTICS_DCRD_PASS"`
+	DcrdRpcServer    string `long:"dcrdserv" description:"Hostname/IP and port of dcrd RPC server to connect to (default localhost:9109, testnet: localhost:19109, simnet: localhost:19556)" env:"PDANALYTICS_DCRD_URL"`
+	DcrdCert         string `long:"dcrdcert" description:"File containing the dcrd certificate file" env:"PDANALYTICS_DCRD_CERT"`
+	DisableDaemonTLS bool   `long:"nodaemontls" description:"Disable TLS for the daemon RPC client -- NOTE: This is only allowed if the RPC client is connecting to localhost" env:"PDANALYTICS_DCRD_DISABLE_TLS"`
 
 	// General application behavior
-	HomeDir      string `short:"A" long:"appdata" description:"Path to application home directory" env:"DCRDATA_APPDATA_DIR"`
-	ConfigFile   string `short:"C" long:"configfile" description:"Path to configuration file" env:"DCRDATA_CONFIG_FILE"`
-	DataDir      string `short:"b" long:"datadir" description:"Directory to store data" env:"DCRDATA_DATA_DIR"`
-	LogDir       string `long:"logdir" description:"Directory to log output." env:"DCRDATA_LOG_DIR"`
+	HomeDir      string `short:"A" long:"appdata" description:"Path to application home directory" env:"PDANALYTICS_APPDATA_DIR"`
+	ConfigFile   string `short:"C" long:"configfile" description:"Path to configuration file" env:"PDANALYTICS_CONFIG_FILE"`
+	DataDir      string `short:"b" long:"datadir" description:"Directory to store data" env:"PDANALYTICS_DATA_DIR"`
+	LogDir       string `long:"logdir" description:"Directory to log output." env:"PDANALYTICS_LOG_DIR"`
 	MaxLogZips   int    `long:"max-log-zips" description:"The number of zipped log files created by the log rotator to be retained. Setting to 0 will keep all."`
-	OutFolder    string `short:"f" long:"outfolder" description:"Folder for file outputs" env:"DCRDATA_OUT_FOLDER"`
+	OutFolder    string `short:"f" long:"outfolder" description:"Folder for file outputs" env:"PDANALYTICS_OUT_FOLDER"`
 	ShowVersion  bool   `short:"V" long:"version" description:"Display version information and exit"`
-	TestNet      bool   `long:"testnet" description:"Use the test network (default mainnet)" env:"DCRDATA_USE_TESTNET"`
-	SimNet       bool   `long:"simnet" description:"Use the simulation test network (default mainnet)" env:"DCRDATA_USE_SIMNET"`
-	DebugLevel   string `short:"d" long:"debuglevel" description:"Logging level {trace, debug, info, warn, error, critical}" env:"DCRDATA_LOG_LEVEL"`
-	Quiet        bool   `short:"q" long:"quiet" description:"Easy way to set debuglevel to error" env:"DCRDATA_QUIET"`
-	HTTPProfile  bool   `long:"httpprof" short:"p" description:"Start HTTP profiler." env:"DCRDATA_ENABLE_HTTP_PROFILER"`
-	HTTPProfPath string `long:"httpprofprefix" description:"URL path prefix for the HTTP profiler." env:"DCRDATA_HTTP_PROFILER_PREFIX"`
-	CPUProfile   string `long:"cpuprofile" description:"File for CPU profiling." env:"DCRDATA_CPU_PROFILER_FILE"`
-	UseGops      bool   `short:"g" long:"gops" description:"Run with gops diagnostics agent listening. See github.com/google/gops for more information." env:"DCRDATA_USE_GOPS"`
+	TestNet      bool   `long:"testnet" description:"Use the test network (default mainnet)" env:"PDANALYTICS_USE_TESTNET"`
+	SimNet       bool   `long:"simnet" description:"Use the simulation test network (default mainnet)" env:"PDANALYTICS_USE_SIMNET"`
+	DebugLevel   string `short:"d" long:"debuglevel" description:"Logging level {trace, debug, info, warn, error, critical}" env:"PDANALYTICS_LOG_LEVEL"`
+	Quiet        bool   `short:"q" long:"quiet" description:"Easy way to set debuglevel to error" env:"PDANALYTICS_QUIET"`
+	HTTPProfile  bool   `long:"httpprof" short:"p" description:"Start HTTP profiler." env:"PDANALYTICS_ENABLE_HTTP_PROFILER"`
+	HTTPProfPath string `long:"httpprofprefix" description:"URL path prefix for the HTTP profiler." env:"PDANALYTICS_HTTP_PROFILER_PREFIX"`
+	CPUProfile   string `long:"cpuprofile" description:"File for CPU profiling." env:"PDANALYTICS_CPU_PROFILER_FILE"`
+	UseGops      bool   `short:"g" long:"gops" description:"Run with gops diagnostics agent listening. See github.com/google/gops for more information." env:"PDANALYTICS_USE_GOPS"`
 
 	// API/server
-	APIProto     string `long:"apiproto" description:"Protocol for API (http or https)" env:"DCRDATA_ENABLE_HTTPS"`
-	APIListen    string `long:"apilisten" description:"Listen address for API. default localhost:7777, :17778 testnet, :17779 simnet" env:"DCRDATA_LISTEN_URL"`
+	APIProto     string `long:"apiproto" description:"Protocol for API (http or https)" env:"PDANALYTICS_ENABLE_HTTPS"`
+	APIListen    string `long:"apilisten" description:"Listen address for API. default localhost:7777, :17778 testnet, :17779 simnet" env:"PDANALYTICS_LISTEN_URL"`
 	ServerHeader string `long:"server-http-header" description:"Set the HTTP response header Server key value. Valid values are \"off\", \"version\", or a custom string."`
 
 	// Links
-	MainnetLink  string `long:"mainnet-link" description:"When dcrdata is on testnet, this address will be used to direct a user to a dcrdata on mainnet when appropriate." env:"DCRDATA_MAINNET_LINK"`
-	TestnetLink  string `long:"testnet-link" description:"When dcrdata is on mainnet, this address will be used to direct a user to a dcrdata on testnet when appropriate." env:"DCRDATA_TESTNET_LINK"`
-	OnionAddress string `long:"onion-address" description:"Hidden service address" env:"DCRDATA_ONION_ADDRESS"`
+	MainnetLink  string `long:"mainnet-link" description:"When pdanalytics is on testnet, this address will be used to direct a user to a pdanalytics on mainnet when appropriate." env:"PDANALYTICS_MAINNET_LINK"`
+	TestnetLink  string `long:"testnet-link" description:"When pdanalytics is on mainnet, this address will be used to direct a user to a pdanalytics on testnet when appropriate." env:"PDANALYTICS_TESTNET_LINK"`
+	OnionAddress string `long:"onion-address" description:"Hidden service address" env:"PDANALYTICS_ONION_ADDRESS"`
 }
 
 var (

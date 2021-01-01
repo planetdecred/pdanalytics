@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	DarkModeCoookie   = "dcrdataDarkBG"
+	DarkModeCoookie   = "pdanalyticsDarkBG"
 	DarkModeFormKey   = "darkmode"
 	RequestURIFormKey = "requestURI"
 

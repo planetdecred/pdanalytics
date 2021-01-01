@@ -37,7 +37,7 @@ func _main(ctx context.Context) error {
 	// Parse the configuration file, and setup logger.
 	cfg, err := loadConfig()
 	if err != nil {
-		fmt.Printf("Failed to load dcrdata config: %s\n", err.Error())
+		fmt.Printf("Failed to load pdanalytics config: %s\n", err.Error())
 		return err
 	}
 	defer func() {
@@ -169,12 +169,12 @@ func listenAndServeProto(ctx context.Context, wg *sync.WaitGroup, listen, proto 
 	go func() {
 		var err error
 		if proto == "https" {
-			err = server.ListenAndServeTLS("dcrdata.cert", "dcrdata.key")
+			err = server.ListenAndServeTLS("pdanalytics.cert", "pdanalytics.key")
 		} else {
 			err = server.ListenAndServe()
 		}
 		// If the server dies for any reason other than ErrServerClosed (from
-		// graceful server.Shutdown), log the error and request dcrdata be
+		// graceful server.Shutdown), log the error and request pdanalytics be
 		// shutdown.
 		if err != nil && err != http.ErrServerClosed {
 			log.Errorf("Failed to start server: %v", err)

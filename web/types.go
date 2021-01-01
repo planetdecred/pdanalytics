@@ -23,7 +23,7 @@ type Links struct {
 	License         string
 	NetParams       string
 	DownloadLink    string
-	// Testnet and below are set via dcrdata config.
+	// Testnet and below are set via pdanalytics config.
 	Testnet       string
 	Mainnet       string
 	TestnetSearch string
