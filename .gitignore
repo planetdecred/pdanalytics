@@ -7,9 +7,8 @@
 debug
 *.cert
 *.key
-dcrdata
 pdanalytics
-dcrdata.conf
+pdanalytics.conf
 /vendor/
 *.orig
 *.db
