@@ -53,3 +53,7 @@ dcrrates/rateserver/logs/
 pgsql_*.sql
 sqlite_*.sql
 db/dcrpg/chkdcrpg/chkdcrpg
+
+public/dist/
+public/js/dist/
+public/**/*.gz

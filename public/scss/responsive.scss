@@ -1,0 +1,32 @@
+/* responsive */
+@media only screen and (max-width: 992px) {
+  .container {
+    max-width: 100% !important;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .sm-fullwidth {
+    width: 100%;
+    max-width: 100% !important;
+  }
+
+  .sm-w151 {
+    width: 151px;
+  }
+}
+
+@media only screen and (max-width: 576px) {
+  .home-link {
+    width: 35px;
+    overflow: hidden;
+  }
+
+  .xs-w91 {
+    width: 91px !important;
+  }
+
+  .xs-w117 {
+    width: 117px;
+  }
+}

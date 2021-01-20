@@ -38,13 +38,14 @@ var (
 	defaultDaemonRPCCertFile = filepath.Join(dcrdHomeDir, "rpc.cert")
 	defaultMaxLogZips        = 16
 
-	defaultHost         = "localhost"
-	defaultHTTPProfPath = "/p"
-	defaultAPIProto     = "http"
-	defaultMainnetPort  = "7777"
-	defaultTestnetPort  = "17778"
-	defaultSimnetPort   = "17779"
-	defaultServerHeader = "pdanalytics"
+	defaultHost               = "localhost"
+	defaultHTTPProfPath       = "/p"
+	defaultAPIProto           = "http"
+	defaultMainnetPort        = "7777"
+	defaultTestnetPort        = "17778"
+	defaultSimnetPort         = "17779"
+	defaultCacheControlMaxAge = 86400
+	defaultServerHeader       = "pdanalytics"
 
 	defaultMainnetLink  = "https://explorer.dcrdata.org/"
 	defaultTestnetLink  = "https://testnet.dcrdata.org/"
@@ -75,11 +76,13 @@ type config struct {
 	HTTPProfPath string `long:"httpprofprefix" description:"URL path prefix for the HTTP profiler." env:"PDANALYTICS_HTTP_PROFILER_PREFIX"`
 	CPUProfile   string `long:"cpuprofile" description:"File for CPU profiling." env:"PDANALYTICS_CPU_PROFILER_FILE"`
 	UseGops      bool   `short:"g" long:"gops" description:"Run with gops diagnostics agent listening. See github.com/google/gops for more information." env:"PDANALYTICS_USE_GOPS"`
+	ReloadHTML   bool   `long:"reload-html" description:"Reload HTML templates on every request" env:"DCRDATA_RELOAD_HTML"`
 
 	// API/server
-	APIProto     string `long:"apiproto" description:"Protocol for API (http or https)" env:"PDANALYTICS_ENABLE_HTTPS"`
-	APIListen    string `long:"apilisten" description:"Listen address for API. default localhost:7777, :17778 testnet, :17779 simnet" env:"PDANALYTICS_LISTEN_URL"`
-	ServerHeader string `long:"server-http-header" description:"Set the HTTP response header Server key value. Valid values are \"off\", \"version\", or a custom string."`
+	APIProto           string `long:"apiproto" description:"Protocol for API (http or https)" env:"PDANALYTICS_ENABLE_HTTPS"`
+	APIListen          string `long:"apilisten" description:"Listen address for API. default localhost:7777, :17778 testnet, :17779 simnet" env:"PDANALYTICS_LISTEN_URL"`
+	ServerHeader       string `long:"server-http-header" description:"Set the HTTP response header Server key value. Valid values are \"off\", \"version\", or a custom string."`
+	CacheControlMaxAge int    `long:"cachecontrol-maxage" description:"Set CacheControl in the HTTP response header to a value in seconds for clients to cache the response. This applies only to FileServer routes." env:"DCRDATA_MAX_CACHE_AGE"`
 
 	// Links
 	MainnetLink  string `long:"mainnet-link" description:"When pdanalytics is on testnet, this address will be used to direct a user to a pdanalytics on mainnet when appropriate." env:"PDANALYTICS_MAINNET_LINK"`
@@ -89,19 +92,20 @@ type config struct {
 
 var (
 	defaultConfig = config{
-		HomeDir:      defaultHomeDir,
-		DataDir:      defaultDataDir,
-		LogDir:       defaultLogDir,
-		MaxLogZips:   defaultMaxLogZips,
-		ConfigFile:   defaultConfigFile,
-		DebugLevel:   defaultLogLevel,
-		HTTPProfPath: defaultHTTPProfPath,
-		APIProto:     defaultAPIProto,
-		ServerHeader: defaultServerHeader,
-		DcrdCert:     defaultDaemonRPCCertFile,
-		MainnetLink:  defaultMainnetLink,
-		TestnetLink:  defaultTestnetLink,
-		OnionAddress: defaultOnionAddress,
+		HomeDir:            defaultHomeDir,
+		DataDir:            defaultDataDir,
+		LogDir:             defaultLogDir,
+		MaxLogZips:         defaultMaxLogZips,
+		ConfigFile:         defaultConfigFile,
+		DebugLevel:         defaultLogLevel,
+		HTTPProfPath:       defaultHTTPProfPath,
+		APIProto:           defaultAPIProto,
+		CacheControlMaxAge: defaultCacheControlMaxAge,
+		ServerHeader:       defaultServerHeader,
+		DcrdCert:           defaultDaemonRPCCertFile,
+		MainnetLink:        defaultMainnetLink,
+		TestnetLink:        defaultTestnetLink,
+		OnionAddress:       defaultOnionAddress,
 	}
 )
 

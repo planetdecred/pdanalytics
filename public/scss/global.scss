@@ -1,0 +1,19 @@
+/* elements */
+html {
+  color: #052f4b;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-font-smoothing: antialiased !important;
+  text-rendering: optimizelegibility !important;
+  padding-top: 60px;
+  padding-bottom: 34px;
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+}
+
+::placeholder {
+  color: $gray-600;
+}

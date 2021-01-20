@@ -13,6 +13,7 @@ import (
 	"github.com/decred/dcrd/rpcclient/v5"
 	"github.com/go-chi/chi"
 	"github.com/google/gops/agent"
+	"github.com/planetdecred/pdanalytics/web"
 )
 
 func main() {
@@ -103,6 +104,17 @@ func _main(ctx context.Context) error {
 	var wg sync.WaitGroup
 
 	webMux := chi.NewRouter()
+	webServer, err := web.NewServer(web.Config{
+		CacheControlMaxAge: int64(cfg.CacheControlMaxAge),
+		Viewsfolder:        "./views",
+		ReloadHTML:         cfg.ReloadHTML,
+	}, webMux, activeChain)
+	if err != nil {
+		log.Error(err)
+		return fmt.Errorf("failed to create new web server (templates missing?)")
+	}
+
+	webServer.MountAssetPaths("/", "./public")
 
 	// (*notify.Notifier).processBlock will discard incoming block if PrevHash does not match
 	bestBlockHash, bestBlockHeight, err := dcrdClient.GetBestBlock()
@@ -112,6 +124,10 @@ func _main(ctx context.Context) error {
 	}
 	notifier.SetPreviousBlock(*bestBlockHash, uint32(bestBlockHeight))
 
+	// buildExplorer start the web server when its convenient for we are
+	// starting here if the block explorer is disable.
+	// The action here assumes that all other modules has being configured
+	webServer.BuildRoute()
 	listenAndServeProto(ctx, &wg, cfg.APIListen, cfg.APIProto, webMux)
 
 	// Register for notifications from dcrd. This also sets the daemon RPC

@@ -1,0 +1,18 @@
+/* bootstrap overrides */
+// try to customize via _variables.scss first before authoring an override
+
+.progress-bar {
+  text-shadow: 1px 1px 0 #00000012;
+  overflow: visible;
+}
+
+.v2-progress.progress {
+  height: 1rem;
+}
+
+.v2-progress {
+  .progress-bar {
+    background-color: #2dd8a3;
+    overflow: visible;
+  }
+}

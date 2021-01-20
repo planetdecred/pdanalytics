@@ -1,0 +1,103 @@
+table {
+  line-height: 1;
+  margin-bottom: 0;
+
+  th {
+    font-size: 13px;
+    font-weight: 500; /* For firefox */
+  }
+
+  td {
+    font-size: 14px;
+  }
+
+  th,
+  td {
+    border: none;
+  }
+
+  thead tr {
+    background: #fff;
+    font-family: 'source-sans-pro-semibold', sans-serif;
+  }
+}
+
+tr.hover-row {
+  cursor: pointer;
+}
+
+tr.hover-row:hover {
+  background-color: #2970ff77;
+}
+
+tr.sum-row {
+  border-top: 1px solid #7777;
+}
+
+.table-mono-cells td {
+  font-family: 'inconsolata-v15-latin-regular', monospace;
+  font-size: 14px;
+}
+
+table.table {
+  tr,
+  th,
+  td {
+    color: #052f4b; // Setting explicitly so bootstrap > 4.3.1 won't override.
+    border-top: none;
+    border-bottom: 1px solid #e4e4e4;
+    padding: 0.75em 0.5em;
+  }
+}
+
+table.table-sm {
+  th,
+  td {
+    padding: 0.5em;
+  }
+}
+
+table.details td {
+  line-height: 1em;
+  padding: 0.5em 0;
+}
+
+table tr.disabled-row {
+  background-color: #00000015;
+  border-bottom: 1px solid #8885;
+}
+
+.blue-row {
+  background: #0078ff1c;
+}
+
+table th.addr-hash-column {
+  font-size: 14px;
+  width: 20em;
+}
+
+table.table.v3 {
+  margin-bottom: 0;
+
+  tr,
+  th,
+  td {
+    padding: 18px 0.5em;
+    font-family: $font-family-sans-serif;
+  }
+
+  th {
+    font-size: 15px;
+    color: #555;
+    padding: 20px 0;
+  }
+
+  td {
+    font-size: 17px;
+  }
+
+  tr:last-child,
+  tr:last-child > td {
+    border: none;
+  }
+}
