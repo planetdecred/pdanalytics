@@ -38,6 +38,7 @@ var (
 	logRotator *rotator.Rotator
 
 	log = backendLog.Logger("PDAN")
+	paramLog = backendLog.Logger("PARA")
 )
 
 // Initialize package-global logger variables.
@@ -47,6 +48,7 @@ func init() {
 // subsystemLoggers maps each subsystem identifier to its associated logger.
 var subsystemLoggers = map[string]slog.Logger{
 	"PDAN": log,
+	"PARA": paramLog,
 }
 
 // initLogRotator initializes the logging rotater to write logs to logFile and
