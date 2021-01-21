@@ -37,7 +37,7 @@ var (
 	// application shutdown.
 	logRotator *rotator.Rotator
 
-	log = backendLog.Logger("PDAN")
+	log      = backendLog.Logger("PDAN")
 	paramLog = backendLog.Logger("PARA")
 )
 

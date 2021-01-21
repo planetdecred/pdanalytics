@@ -1,4 +1,4 @@
-module github.com/decred/dcrdata/pkgs/parameters
+module github.com/planetdecred/pdanalytics/pkgs/parameters
 
 go 1.13
 

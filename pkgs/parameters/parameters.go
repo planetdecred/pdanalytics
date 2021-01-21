@@ -1,14 +1,11 @@
 package parameters
 
 import (
-	"fmt"
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/decred/dcrd/chaincfg/v2"
 	"github.com/decred/dcrd/rpcclient/v5"
-	"github.com/decred/dcrd/txscript/v2"
 
 	"github.com/planetdecred/pdanalytics/web"
 )
@@ -56,7 +53,7 @@ func New(dcrdClient *rpcclient.Client, webServer *web.Server, params *chaincfg.P
 	exp.webServer.AddMenuItem(web.MenuItem{})
 
 	// Development subsidy address of the current network
-	devSubsidyAddress, err := devSubsidyAddress(params)
+	devSubsidyAddress, err := web.DevSubsidyAddress(params)
 	if err != nil {
 		log.Warnf("parameters.New: %v", err)
 		return nil, err
@@ -84,84 +81,6 @@ func New(dcrdClient *rpcclient.Client, webServer *web.Server, params *chaincfg.P
 	return exp, nil
 }
 
-// DevSubsidyAddress returns the development subsidy address for the specified
-// network.
-func devSubsidyAddress(params *chaincfg.Params) (string, error) {
-	var devSubsidyAddress string
-	var err error
-	switch params.Name {
-	case "testnet2":
-		// TestNet2 uses an invalid organization PkScript
-		devSubsidyAddress = "TccTkqj8wFqrUemmHMRSx8SYEueQYLmuuFk"
-		err = fmt.Errorf("testnet2 has invalid project fund script")
-	default:
-		_, devSubsidyAddresses, _, err0 := txscript.ExtractPkScriptAddrs(
-			params.OrganizationPkScriptVersion, params.OrganizationPkScript, params)
-		if err0 != nil || len(devSubsidyAddresses) != 1 {
-			err = fmt.Errorf("failed to decode dev subsidy address: %v", err0)
-		} else {
-			devSubsidyAddress = devSubsidyAddresses[0].String()
-		}
-	}
-	return devSubsidyAddress, err
-}
-
-// AddrPrefix represent the address name it's prefix and description
-type AddrPrefix struct {
-	Name        string
-	Prefix      string
-	Description string
-}
-
-// AddressPrefixes generates an array AddrPrefix by using chaincfg.Params
-// TODO: move to shared package
-func AddressPrefixes(params *chaincfg.Params) []AddrPrefix {
-	Descriptions := []string{"P2PK address",
-		"P2PKH address prefix. Standard wallet address. 1 public key -> 1 private key",
-		"Ed25519 P2PKH address prefix",
-		"secp256k1 Schnorr P2PKH address prefix",
-		"P2SH address prefix",
-		"WIF private key prefix",
-		"HD extended private key prefix",
-		"HD extended public key prefix",
-	}
-	Name := []string{"PubKeyAddrID",
-		"PubKeyHashAddrID",
-		"PKHEdwardsAddrID",
-		"PKHSchnorrAddrID",
-		"ScriptHashAddrID",
-		"PrivateKeyID",
-		"HDPrivateKeyID",
-		"HDPublicKeyID",
-	}
-
-	MainnetPrefixes := []string{"Dk", "Ds", "De", "DS", "Dc", "Pm", "dprv", "dpub"}
-	TestnetPrefixes := []string{"Tk", "Ts", "Te", "TS", "Tc", "Pt", "tprv", "tpub"}
-	SimnetPrefixes := []string{"Sk", "Ss", "Se", "SS", "Sc", "Ps", "sprv", "spub"}
-
-	name := params.Name
-	var netPrefixes []string
-	if name == "mainnet" {
-		netPrefixes = MainnetPrefixes
-	} else if strings.HasPrefix(name, "testnet") {
-		netPrefixes = TestnetPrefixes
-	} else if name == "simnet" {
-		netPrefixes = SimnetPrefixes
-	} else {
-		return nil
-	}
-
-	addrPrefix := make([]AddrPrefix, 0, len(Descriptions))
-	for i, desc := range Descriptions {
-		addrPrefix = append(addrPrefix, AddrPrefix{
-			Name:        Name[i],
-			Description: desc,
-			Prefix:      netPrefixes[i],
-		})
-	}
-	return addrPrefix
-}
-
 // commonData grabs the common page data that is available to every page.
 // This is particularly useful for extras.tmpl, parts of which
 // are used on every page
@@ -169,7 +88,7 @@ func (exp *parameter) commonData(r *http.Request) *web.CommonPageData {
 
 	darkMode, err := r.Cookie(web.DarkModeCoookie)
 	if err != nil && err != http.ErrNoCookie {
-		log.Errorf("Cookie dcrdataDarkBG retrieval error: %v", err)
+		log.Errorf("Cookie pdanalyticsDarkBG retrieval error: %v", err)
 	}
 	return &web.CommonPageData{
 		Version:       exp.Version,
@@ -188,7 +107,7 @@ func (exp *parameter) commonData(r *http.Request) *web.CommonPageData {
 
 func (exp parameter) handle(w http.ResponseWriter, r *http.Request) {
 	params := exp.ChainParams
-	addrPrefix := AddressPrefixes(params)
+	addrPrefix := web.AddressPrefixes(params)
 	actualTicketPoolSize := int64(params.TicketPoolSize * params.TicketsPerBlock)
 
 	exp.pageData.RLock()
@@ -203,7 +122,7 @@ func (exp parameter) handle(w http.ResponseWriter, r *http.Request) {
 	type ExtendedParams struct {
 		MaximumBlockSize     int64
 		ActualTicketPoolSize int64
-		AddressPrefix        []AddrPrefix
+		AddressPrefix        []web.AddrPrefix
 	}
 
 	str, err := exp.templates.ExecTemplateToString("parameters", struct {
