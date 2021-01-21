@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,6 +14,7 @@ import (
 	"github.com/decred/dcrd/rpcclient/v5"
 	"github.com/go-chi/chi"
 	"github.com/google/gops/agent"
+	"github.com/planetdecred/pdanalytics/pkgs/parameters"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
@@ -116,6 +118,14 @@ func _main(ctx context.Context) error {
 
 	webServer.MountAssetPaths("/", "./public")
 
+	if cfg.EnableChainParameters == 1 {
+		_, err := parameters.New(dcrdClient, webServer, activeChain)
+		if err != nil {
+			log.Error(err)
+			return fmt.Errorf("Failed to create new parameters component, %s", err.Error())
+		}
+	}
+
 	// (*notify.Notifier).processBlock will discard incoming block if PrevHash does not match
 	bestBlockHash, bestBlockHeight, err := dcrdClient.GetBestBlock()
 	if err != nil {
@@ -144,12 +154,30 @@ func _main(ctx context.Context) error {
 }
 
 func connectNodeRPC(cfg *config, ntfnHandlers *rpcclient.NotificationHandlers) (*rpcclient.Client, error) {
+	var dcrdCerts []byte
+	var err error
+	if !cfg.DisableDaemonTLS {
+		dcrdCerts, err = ioutil.ReadFile(cfg.DcrdCert)
+		if err != nil {
+			log.Errorf("Failed to read dcrd cert file at %s: %s\n",
+				cfg.DcrdCert, err.Error())
+			return nil, err
+		}
+		log.Debugf("Attempting to connect to dcrd RPC %s as user %s "+
+			"using certificate located in %s",
+			cfg.DcrdRpcServer, cfg.DcrdRpcUser, cfg.DcrdCert)
+	} else {
+		log.Debugf("Attempting to connect to dcrd RPC %s as user %s (no TLS)",
+			cfg.DcrdRpcServer, cfg.DcrdRpcUser)
+	}
+
 	connCfg := &rpcclient.ConnConfig{
-		Host:       cfg.DcrdRpcServer,
-		Endpoint:   "ws",
-		User:       cfg.DcrdRpcUser,
-		Pass:       cfg.DcrdRpcPassword,
-		DisableTLS: cfg.DisableDaemonTLS,
+		Host:         cfg.DcrdRpcServer,
+		Endpoint:     "ws",
+		User:         cfg.DcrdRpcUser,
+		Pass:         cfg.DcrdRpcPassword,
+		Certificates: dcrdCerts,
+		DisableTLS:   cfg.DisableDaemonTLS,
 	}
 	return rpcclient.New(connCfg, ntfnHandlers)
 }
