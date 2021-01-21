@@ -88,24 +88,28 @@ type config struct {
 	MainnetLink  string `long:"mainnet-link" description:"When pdanalytics is on testnet, this address will be used to direct a user to a pdanalytics on mainnet when appropriate." env:"PDANALYTICS_MAINNET_LINK"`
 	TestnetLink  string `long:"testnet-link" description:"When pdanalytics is on mainnet, this address will be used to direct a user to a pdanalytics on testnet when appropriate." env:"PDANALYTICS_TESTNET_LINK"`
 	OnionAddress string `long:"onion-address" description:"Hidden service address" env:"PDANALYTICS_ONION_ADDRESS"`
+
+	// Modules config
+	EnableChainParameters int `long:"parameters" description:"Enable/Disables the chain parameter component from running."`
 }
 
 var (
 	defaultConfig = config{
-		HomeDir:            defaultHomeDir,
-		DataDir:            defaultDataDir,
-		LogDir:             defaultLogDir,
-		MaxLogZips:         defaultMaxLogZips,
-		ConfigFile:         defaultConfigFile,
-		DebugLevel:         defaultLogLevel,
-		HTTPProfPath:       defaultHTTPProfPath,
-		APIProto:           defaultAPIProto,
-		CacheControlMaxAge: defaultCacheControlMaxAge,
-		ServerHeader:       defaultServerHeader,
-		DcrdCert:           defaultDaemonRPCCertFile,
-		MainnetLink:        defaultMainnetLink,
-		TestnetLink:        defaultTestnetLink,
-		OnionAddress:       defaultOnionAddress,
+		HomeDir:               defaultHomeDir,
+		DataDir:               defaultDataDir,
+		LogDir:                defaultLogDir,
+		MaxLogZips:            defaultMaxLogZips,
+		ConfigFile:            defaultConfigFile,
+		DebugLevel:            defaultLogLevel,
+		HTTPProfPath:          defaultHTTPProfPath,
+		APIProto:              defaultAPIProto,
+		CacheControlMaxAge:    defaultCacheControlMaxAge,
+		ServerHeader:          defaultServerHeader,
+		DcrdCert:              defaultDaemonRPCCertFile,
+		MainnetLink:           defaultMainnetLink,
+		TestnetLink:           defaultTestnetLink,
+		OnionAddress:          defaultOnionAddress,
+		EnableChainParameters: 1,
 	}
 )
 

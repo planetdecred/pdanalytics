@@ -13,6 +13,7 @@ import (
 	"github.com/decred/dcrd/rpcclient/v5"
 	"github.com/go-chi/chi"
 	"github.com/google/gops/agent"
+	"github.com/planetdecred/pdanalytics/pkgs/parameters"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
@@ -115,6 +116,14 @@ func _main(ctx context.Context) error {
 	}
 
 	webServer.MountAssetPaths("/", "./public")
+
+	if cfg.EnableChainParameters == 1 {
+		_, err := parameters.New(dcrdClient, webServer, activeChain)
+		if err != nil {
+			log.Error(err)
+			return fmt.Errorf("Failed to create new parameters component, %s", err.Error())
+		}
+	}
 
 	// (*notify.Notifier).processBlock will discard incoming block if PrevHash does not match
 	bestBlockHash, bestBlockHeight, err := dcrdClient.GetBestBlock()
