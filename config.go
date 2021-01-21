@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"os/user"
@@ -20,6 +21,7 @@ import (
 
 const (
 	defaultConfigFilename = "pdanalytics.conf"
+	sampleConfigFileName  = "./sample-pdanalytics.conf"
 	defaultLogFilename    = "pdanalytics.log"
 	defaultDataDirname    = "data"
 	defaultLogLevel       = "info"
@@ -243,6 +245,27 @@ func parseAndSetDebugLevels(debugLevel string) error {
 	return nil
 }
 
+func copyFile(sourec, destination string) error {
+	from, err := os.Open(sourec)
+	if err != nil {
+		return err
+	}
+	defer from.Close()
+
+	to, err := os.OpenFile(destination, os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		return err
+	}
+	defer to.Close()
+
+	_, err = io.Copy(to, from)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // loadConfig initializes and parses the config using a config file and command
 // line options.
 func loadConfig() (*config, error) {
@@ -315,6 +338,13 @@ func loadConfig() (*config, error) {
 	// Config file name for logging.
 	configFile := "NONE (defaults)"
 	parser := flags.NewParser(&cfg, flags.Default)
+
+	// if the config file is missing, create the default
+	if _, err := os.Stat(preCfg.ConfigFile); os.IsNotExist(err) {
+		if err = copyFile(sampleConfigFileName, preCfg.ConfigFile); err != nil {
+			return nil, fmt.Errorf("Missing config file and cannot copy the sample - %s", err.Error())
+		}
+	}
 
 	// Do not error default config file is missing.
 	if _, err := os.Stat(preCfg.ConfigFile); os.IsNotExist(err) {
