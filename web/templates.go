@@ -5,14 +5,17 @@
 package web
 
 import (
+	"encoding/hex"
 	"fmt"
 	"html/template"
 	"math"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/decred/dcrd/chaincfg/v2"
+	"github.com/decred/dcrd/dcrutil/v2"
 	"github.com/dustin/go-humanize"
 )
 
@@ -29,6 +32,46 @@ type Templates struct {
 	folder    string
 	helpers   template.FuncMap
 	Exec      func(string, interface{}) (string, error)
+}
+
+type periodMap struct {
+	y          string
+	mo         string
+	d          string
+	h          string
+	min        string
+	s          string
+	sep        string
+	pluralizer func(string, int) string
+}
+
+var shortPeriods = &periodMap{
+	y:   "y",
+	mo:  "mo",
+	d:   "d",
+	h:   "h",
+	min: "m",
+	s:   "s",
+	sep: " ",
+	pluralizer: func(s string, count int) string {
+		return s
+	},
+}
+
+var longPeriods = &periodMap{
+	y:   " year",
+	mo:  " month",
+	d:   " day",
+	h:   " hour",
+	min: " minutes",
+	s:   " seconds",
+	sep: ", ",
+	pluralizer: func(s string, count int) string {
+		if count == 1 {
+			return s
+		}
+		return s + "s"
+	},
 }
 
 func newTemplates(folder string, reload bool, common []string, helpers template.FuncMap) Templates {
@@ -141,6 +184,20 @@ func makeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 			return hash[hashLen:]
 		},
 		"float64AsDecimalParts": float64Formatting,
+		"amountAsDecimalParts": func(v int64, useCommas bool) []string {
+			return float64Formatting(dcrutil.Amount(v).ToCoin(), 8, useCommas)
+		},
+		"durationToShortDurationString": func(d time.Duration) string {
+			return formattedDuration(d, shortPeriods)
+		},
+		"uint16Mul": func(a uint16, b int) (result int) {
+			result = int(a) * b
+			return
+		},
+		"convertByteArrayToString": func(arr []byte) (inString string) {
+			inString = hex.EncodeToString(arr)
+			return
+		},
 	}
 }
 
@@ -185,4 +242,35 @@ func float64Formatting(v float64, numPlaces int, useCommas bool, boldNumPlaces .
 	}
 
 	return []string{integer, dec[:places], dec[places:], trailingZeros}
+}
+
+func formattedDuration(duration time.Duration, str *periodMap) string {
+	durationyr := int(duration / (time.Hour * 24 * 365))
+	durationmo := int((duration / (time.Hour * 24 * 30)) % 12)
+	pl := str.pluralizer
+	i := strconv.Itoa
+	if durationyr != 0 {
+		return i(durationyr) + "y " + i(durationmo) + "mo"
+	}
+
+	durationdays := int((duration / time.Hour / 24) % 30)
+	if durationmo != 0 {
+		return i(durationmo) + pl(str.mo, durationmo) + str.sep + i(durationdays) + pl(str.d, durationdays)
+	}
+
+	durationhr := int((duration / time.Hour) % 24)
+	if durationdays != 0 {
+		return i(durationdays) + pl(str.d, durationdays) + str.sep + i(durationhr) + pl(str.h, durationhr)
+	}
+
+	durationmin := int(duration.Minutes()) % 60
+	if durationhr != 0 {
+		return i(durationhr) + pl(str.h, durationhr) + str.sep + i(durationmin) + pl(str.min, durationmin)
+	}
+
+	durationsec := int(duration.Seconds()) % 60
+	if (durationhr == 0) && (durationmin != 0) {
+		return i(durationmin) + pl(str.min, durationmin) + str.sep + i(durationsec) + pl(str.s, durationsec)
+	}
+	return i(durationsec) + pl(str.s, durationsec)
 }
