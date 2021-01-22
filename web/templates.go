@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/decred/dcrd/chaincfg/v2"
+	"github.com/decred/dcrd/dcrec"
 	"github.com/decred/dcrd/dcrutil/v2"
 	"github.com/dustin/go-humanize"
 )
@@ -182,6 +183,38 @@ func makeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 				return hash
 			}
 			return hash[hashLen:]
+		},
+		"redirectToMainnet": func(netName string, message string) bool {
+			if netName != "Mainnet" && strings.Contains(message, "mainnet") {
+				return true
+			}
+			return false
+		},
+		"redirectToTestnet": func(netName string, message string) bool {
+			if netName != testnetNetName && strings.Contains(message, "testnet") {
+				return true
+			}
+			return false
+		},
+		"PKAddr2PKHAddr": func(address string) (p2pkh string) {
+			// Attempt to decode the pay-to-pubkey address.
+			var addr dcrutil.Address
+			addr, err := dcrutil.DecodeAddress(address, params)
+			if err != nil {
+				log.Errorf(err.Error())
+				return ""
+			}
+
+			// Extract the pubkey hash.
+			addrHash := addr.Hash160()
+
+			// Create a new pay-to-pubkey-hash address.
+			addrPKH, err := dcrutil.NewAddressPubKeyHash(addrHash[:], params, dcrec.STEcdsaSecp256k1)
+			if err != nil {
+				log.Errorf(err.Error())
+				return ""
+			}
+			return addrPKH.Address()
 		},
 		"float64AsDecimalParts": float64Formatting,
 		"amountAsDecimalParts": func(v int64, useCommas bool) []string {
