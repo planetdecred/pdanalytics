@@ -37,8 +37,9 @@ var (
 	// application shutdown.
 	logRotator *rotator.Rotator
 
-	log      = backendLog.Logger("PDAN")
-	paramLog = backendLog.Logger("PARA")
+	log           = backendLog.Logger("PDAN")
+	paramLog      = backendLog.Logger("PARA")
+	attackcostLog = backendLog.Logger("ATCK")
 )
 
 // Initialize package-global logger variables.
@@ -49,6 +50,7 @@ func init() {
 var subsystemLoggers = map[string]slog.Logger{
 	"PDAN": log,
 	"PARA": paramLog,
+	"ATCK": attackcostLog,
 }
 
 // initLogRotator initializes the logging rotater to write logs to logFile and
