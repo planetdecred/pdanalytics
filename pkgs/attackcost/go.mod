@@ -14,6 +14,4 @@ require (
 	github.com/planetdecred/pdanalytics/web v0.0.0-20210121232737-d068a16f7d67
 )
 
-replace (
-	github.com/planetdecred/pdanalytics/web => ../../web
-)
+replace github.com/planetdecred/pdanalytics/web => ../../web
