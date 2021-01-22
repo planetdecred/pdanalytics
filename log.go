@@ -37,9 +37,9 @@ var (
 	// application shutdown.
 	logRotator *rotator.Rotator
 
-	log           = backendLog.Logger("PDAN")
-	paramLog      = backendLog.Logger("PARA")
-	attackcostLog = backendLog.Logger("ATCK")
+	log              = backendLog.Logger("PDAN")
+	paramLog         = backendLog.Logger("PARA")
+	attackcostLog    = backendLog.Logger("ATCK")
 	stakingrewardLog = backendLog.Logger("STCK")
 )
 

@@ -48,12 +48,8 @@ var (
 	defaultSimnetPort         = "17779"
 	defaultCacheControlMaxAge = 86400
 	defaultServerHeader       = "pdanalytics"
-	
-	// Exchange bot
-	defaultExchangeIndex     = "USD"
-	defaultDisabledExchanges = "dragonex,poloniex"
-	defaultRateCertFile      = filepath.Join(defaultHomeDir, "rpc.cert")
 
+	// Exchange bot
 	defaultExchangeIndex     = "USD"
 	defaultDisabledExchanges = "dragonex,poloniex"
 	defaultRateCertFile      = filepath.Join(defaultHomeDir, "rpc.cert")
@@ -108,8 +104,8 @@ type config struct {
 	RateCertificate   string `long:"ratecert" description:"File containing DCRRates TLS certificate file." env:"DCRDATA_RATE_MASTER"`
 
 	// Modules config
-	EnableChainParameters int `long:"parameters" description:"Enable/Disables the chain parameter component from running."`
-	EnableAttackCost      int `long:"attackcost" description:"Enable/Disables the attack cost calculator component from running."`
+	EnableChainParameters         int `long:"parameters" description:"Enable/Disables the chain parameter component from running."`
+	EnableAttackCost              int `long:"attackcost" description:"Enable/Disables the attack cost calculator component from running."`
 	EnableStakingRewardCalculator int `long:"stakingreward" description:"Enable/Disables the staking reward calculator component from running."`
 }
 
@@ -134,7 +130,7 @@ var (
 		OnionAddress:                  defaultOnionAddress,
 		EnableStakingRewardCalculator: 1,
 		EnableChainParameters:         1,
-		EnableAttackCost:      1,
+		EnableAttackCost:              1,
 	}
 )
 
