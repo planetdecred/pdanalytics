@@ -8,12 +8,15 @@ import (
 	"os"
 	"os/signal"
 	"runtime/pprof"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/decred/dcrd/rpcclient/v5"
+	"github.com/decred/dcrdata/exchanges/v2"
 	"github.com/go-chi/chi"
 	"github.com/google/gops/agent"
+	"github.com/planetdecred/pdanalytics/pkgs/attackcost"
 	"github.com/planetdecred/pdanalytics/pkgs/parameters"
 	"github.com/planetdecred/pdanalytics/web"
 )
@@ -105,6 +108,36 @@ func _main(ctx context.Context) error {
 
 	var wg sync.WaitGroup
 
+	// ExchangeBot
+	var xcBot *exchanges.ExchangeBot
+	if cfg.EnableExchangeBot && activeChain.Name != "mainnet" {
+		log.Warnf("disabling exchange monitoring. only available on mainnet")
+		cfg.EnableExchangeBot = false
+	}
+	if cfg.EnableExchangeBot {
+		botCfg := exchanges.ExchangeBotConfig{
+			BtcIndex:       cfg.ExchangeCurrency,
+			MasterBot:      cfg.RateMaster,
+			MasterCertFile: cfg.RateCertificate,
+		}
+		if cfg.DisabledExchanges != "" {
+			botCfg.Disabled = strings.Split(cfg.DisabledExchanges, ",")
+		}
+		xcBot, err = exchanges.NewExchangeBot(&botCfg)
+		if err != nil {
+			log.Errorf("Could not create exchange monitor. Exchange info will be disabled: %v", err)
+		} else {
+			var xcList, prepend string
+			for k := range xcBot.Exchanges {
+				xcList += prepend + k
+				prepend = ", "
+			}
+			log.Infof("ExchangeBot monitoring %s", xcList)
+			wg.Add(1)
+			go xcBot.Start(ctx, &wg)
+		}
+	}
+
 	webMux := chi.NewRouter()
 	webServer, err := web.NewServer(web.Config{
 		CacheControlMaxAge: int64(cfg.CacheControlMaxAge),
@@ -124,6 +157,16 @@ func _main(ctx context.Context) error {
 			log.Error(err)
 			return fmt.Errorf("Failed to create new parameters component, %s", err.Error())
 		}
+	}
+
+	if cfg.EnableAttackCost == 1 {
+		attCost, err := attackcost.New(dcrdClient, webServer, xcBot, activeChain)
+		if err != nil {
+			log.Error(err)
+			return fmt.Errorf("Failed to create new attackcost component, %s", err.Error())
+		}
+
+		notifier.RegisterBlockHandlerGroup(attCost.ConnectBlock)
 	}
 
 	// (*notify.Notifier).processBlock will discard incoming block if PrevHash does not match

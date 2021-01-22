@@ -48,9 +48,14 @@ var (
 	defaultSimnetPort         = "17779"
 	defaultCacheControlMaxAge = 86400
 	defaultServerHeader       = "pdanalytics"
+	
+	// Exchange bot
+	defaultExchangeIndex     = "USD"
+	defaultDisabledExchanges = "dragonex,poloniex"
+	defaultRateCertFile      = filepath.Join(defaultHomeDir, "rpc.cert")
 
-	defaultMainnetLink  = "https://explorer.dcrdata.org/"
-	defaultTestnetLink  = "https://testnet.dcrdata.org/"
+	defaultMainnetLink  = "https://explorer.planetdecred.org/"
+	defaultTestnetLink  = "https://testnet.planetdecred.org/"
 	defaultOnionAddress = ""
 )
 
@@ -91,8 +96,16 @@ type config struct {
 	TestnetLink  string `long:"testnet-link" description:"When pdanalytics is on mainnet, this address will be used to direct a user to a pdanalytics on testnet when appropriate." env:"PDANALYTICS_TESTNET_LINK"`
 	OnionAddress string `long:"onion-address" description:"Hidden service address" env:"PDANALYTICS_ONION_ADDRESS"`
 
+	// ExchangeBot settings
+	EnableExchangeBot bool   `long:"exchange-monitor" description:"Enable the exchange monitor" env:"DCRDATA_MONITOR_EXCHANGES"`
+	DisabledExchanges string `long:"disable-exchange" description:"Exchanges to disable. See /exchanges/exchanges.go for available exchanges. Use a comma to separate multiple exchanges" env:"DCRDATA_DISABLE_EXCHANGES"`
+	ExchangeCurrency  string `long:"exchange-currency" description:"The default bitcoin price index. A 3-letter currency code" env:"DCRDATA_EXCHANGE_INDEX"`
+	RateMaster        string `long:"ratemaster" description:"The address of a DCRRates instance. Exchange monitoring will get all data from a DCRRates subscription." env:"DCRDATA_RATE_MASTER"`
+	RateCertificate   string `long:"ratecert" description:"File containing DCRRates TLS certificate file." env:"DCRDATA_RATE_MASTER"`
+
 	// Modules config
 	EnableChainParameters int `long:"parameters" description:"Enable/Disables the chain parameter component from running."`
+	EnableAttackCost      int `long:"attackcost" description:"Enable/Disables the attack cost calculator component from running."`
 }
 
 var (
@@ -111,7 +124,11 @@ var (
 		MainnetLink:           defaultMainnetLink,
 		TestnetLink:           defaultTestnetLink,
 		OnionAddress:          defaultOnionAddress,
+		ExchangeCurrency:      defaultExchangeIndex,
+		DisabledExchanges:     defaultDisabledExchanges,
+		RateCertificate:       defaultRateCertFile,
 		EnableChainParameters: 1,
+		EnableAttackCost:      1,
 	}
 )
 
@@ -527,7 +544,7 @@ func loadConfig() (*config, error) {
 
 	// Expand some additional paths.
 	cfg.DcrdCert = cleanAndExpandPath(cfg.DcrdCert)
-	// cfg.RateCertificate = cleanAndExpandPath(cfg.RateCertificate)
+	cfg.RateCertificate = cleanAndExpandPath(cfg.RateCertificate)
 
 	// Clean up the provided mainnet and testnet links, ensuring there is a single
 	// trailing slash.

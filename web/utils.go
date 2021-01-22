@@ -3,6 +3,7 @@ package web
 
 import (
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/decred/dcrd/chaincfg/v2"
@@ -84,4 +85,11 @@ func AddressPrefixes(params *chaincfg.Params) []AddrPrefix {
 		})
 	}
 	return addrPrefix
+}
+
+// CalculateHashRate calculates the hashrate from the difficulty value and
+// the targetTimePerBlock in seconds. The hashrate returned is in form PetaHash
+// per second (PH/s).
+func CalculateHashRate(difficulty, targetTimePerBlock float64) float64 {
+	return ((difficulty * math.Pow(2, 32)) / targetTimePerBlock) / 1000000
 }
