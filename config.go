@@ -54,6 +54,10 @@ var (
 	defaultDisabledExchanges = "dragonex,poloniex"
 	defaultRateCertFile      = filepath.Join(defaultHomeDir, "rpc.cert")
 
+	defaultExchangeIndex     = "USD"
+	defaultDisabledExchanges = "dragonex,poloniex"
+	defaultRateCertFile      = filepath.Join(defaultHomeDir, "rpc.cert")
+
 	defaultMainnetLink  = "https://explorer.planetdecred.org/"
 	defaultTestnetLink  = "https://testnet.planetdecred.org/"
 	defaultOnionAddress = ""
@@ -106,28 +110,30 @@ type config struct {
 	// Modules config
 	EnableChainParameters int `long:"parameters" description:"Enable/Disables the chain parameter component from running."`
 	EnableAttackCost      int `long:"attackcost" description:"Enable/Disables the attack cost calculator component from running."`
+	EnableStakingRewardCalculator int `long:"stakingreward" description:"Enable/Disables the staking reward calculator component from running."`
 }
 
 var (
 	defaultConfig = config{
-		HomeDir:               defaultHomeDir,
-		DataDir:               defaultDataDir,
-		LogDir:                defaultLogDir,
-		MaxLogZips:            defaultMaxLogZips,
-		ConfigFile:            defaultConfigFile,
-		DebugLevel:            defaultLogLevel,
-		HTTPProfPath:          defaultHTTPProfPath,
-		APIProto:              defaultAPIProto,
-		CacheControlMaxAge:    defaultCacheControlMaxAge,
-		ServerHeader:          defaultServerHeader,
-		DcrdCert:              defaultDaemonRPCCertFile,
-		MainnetLink:           defaultMainnetLink,
-		TestnetLink:           defaultTestnetLink,
-		OnionAddress:          defaultOnionAddress,
-		ExchangeCurrency:      defaultExchangeIndex,
-		DisabledExchanges:     defaultDisabledExchanges,
-		RateCertificate:       defaultRateCertFile,
-		EnableChainParameters: 1,
+		HomeDir:                       defaultHomeDir,
+		DataDir:                       defaultDataDir,
+		LogDir:                        defaultLogDir,
+		MaxLogZips:                    defaultMaxLogZips,
+		ConfigFile:                    defaultConfigFile,
+		DebugLevel:                    defaultLogLevel,
+		HTTPProfPath:                  defaultHTTPProfPath,
+		APIProto:                      defaultAPIProto,
+		CacheControlMaxAge:            defaultCacheControlMaxAge,
+		ServerHeader:                  defaultServerHeader,
+		DcrdCert:                      defaultDaemonRPCCertFile,
+		ExchangeCurrency:              defaultExchangeIndex,
+		DisabledExchanges:             defaultDisabledExchanges,
+		RateCertificate:               defaultRateCertFile,
+		MainnetLink:                   defaultMainnetLink,
+		TestnetLink:                   defaultTestnetLink,
+		OnionAddress:                  defaultOnionAddress,
+		EnableStakingRewardCalculator: 1,
+		EnableChainParameters:         1,
 		EnableAttackCost:      1,
 	}
 )

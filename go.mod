@@ -17,11 +17,13 @@ require (
 	github.com/jrick/logrotate v1.0.0
 	github.com/planetdecred/pdanalytics/pkgs/attackcost v0.0.0-00010101000000-000000000000
 	github.com/planetdecred/pdanalytics/pkgs/parameters v0.0.0-00010101000000-000000000000
+	github.com/planetdecred/pdanalytics/pkgs/stakingreward v0.0.0-00010101000000-000000000000
 	github.com/planetdecred/pdanalytics/web v0.0.0-20210121232737-d068a16f7d67
 )
 
 replace (
 	github.com/planetdecred/pdanalytics/pkgs/attackcost => ./pkgs/attackcost
 	github.com/planetdecred/pdanalytics/pkgs/parameters => ./pkgs/parameters
+	github.com/planetdecred/pdanalytics/pkgs/stakingreward => ./pkgs/stakingreward
 	github.com/planetdecred/pdanalytics/web => ./web
 )

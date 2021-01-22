@@ -18,6 +18,7 @@ import (
 	"github.com/google/gops/agent"
 	"github.com/planetdecred/pdanalytics/pkgs/attackcost"
 	"github.com/planetdecred/pdanalytics/pkgs/parameters"
+	"github.com/planetdecred/pdanalytics/pkgs/stakingreward"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
@@ -25,7 +26,7 @@ func main() {
 	// Create a context that is cancelled when a shutdown request is received
 	// via requestShutdown.
 	ctx := withShutdownCancel(context.Background())
-	// Listen for both interrupt signals and shutdown requests.
+	// Listen for both interrupt signals and shutdown requests. 
 	go shutdownListener()
 
 	if err := _main(ctx); err != nil {
@@ -150,6 +151,16 @@ func _main(ctx context.Context) error {
 	}
 
 	webServer.MountAssetPaths("/", "./public")
+
+	if cfg.EnableStakingRewardCalculator == 1 {
+		rewardCalculator, err := stakingreward.New(dcrdClient, webServer, xcBot, activeChain)
+		if err != nil {
+			log.Error(err)
+			return fmt.Errorf("Failed to create new staking reward component, %s", err.Error())
+		}
+
+		notifier.RegisterBlockHandlerGroup(rewardCalculator.ConnectBlock)
+	}
 
 	if cfg.EnableChainParameters == 1 {
 		_, err := parameters.New(dcrdClient, webServer, activeChain)

@@ -15,6 +15,4 @@ require (
 	golang.org/x/text v0.3.2 // indirect
 )
 
-replace (
-	github.com/planetdecred/pdanalytics/web => ../../web
-)
+replace github.com/planetdecred/pdanalytics/web => ../../web
