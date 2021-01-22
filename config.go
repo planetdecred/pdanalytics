@@ -54,8 +54,8 @@ var (
 	defaultDisabledExchanges = "dragonex,poloniex"
 	defaultRateCertFile      = filepath.Join(defaultHomeDir, "rpc.cert")
 
-	defaultMainnetLink  = "https://explorer.dcrdata.org/"
-	defaultTestnetLink  = "https://testnet.dcrdata.org/"
+	defaultMainnetLink  = "https://explorer.planetdecred.org/"
+	defaultTestnetLink  = "https://testnet.planetdecred.org/"
 	defaultOnionAddress = ""
 )
 
