@@ -171,7 +171,7 @@ func _main(ctx context.Context) error {
 	}
 
 	if cfg.EnableAttackCost == 1 {
-		attCost, err := attackcost.New(dcrdClient, webServer, xcBot, activeChain)
+		attCost, err := attackcost.New(dcrdClient, webServer, "", xcBot, activeChain)
 		if err != nil {
 			log.Error(err)
 			return fmt.Errorf("Failed to create new attackcost component, %s", err.Error())
