@@ -37,9 +37,11 @@ type attackcost struct {
 
 func New(dcrdClient *rpcclient.Client, webServer *web.Server, viewFolder string,
 	xcBot *exchanges.ExchangeBot, params *chaincfg.Params) (*attackcost, error) {
+
 	if viewFolder == "" {
 		viewFolder = "./pkgs/attackcost/views"
 	}
+
 	ac := &attackcost{
 		templates:    web.NewTemplates(viewFolder, false, []string{"extras"}, web.MakeTemplateFuncMap(params)),
 		webServer:    webServer,

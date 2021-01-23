@@ -153,7 +153,7 @@ func _main(ctx context.Context) error {
 	webServer.MountAssetPaths("/", "./public")
 
 	if cfg.EnableStakingRewardCalculator == 1 {
-		rewardCalculator, err := stakingreward.New(dcrdClient, webServer, xcBot, activeChain)
+		rewardCalculator, err := stakingreward.New(dcrdClient, webServer, "", xcBot, activeChain)
 		if err != nil {
 			log.Error(err)
 			return fmt.Errorf("Failed to create new staking reward component, %s", err.Error())
@@ -163,7 +163,7 @@ func _main(ctx context.Context) error {
 	}
 
 	if cfg.EnableChainParameters == 1 {
-		_, err := parameters.New(dcrdClient, webServer, activeChain)
+		_, err := parameters.New(dcrdClient, webServer, "", activeChain)
 		if err != nil {
 			log.Error(err)
 			return fmt.Errorf("Failed to create new parameters component, %s", err.Error())

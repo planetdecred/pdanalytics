@@ -11,7 +11,7 @@ import (
 )
 
 type parameter struct {
-	templates *web.Templates
+	templates web.Templates
 	webServer *web.Server
 
 	pageData *web.PageData
@@ -24,9 +24,14 @@ type parameter struct {
 	dcrdChainSvr *rpcclient.Client
 }
 
-func New(dcrdClient *rpcclient.Client, webServer *web.Server, params *chaincfg.Params) (*parameter, error) {
+func New(dcrdClient *rpcclient.Client, webServer *web.Server, viewFolder string, params *chaincfg.Params) (*parameter, error) {
+
+	if viewFolder == "" {
+		viewFolder = "./pkgs/parameters/views"
+	}
+
 	exp := &parameter{
-		templates:    webServer.Templates,
+		templates:    web.NewTemplates(viewFolder, false, []string{"extras"}, web.MakeTemplateFuncMap(params)),
 		webServer:    webServer,
 		ChainParams:  params,
 		dcrdChainSvr: dcrdClient,
