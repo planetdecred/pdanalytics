@@ -74,7 +74,7 @@ func (e ExpStatus) IsSyncing() bool {
 // NewServer
 func NewServer(cfg Config, mux *chi.Mux, chainParams *chaincfg.Params) (*Server, error) {
 	commonTemplates := []string{"extras"}
-	templates := newTemplates(cfg.Viewsfolder, cfg.ReloadHTML, commonTemplates, makeTemplateFuncMap(chainParams))
+	templates := NewTemplates(cfg.Viewsfolder, cfg.ReloadHTML, commonTemplates, MakeTemplateFuncMap(chainParams))
 	s := &Server{
 		webMux:      mux,
 		cfg:         cfg,

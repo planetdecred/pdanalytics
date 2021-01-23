@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"html/template"
 	"math"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -20,7 +21,10 @@ import (
 	"github.com/dustin/go-humanize"
 )
 
-const testnetNetName = "Testnet"
+const (
+	TestnetNetName = "Testnet"
+	defaultFolder  = "./views"
+)
 
 type pageTemplate struct {
 	file     string
@@ -59,26 +63,22 @@ var shortPeriods = &periodMap{
 	},
 }
 
-var longPeriods = &periodMap{
-	y:   " year",
-	mo:  " month",
-	d:   " day",
-	h:   " hour",
-	min: " minutes",
-	s:   " seconds",
-	sep: ", ",
-	pluralizer: func(s string, count int) string {
-		if count == 1 {
-			return s
-		}
-		return s + "s"
-	},
-}
-
-func newTemplates(folder string, reload bool, common []string, helpers template.FuncMap) Templates {
+// NewTemplates creates a new Templates obj. The default folder is ./views
+func NewTemplates(folder string, reload bool, common []string, helpers template.FuncMap) Templates {
+	if folder == "" {
+		folder = defaultFolder
+	}
 	com := make([]string, 0, len(common))
 	for _, file := range common {
-		com = append(com, filepath.Join(folder, file+".tmpl"))
+		// if this is a custom folder and the common file is not found,
+		// try and use the one in ./view folder
+		fileName := filepath.Join(folder, file+".tmpl")
+		if _, err := os.Stat(fileName); os.IsNotExist(err) && folder != defaultFolder {
+			if _, err := os.Stat(filepath.Join(defaultFolder, file+".tmpl")); err == nil {
+				fileName = filepath.Join(defaultFolder, file+".tmpl")
+			}
+		}
+		com = append(com, fileName)
 	}
 	t := Templates{
 		templates: make(map[string]pageTemplate),
@@ -153,12 +153,15 @@ func netName(chainParams *chaincfg.Params) string {
 		return "invalid"
 	}
 	if strings.HasPrefix(strings.ToLower(chainParams.Name), "testnet") {
-		return testnetNetName
+		return TestnetNetName
 	}
 	return strings.Title(chainParams.Name)
 }
 
-func makeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
+// MakeTemplateFuncMap defines common template functions that are shered
+// accross all the modules. Individual modules can extend this and add
+// functions that are specific to the module
+func MakeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 	netTheme := "theme-" + strings.ToLower(netName(params))
 
 	return template.FuncMap{
@@ -191,7 +194,7 @@ func makeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 			return false
 		},
 		"redirectToTestnet": func(netName string, message string) bool {
-			if netName != testnetNetName && strings.Contains(message, "testnet") {
+			if netName != TestnetNetName && strings.Contains(message, "testnet") {
 				return true
 			}
 			return false
@@ -216,12 +219,12 @@ func makeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 			}
 			return addrPKH.Address()
 		},
-		"float64AsDecimalParts": float64Formatting,
+		"float64AsDecimalParts": Float64Formatting,
 		"amountAsDecimalParts": func(v int64, useCommas bool) []string {
-			return float64Formatting(dcrutil.Amount(v).ToCoin(), 8, useCommas)
+			return Float64Formatting(dcrutil.Amount(v).ToCoin(), 8, useCommas)
 		},
 		"durationToShortDurationString": func(d time.Duration) string {
-			return formattedDuration(d, shortPeriods)
+			return FormattedDuration(d, shortPeriods)
 		},
 		"uint16Mul": func(a uint16, b int) (result int) {
 			result = int(a) * b
@@ -234,7 +237,7 @@ func makeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 	}
 }
 
-// float64Formatting formats a float64 value into multiple strings depending on whether
+// Float64Formatting formats a float64 value into multiple strings depending on whether
 // boldNumPlaces is provided or not. boldNumPlaces defines the number of decimal
 // places to be written with same font as the whole number value of the float.
 // If boldNumPlaces is provided the returned slice should have at least four items
@@ -242,7 +245,7 @@ func makeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 // numplaces is 8 and boldNumPlaces is set to 2 the following should be returned
 // []string{"342", "12", "132", "000"}. If boldNumPlace is not set the returned
 // slice should be []string{"342", "12132", "000"}.
-func float64Formatting(v float64, numPlaces int, useCommas bool, boldNumPlaces ...int) []string {
+func Float64Formatting(v float64, numPlaces int, useCommas bool, boldNumPlaces ...int) []string {
 	pow := math.Pow(10, float64(numPlaces))
 	formattedVal := math.Round(v*pow) / pow
 	clipped := fmt.Sprintf("%."+strconv.Itoa(numPlaces)+"f", formattedVal)
@@ -277,7 +280,7 @@ func float64Formatting(v float64, numPlaces int, useCommas bool, boldNumPlaces .
 	return []string{integer, dec[:places], dec[places:], trailingZeros}
 }
 
-func formattedDuration(duration time.Duration, str *periodMap) string {
+func FormattedDuration(duration time.Duration, str *periodMap) string {
 	durationyr := int(duration / (time.Hour * 24 * 365))
 	durationmo := int((duration / (time.Hour * 24 * 30)) % 12)
 	pl := str.pluralizer
