@@ -13,7 +13,7 @@ import (
 )
 
 type attackcost struct {
-	templates *web.Templates
+	templates web.Templates
 	webServer *web.Server
 	xcBot     *exchanges.ExchangeBot
 
@@ -35,10 +35,15 @@ type attackcost struct {
 	reorgLock    sync.Mutex
 }
 
-func New(dcrdClient *rpcclient.Client, webServer *web.Server,
+func New(dcrdClient *rpcclient.Client, webServer *web.Server, viewFolder string,
 	xcBot *exchanges.ExchangeBot, params *chaincfg.Params) (*attackcost, error) {
-	exp := &attackcost{
-		templates:    webServer.Templates,
+
+	if viewFolder == "" {
+		viewFolder = "./pkgs/attackcost/views"
+	}
+
+	ac := &attackcost{
+		templates:    web.NewTemplates(viewFolder, false, []string{"extras"}, web.MakeTemplateFuncMap(params)),
 		webServer:    webServer,
 		xcBot:        xcBot,
 		ChainParams:  params,
@@ -54,20 +59,20 @@ func New(dcrdClient *rpcclient.Client, webServer *web.Server,
 		return nil, err
 	}
 
-	if err = exp.ConnectBlock(blockHeader); err != nil {
+	if err = ac.ConnectBlock(blockHeader); err != nil {
 		return nil, err
 	}
 
 	tmpls := []string{"attackcost"}
 
 	for _, name := range tmpls {
-		if err := exp.templates.AddTemplate(name); err != nil {
+		if err := ac.templates.AddTemplate(name); err != nil {
 			log.Errorf("Unable to create new html template: %v", err)
 			return nil, err
 		}
 	}
 
-	exp.webServer.AddMenuItem(web.MenuItem{
+	ac.webServer.AddMenuItem(web.MenuItem{
 		Href:      "/attack-cost",
 		HyperText: "Attack Cost",
 		Attributes: map[string]string{
@@ -76,7 +81,7 @@ func New(dcrdClient *rpcclient.Client, webServer *web.Server,
 		},
 	})
 
-	exp.webServer.AddMenuItem(web.MenuItem{})
+	ac.webServer.AddMenuItem(web.MenuItem{})
 
 	// Development subsidy address of the current network
 	devSubsidyAddress, err := web.DevSubsidyAddress(params)
@@ -86,66 +91,66 @@ func New(dcrdClient *rpcclient.Client, webServer *web.Server,
 	}
 	log.Debugf("Organization address: %s", devSubsidyAddress)
 
-	exp.pageData = &web.PageData{
+	ac.pageData = &web.PageData{
 		BlockInfo: new(web.BlockInfo),
 		HomeInfo: &web.HomeInfo{
 			DevAddress: devSubsidyAddress,
 			Params: web.ChainParams{
-				WindowSize:       exp.ChainParams.StakeDiffWindowSize,
-				RewardWindowSize: exp.ChainParams.SubsidyReductionInterval,
-				BlockTime:        exp.ChainParams.TargetTimePerBlock.Nanoseconds(),
-				MeanVotingBlocks: exp.MeanVotingBlocks,
+				WindowSize:       ac.ChainParams.StakeDiffWindowSize,
+				RewardWindowSize: ac.ChainParams.SubsidyReductionInterval,
+				BlockTime:        ac.ChainParams.TargetTimePerBlock.Nanoseconds(),
+				MeanVotingBlocks: ac.MeanVotingBlocks,
 			},
 			PoolInfo: web.TicketPoolInfo{
-				Target: uint32(exp.ChainParams.TicketPoolSize * exp.ChainParams.TicketsPerBlock),
+				Target: uint32(ac.ChainParams.TicketPoolSize * ac.ChainParams.TicketsPerBlock),
 			},
 		},
 	}
 
-	webServer.AddRoute("/attack-cost", web.GET, exp.AttackCost)
+	webServer.AddRoute("/attack-cost", web.GET, ac.AttackCost)
 
-	return exp, nil
+	return ac, nil
 }
 
-func (exp *attackcost) ConnectBlock(w *wire.BlockHeader) error {
-	exp.reorgLock.Lock()
-	defer exp.reorgLock.Unlock()
-	exp.height = int64(w.Height)
+func (ac *attackcost) ConnectBlock(w *wire.BlockHeader) error {
+	ac.reorgLock.Lock()
+	defer ac.reorgLock.Unlock()
+	ac.height = int64(w.Height)
 	hash := w.BlockHash()
 
 	// Hashrate
-	header, err := exp.dcrdChainSvr.GetBlockHeaderVerbose(&hash)
+	header, err := ac.dcrdChainSvr.GetBlockHeaderVerbose(&hash)
 	if err != nil {
 		return err
 	}
-	targetTimePerBlock := float64(exp.ChainParams.TargetTimePerBlock)
-	exp.hashrate = web.CalculateHashRate(header.Difficulty, targetTimePerBlock)
+	targetTimePerBlock := float64(ac.ChainParams.TargetTimePerBlock)
+	ac.hashrate = web.CalculateHashRate(header.Difficulty, targetTimePerBlock)
 
 	// Coin supply
-	coinSupply, err := exp.dcrdChainSvr.GetCoinSupply()
+	coinSupply, err := ac.dcrdChainSvr.GetCoinSupply()
 	if err != nil {
 		return err
 	}
-	exp.coinSupply = int64(coinSupply)
+	ac.coinSupply = int64(coinSupply)
 
 	// Stake difficulty (ticket price)
-	stakeDiff, err := exp.dcrdChainSvr.GetStakeDifficulty()
+	stakeDiff, err := ac.dcrdChainSvr.GetStakeDifficulty()
 	if err != nil {
 		return err
 	}
-	exp.ticketPrice = stakeDiff.CurrentStakeDifficulty
+	ac.ticketPrice = stakeDiff.CurrentStakeDifficulty
 
 	// Ticket pool info
-	poolValue, err := exp.dcrdChainSvr.GetTicketPoolValue()
+	poolValue, err := ac.dcrdChainSvr.GetTicketPoolValue()
 	if err != nil {
 		return err
 	}
-	exp.ticketPoolValue = poolValue.ToCoin()
-	hashes, err := exp.dcrdChainSvr.LiveTickets()
+	ac.ticketPoolValue = poolValue.ToCoin()
+	hashes, err := ac.dcrdChainSvr.LiveTickets()
 	if err != nil {
 		return err
 	}
-	exp.ticketPoolSize = int64(len(hashes))
+	ac.ticketPoolSize = int64(len(hashes))
 
 	return nil
 }
@@ -153,24 +158,24 @@ func (exp *attackcost) ConnectBlock(w *wire.BlockHeader) error {
 // commonData grabs the common page data that is available to every page.
 // This is particularly useful for extras.tmpl, parts of which
 // are used on every page
-func (exp *attackcost) commonData(r *http.Request) *web.CommonPageData {
+func (ac *attackcost) commonData(r *http.Request) *web.CommonPageData {
 
 	darkMode, err := r.Cookie(web.DarkModeCoookie)
 	if err != nil && err != http.ErrNoCookie {
 		log.Errorf("Cookie dcrdataDarkBG retrieval error: %v", err)
 	}
 	return &web.CommonPageData{
-		Version:       exp.Version,
-		ChainParams:   exp.ChainParams,
-		BlockTimeUnix: int64(exp.ChainParams.TargetTimePerBlock.Seconds()),
-		DevAddress:    exp.pageData.HomeInfo.DevAddress,
-		NetName:       exp.NetName,
+		Version:       ac.Version,
+		ChainParams:   ac.ChainParams,
+		BlockTimeUnix: int64(ac.ChainParams.TargetTimePerBlock.Seconds()),
+		DevAddress:    ac.pageData.HomeInfo.DevAddress,
+		NetName:       ac.NetName,
 		Links:         web.ExplorerLinks,
 		Cookies: web.Cookies{
 			DarkMode: darkMode != nil && darkMode.Value == "1",
 		},
 		RequestURI: r.URL.RequestURI(),
-		MenuItems:  exp.webServer.MenuItems,
+		MenuItems:  ac.webServer.MenuItems,
 	}
 }
 

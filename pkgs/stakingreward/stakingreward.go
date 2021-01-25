@@ -17,7 +17,7 @@ import (
 )
 
 type calculator struct {
-	templates *web.Templates
+	templates web.Templates
 	webServer *web.Server
 	xcBot     *exchanges.ExchangeBot
 
@@ -39,10 +39,15 @@ type calculator struct {
 	reorgLock    sync.Mutex
 }
 
-func New(dcrdClient *rpcclient.Client, webServer *web.Server,
+func New(dcrdClient *rpcclient.Client, webServer *web.Server, viewFolder string,
 	xcBot *exchanges.ExchangeBot, params *chaincfg.Params) (*calculator, error) {
+
+	if viewFolder == "" {
+		viewFolder = "./pkgs/stakingreward/views"
+	}
+
 	exp := &calculator{
-		templates:    webServer.Templates,
+		templates:    web.NewTemplates(viewFolder, false, []string{"extras"}, web.MakeTemplateFuncMap(params)),
 		webServer:    webServer,
 		xcBot:        xcBot,
 		ChainParams:  params,
