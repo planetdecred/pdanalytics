@@ -16,9 +16,6 @@ import (
 	"github.com/decred/dcrdata/exchanges/v2"
 	"github.com/go-chi/chi"
 	"github.com/google/gops/agent"
-	"github.com/planetdecred/pdanalytics/pkgs/attackcost"
-	"github.com/planetdecred/pdanalytics/pkgs/parameters"
-	"github.com/planetdecred/pdanalytics/pkgs/stakingreward"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
@@ -143,6 +140,7 @@ func _main(ctx context.Context) error {
 	webServer, err := web.NewServer(web.Config{
 		CacheControlMaxAge: int64(cfg.CacheControlMaxAge),
 		Viewsfolder:        "./views",
+		AssetsFolder:       "./web/public",
 		ReloadHTML:         cfg.ReloadHTML,
 	}, webMux, activeChain)
 	if err != nil {
@@ -150,34 +148,12 @@ func _main(ctx context.Context) error {
 		return fmt.Errorf("failed to create new web server (templates missing?)")
 	}
 
-	webServer.MountAssetPaths("/", "./public")
+	webServer.MountAssetPaths("/", "./web/public")
 
-	if cfg.EnableStakingRewardCalculator == 1 {
-		rewardCalculator, err := stakingreward.New(dcrdClient, webServer, "", xcBot, activeChain)
-		if err != nil {
-			log.Error(err)
-			return fmt.Errorf("Failed to create new staking reward component, %s", err.Error())
-		}
+	err = setupModules(cfg, dcrdClient, webServer, xcBot, notifier)
 
-		notifier.RegisterBlockHandlerGroup(rewardCalculator.ConnectBlock)
-	}
-
-	if cfg.EnableChainParameters == 1 {
-		_, err := parameters.New(dcrdClient, webServer, "", activeChain)
-		if err != nil {
-			log.Error(err)
-			return fmt.Errorf("Failed to create new parameters component, %s", err.Error())
-		}
-	}
-
-	if cfg.EnableAttackCost == 1 {
-		attCost, err := attackcost.New(dcrdClient, webServer, "", xcBot, activeChain)
-		if err != nil {
-			log.Error(err)
-			return fmt.Errorf("Failed to create new attackcost component, %s", err.Error())
-		}
-
-		notifier.RegisterBlockHandlerGroup(attCost.ConnectBlock)
+	if err != nil {
+		return err
 	}
 
 	// (*notify.Notifier).processBlock will discard incoming block if PrevHash does not match
