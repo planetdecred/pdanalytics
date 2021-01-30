@@ -16,6 +16,7 @@ import (
 	"github.com/decred/dcrdata/exchanges/v2"
 	"github.com/go-chi/chi"
 	"github.com/google/gops/agent"
+	"github.com/planetdecred/pdanalytics/base"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
@@ -150,7 +151,14 @@ func _main(ctx context.Context) error {
 
 	webServer.MountAssetPaths("/", "./web/public")
 
-	err = setupModules(cfg, dcrdClient, webServer, xcBot, notifier)
+	//b :=
+
+	err = setupModules(cfg, &base.Base{
+		DcrdClient: dcrdClient,
+		WebServer:  webServer,
+		XcBot:      xcBot,
+		Params:     activeChain,
+	})
 
 	if err != nil {
 		return err

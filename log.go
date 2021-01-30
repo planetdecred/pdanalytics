@@ -7,6 +7,7 @@ import (
 
 	"github.com/decred/slog"
 	"github.com/jrick/logrotate/rotator"
+	"github.com/planetdecred/pdanalytics/parameters"
 )
 
 // logWriter implements an io.Writer that outputs to both standard output and
@@ -45,6 +46,7 @@ var (
 
 // Initialize package-global logger variables.
 func init() {
+	parameters.UseLogger(paramLog)
 }
 
 // subsystemLoggers maps each subsystem identifier to its associated logger.

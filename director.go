@@ -3,41 +3,39 @@ package main
 import (
 	"fmt"
 
-	"github.com/decred/dcrd/rpcclient/v5"
-	"github.com/decred/dcrdata/exchanges/v2"
-	"github.com/planetdecred/pdanalytics/attackcost"
+	"github.com/planetdecred/pdanalytics/base"
 	"github.com/planetdecred/pdanalytics/parameters"
-	"github.com/planetdecred/pdanalytics/stakingreward"
-	"github.com/planetdecred/pdanalytics/web"
 )
 
-func setupModules(cfg *config, dcrdClient *rpcclient.Client, webServer *web.Server, xcBot *exchanges.ExchangeBot, notif *notifier) error {
-	if cfg.EnableStakingRewardCalculator == 1 {
-		rewardCalculator, err := stakingreward.New(dcrdClient, webServer, "", xcBot, activeChain)
-		if err != nil {
-			log.Error(err)
-			return fmt.Errorf("Failed to create new staking reward component, %s", err.Error())
-		}
+func setupModules(cfg *config, b *base.Base) error {
+	if cfg.EnableStakingRewardCalculator {
+		// rewardCalculator, err := stakingreward.New(dcrdClient, webServer, "", xcBot, activeChain)
+		// if err != nil {
+		// 	log.Error(err)
+		// 	return fmt.Errorf("Failed to create staking reward component, %s", err.Error())
+		// }
 
-		notif.RegisterBlockHandlerGroup(rewardCalculator.ConnectBlock)
+		// notif.RegisterBlockHandlerGroup(rewardCalculator.ConnectBlock)
 	}
 
-	if cfg.EnableChainParameters == 1 {
-		_, err := parameters.New(dcrdClient, webServer, "", activeChain)
+	if cfg.EnableChainParameters {
+		_, err := parameters.New(b)
 		if err != nil {
 			log.Error(err)
-			return fmt.Errorf("Failed to create new parameters component, %s", err.Error())
+			return fmt.Errorf("Failed to create parameters component, %s", err.Error())
 		}
+
+		log.Info("Chain Parameters Enabled")
 	}
 
-	if cfg.EnableAttackCost == 1 {
-		attCost, err := attackcost.New(dcrdClient, webServer, "", xcBot, activeChain)
-		if err != nil {
-			log.Error(err)
-			return fmt.Errorf("Failed to create new attackcost component, %s", err.Error())
-		}
+	if cfg.EnableAttackCost {
+		// attCost, err := attackcost.New(dcrdClient, webServer, "", xcBot, activeChain)
+		// if err != nil {
+		// 	log.Error(err)
+		// 	return fmt.Errorf("Failed to create attackcost component, %s", err.Error())
+		// }
 
-		notif.RegisterBlockHandlerGroup(attCost.ConnectBlock)
+		// notif.RegisterBlockHandlerGroup(attCost.ConnectBlock)
 	}
 
 	return nil

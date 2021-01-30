@@ -104,9 +104,9 @@ type config struct {
 	RateCertificate   string `long:"ratecert" description:"File containing DCRRates TLS certificate file." env:"DCRDATA_RATE_MASTER"`
 
 	// Modules config
-	EnableChainParameters         int `long:"parameters" description:"Enable/Disables the chain parameter component from running."`
-	EnableAttackCost              int `long:"attackcost" description:"Enable/Disables the attack cost calculator component from running."`
-	EnableStakingRewardCalculator int `long:"stakingreward" description:"Enable/Disables the staking reward calculator component from running."`
+	EnableChainParameters         bool `long:"parameters" description:"Enable/Disables the chain parameter component."`
+	EnableAttackCost              bool `long:"attackcost" description:"Enable/Disables the attack cost calculator component."`
+	EnableStakingRewardCalculator bool `long:"stakingreward" description:"Enable/Disables the staking reward calculator component."`
 }
 
 var (
@@ -128,9 +128,9 @@ var (
 		MainnetLink:                   defaultMainnetLink,
 		TestnetLink:                   defaultTestnetLink,
 		OnionAddress:                  defaultOnionAddress,
-		EnableStakingRewardCalculator: 1,
-		EnableChainParameters:         1,
-		EnableAttackCost:              1,
+		EnableStakingRewardCalculator: true,
+		EnableChainParameters:         true,
+		EnableAttackCost:              true,
 	}
 )
 
