@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"github.com/planetdecred/pdanalytics/attackcost"
+	"github.com/planetdecred/pdanalytics/parameters"
+	"github.com/planetdecred/pdanalytics/stakingreward"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
@@ -14,12 +16,15 @@ type Home struct {
 }
 
 type Mods struct {
-	ac *attackcost.Attackcost
+	Ac  *attackcost.Attackcost
+	Stk *stakingreward.Calculator
+	Prm *parameters.Parameters
 }
 
-func New(server *web.Server) (*Home, error) {
+func New(server *web.Server, mods Mods) (*Home, error) {
 	hm := &Home{
 		server: server,
+		mods:   mods,
 	}
 	err := server.Templates.AddTemplate("home")
 
@@ -32,10 +37,21 @@ func New(server *web.Server) (*Home, error) {
 }
 
 func (hm *Home) homepage(w http.ResponseWriter, r *http.Request) {
+	stk := hm.mods.Stk != nil
+	ac := hm.mods.Ac != nil
+	prm := hm.mods.Prm != nil
 	str, err := hm.server.Templates.ExecTemplateToString("home", struct {
 		*web.CommonPageData
+		NoModEnabled         bool
+		StakingRewardEnabled bool
+		ParametersEnabled    bool
+		AttackCostEnabled    bool
 	}{
-		CommonPageData: hm.server.CommonData(r),
+		NoModEnabled:         !(stk || prm || ac),
+		CommonPageData:       hm.server.CommonData(r),
+		StakingRewardEnabled: stk,
+		ParametersEnabled:    prm,
+		AttackCostEnabled:    ac,
 	})
 
 	w.Header().Set("Content-Type", "text/html")

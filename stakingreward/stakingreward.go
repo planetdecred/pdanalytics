@@ -16,7 +16,7 @@ import (
 	"github.com/planetdecred/pdanalytics/web"
 )
 
-type calculator struct {
+type Calculator struct {
 	webServer *web.Server
 	xcBot     *exchanges.ExchangeBot
 	client    *dcrd.Dcrd
@@ -33,8 +33,8 @@ type calculator struct {
 	reorgLock sync.Mutex
 }
 
-func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot) (*calculator, error) {
-	calc := &calculator{
+func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot) (*Calculator, error) {
+	calc := &Calculator{
 		webServer: webServer,
 		xcBot:     xcBot,
 		client:    client,
@@ -79,7 +79,7 @@ func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot)
 	return calc, nil
 }
 
-func (exp *calculator) ConnectBlock(w *wire.BlockHeader) error {
+func (exp *Calculator) ConnectBlock(w *wire.BlockHeader) error {
 	exp.reorgLock.Lock()
 	defer exp.reorgLock.Unlock()
 
@@ -149,7 +149,7 @@ func CalcMeanVotingBlocks(params *chaincfg.Params) int64 {
 // starting amount of DCR and calculation parameters.  Generate a TEXT table of
 // the simulation results that can optionally be used for future expansion of
 // dcrdata functionality.
-func (exp *calculator) simulateStakingReward(numberOfDays float64, startingDCRBalance float64, integerTicketQty bool,
+func (exp *Calculator) simulateStakingReward(numberOfDays float64, startingDCRBalance float64, integerTicketQty bool,
 	currentStakePercent float64, actualCoinbase float64, currentBlockNum float64,
 	actualTicketPrice float64) (stakingReward, ticketPrice float64) {
 
@@ -241,7 +241,7 @@ func (exp *calculator) simulateStakingReward(numberOfDays float64, startingDCRBa
 }
 
 // stakingReward is the page handler for the "/ticket-reward" path.
-func (calc *calculator) stakingReward(w http.ResponseWriter, r *http.Request) {
+func (calc *Calculator) stakingReward(w http.ResponseWriter, r *http.Request) {
 	price := 24.42 // why this value?
 	if calc.xcBot != nil {
 		if rate := calc.xcBot.Conversion(1.0); rate != nil {
@@ -281,7 +281,7 @@ func (calc *calculator) stakingReward(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (exp *calculator) targetTicketReward(w http.ResponseWriter, r *http.Request) {
+func (exp *Calculator) targetTicketReward(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	startingBalance, err := strconv.ParseFloat(r.FormValue("startingBalance"), 64)
 	if err != nil {

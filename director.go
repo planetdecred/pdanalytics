@@ -13,8 +13,11 @@ import (
 )
 
 func setupModules(cfg *config, client *dcrd.Dcrd, server *web.Server, xcBot *exchanges.ExchangeBot) error {
+	var err error
+
+	var stk *stakingreward.Calculator
 	if cfg.EnableStakingRewardCalculator {
-		_, err := stakingreward.New(client, server, xcBot)
+		stk, err = stakingreward.New(client, server, xcBot)
 		if err != nil {
 			log.Error(err)
 			return fmt.Errorf("Failed to create staking reward component, %s", err.Error())
@@ -23,8 +26,9 @@ func setupModules(cfg *config, client *dcrd.Dcrd, server *web.Server, xcBot *exc
 		log.Info("Staking Reward Calculator Enabled")
 	}
 
+	var prms *parameters.Parameters
 	if cfg.EnableChainParameters {
-		_, err := parameters.New(client, server)
+		prms, err = parameters.New(client, server)
 		if err != nil {
 			log.Error(err)
 			return fmt.Errorf("Failed to create parameters component, %s", err.Error())
@@ -33,8 +37,9 @@ func setupModules(cfg *config, client *dcrd.Dcrd, server *web.Server, xcBot *exc
 		log.Info("Chain Parameters Enabled")
 	}
 
+	var ac *attackcost.Attackcost
 	if cfg.EnableAttackCost {
-		_, err := attackcost.New(client, server, xcBot)
+		ac, err = attackcost.New(client, server, xcBot)
 		if err != nil {
 			log.Error(err)
 			return fmt.Errorf("Failed to create attackcost component, %s", err.Error())
@@ -43,7 +48,11 @@ func setupModules(cfg *config, client *dcrd.Dcrd, server *web.Server, xcBot *exc
 		log.Info("Attack Cost Calculator Enabled")
 	}
 
-	_, err := homepage.New(server)
+	_, err = homepage.New(server, homepage.Mods{
+		Stk: stk,
+		Prm: prms,
+		Ac:  ac,
+	})
 	if err != nil {
 		log.Error(err)
 	}
