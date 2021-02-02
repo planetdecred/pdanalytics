@@ -38,7 +38,6 @@ func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot)
 		webServer: webServer,
 		xcBot:     xcBot,
 		client:    client,
-		stakePerc: 45.0, // why this?
 	}
 
 	calc.MeanVotingBlocks = CalcMeanVotingBlocks(client.Params)
