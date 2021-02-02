@@ -43,9 +43,9 @@ var (
 	defaultHost               = "localhost"
 	defaultHTTPProfPath       = "/p"
 	defaultAPIProto           = "http"
-	defaultMainnetPort        = "7777"
-	defaultTestnetPort        = "17778"
-	defaultSimnetPort         = "17779"
+	defaultMainnetPort        = "7070"
+	defaultTestnetPort        = "7171"
+	defaultSimnetPort         = "7272"
 	defaultCacheControlMaxAge = 86400
 	defaultServerHeader       = "pdanalytics"
 
