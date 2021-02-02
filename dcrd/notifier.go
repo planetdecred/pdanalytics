@@ -1,4 +1,4 @@
-package main
+package dcrd
 
 import (
 	"context"
@@ -19,7 +19,7 @@ const SyncHandlerDeadline = time.Minute * 5
 // BlockHandler is a function that will be called when dcrd reports a new block.
 type BlockHandler func(*wire.BlockHeader) error
 
-type notifier struct {
+type Notifier struct {
 	ctx  context.Context
 	node *rpcclient.Client
 	// The anyQ sequences all dcrd notification in the order they are received.
@@ -32,8 +32,8 @@ type notifier struct {
 }
 
 // NewNotifier is the constructor for a Notifier.
-func NewNotifier(ctx context.Context) *notifier {
-	return &notifier{
+func NewNotifier(ctx context.Context) *Notifier {
+	return &Notifier{
 		ctx: ctx,
 		// anyQ can cause deadlocks if it gets full. All mempool transactions pass
 		// through here, so the size should stay pretty big to accommodate for the
@@ -44,7 +44,7 @@ func NewNotifier(ctx context.Context) *notifier {
 }
 
 // Listen must be called once, but only after all handlers are registered.
-func (notifier *notifier) Listen(dcrdClient *rpcclient.Client) *ContextualError {
+func (notifier *Notifier) Listen(dcrdClient *rpcclient.Client) *ContextualError {
 	// Register for block connection and chain reorg notifications.
 	notifier.node = dcrdClient
 
@@ -70,7 +70,7 @@ func (notifier *notifier) Listen(dcrdClient *rpcclient.Client) *ContextualError 
 
 // DcrdHandlers creates a set of handlers to be passed to the dcrd
 // rpcclient.Client as a parameter of its constructor.
-func (notifier *notifier) DcrdHandlers() *rpcclient.NotificationHandlers {
+func (notifier *Notifier) DcrdHandlers() *rpcclient.NotificationHandlers {
 	return &rpcclient.NotificationHandlers{
 		OnBlockConnected:    notifier.onBlockConnected,
 		OnBlockDisconnected: notifier.onBlockDisconnected,
@@ -82,7 +82,7 @@ func (notifier *notifier) DcrdHandlers() *rpcclient.NotificationHandlers {
 // group are run asynchronously. Handlers registered with
 // RegisterBlockHandlerGroup are FIFO'd together with handlers registered with
 // RegisterBlockHandlerLiteGroup.
-func (notifier *notifier) RegisterBlockHandlerGroup(handlers ...BlockHandler) {
+func (notifier *Notifier) RegisterBlockHandlerGroup(handlers ...BlockHandler) {
 	notifier.block = append(notifier.block, handlers)
 }
 
@@ -92,7 +92,7 @@ func (notifier *notifier) RegisterBlockHandlerGroup(handlers ...BlockHandler) {
 // disconnected by a mechanism other than (*Notifier).processBlock, which
 // keeps this data up-to-date. For example, signalReorg will use
 // SetPreviousBlock after the reorg is complete.
-func (notifier *notifier) SetPreviousBlock(prevHash chainhash.Hash, prevHeight uint32) {
+func (notifier *Notifier) SetPreviousBlock(prevHash chainhash.Hash, prevHeight uint32) {
 	notifier.previous.hash = prevHash
 	notifier.previous.height = prevHeight
 }
@@ -104,7 +104,7 @@ func functionName(i interface{}) string {
 // superQueue should be run as a goroutine. The dcrd-registered block and reorg
 // handlers should perform any pre-processing and type conversion and then
 // deposit the payload into the anyQ channel.
-func (notifier *notifier) superQueue() {
+func (notifier *Notifier) superQueue() {
 out:
 	for {
 		select {
@@ -127,7 +127,7 @@ out:
 
 // processBlock calls the BlockHandler/BlockHandlerLite groups one at a time in
 // the order that they were registered.
-func (notifier *notifier) processBlock(bh *wire.BlockHeader) {
+func (notifier *Notifier) processBlock(bh *wire.BlockHeader) {
 	hash := bh.BlockHash()
 	height := bh.Height
 	prev := notifier.previous
@@ -176,7 +176,7 @@ func (notifier *notifier) processBlock(bh *wire.BlockHeader) {
 }
 
 // rpcclient.NotificationHandlers.OnBlockConnected
-func (notifier *notifier) onBlockConnected(blockHeaderSerialized []byte, _ [][]byte) {
+func (notifier *Notifier) onBlockConnected(blockHeaderSerialized []byte, _ [][]byte) {
 	blockHeader := new(wire.BlockHeader)
 	err := blockHeader.FromBytes(blockHeaderSerialized)
 	if err != nil {
@@ -194,7 +194,7 @@ func (notifier *notifier) onBlockConnected(blockHeaderSerialized []byte, _ [][]b
 }
 
 // rpcclient.NotificationHandlers.OnBlockDisconnected
-func (notifier *notifier) onBlockDisconnected(blockHeaderSerialized []byte) {
+func (notifier *Notifier) onBlockDisconnected(blockHeaderSerialized []byte) {
 	blockHeader := new(wire.BlockHeader)
 	err := blockHeader.FromBytes(blockHeaderSerialized)
 	if err != nil {

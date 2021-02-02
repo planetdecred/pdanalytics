@@ -7,7 +7,10 @@ import (
 
 	"github.com/decred/slog"
 	"github.com/jrick/logrotate/rotator"
+	"github.com/planetdecred/pdanalytics/attackcost"
+	"github.com/planetdecred/pdanalytics/homepage"
 	"github.com/planetdecred/pdanalytics/parameters"
+	"github.com/planetdecred/pdanalytics/stakingreward"
 )
 
 // logWriter implements an io.Writer that outputs to both standard output and
@@ -42,11 +45,15 @@ var (
 	paramLog         = backendLog.Logger("PARA")
 	attackcostLog    = backendLog.Logger("ATCK")
 	stakingrewardLog = backendLog.Logger("STCK")
+	homeLog          = backendLog.Logger(("HOME"))
 )
 
 // Initialize package-global logger variables.
 func init() {
 	parameters.UseLogger(paramLog)
+	stakingreward.UseLogger(stakingrewardLog)
+	attackcost.UseLogger(attackcostLog)
+	homepage.UseLogger(homeLog)
 }
 
 // subsystemLoggers maps each subsystem identifier to its associated logger.
@@ -55,6 +62,7 @@ var subsystemLoggers = map[string]slog.Logger{
 	"PARA": paramLog,
 	"ATCK": attackcostLog,
 	"STCK": stakingrewardLog,
+	"HOME": homeLog,
 }
 
 // initLogRotator initializes the logging rotater to write logs to logFile and

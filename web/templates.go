@@ -64,7 +64,7 @@ var shortPeriods = &periodMap{
 }
 
 // NewTemplates creates a new Templates obj. The default folder is ./views
-func NewTemplates(folder string, reload bool, common []string, helpers template.FuncMap) Templates {
+func NewTemplates(folder string, reload bool, common []string, helpers template.FuncMap) *Templates {
 	if folder == "" {
 		folder = defaultFolder
 	}
@@ -91,7 +91,7 @@ func NewTemplates(folder string, reload bool, common []string, helpers template.
 		t.Exec = t.ExecWithReload
 	}
 
-	return t
+	return &t
 }
 
 func (t *Templates) AddTemplate(name string) error {

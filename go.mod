@@ -11,6 +11,7 @@ require (
 	github.com/decred/dcrd/dcrutil/v2 v2.0.1
 	github.com/decred/dcrd/rpcclient v1.1.0
 	github.com/decred/dcrd/rpcclient/v5 v5.0.1
+	github.com/decred/dcrd/txscript/v2 v2.1.0
 	github.com/decred/dcrd/wire v1.4.0
 	github.com/decred/dcrdata/exchanges v1.0.0
 	github.com/decred/dcrdata/exchanges/v2 v2.1.0

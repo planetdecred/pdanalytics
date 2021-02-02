@@ -4,20 +4,22 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/planetdecred/pdanalytics/base"
+	"github.com/planetdecred/pdanalytics/dcrd"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
 type Parameters struct {
-	*base.Base
+	server *web.Server
+	client *dcrd.Dcrd
 }
 
-func New(b *base.Base) (*Parameters, error) {
+func New(client *dcrd.Dcrd, server *web.Server) (*Parameters, error) {
 	prm := &Parameters{
-		Base: b,
+		server: server,
+		client: client,
 	}
 
-	prm.WebServer.AddMenuItem(web.MenuItem{
+	prm.server.AddMenuItem(web.MenuItem{
 		Href:      "/parameters",
 		HyperText: "Parameters",
 		Attributes: map[string]string{
@@ -26,45 +28,21 @@ func New(b *base.Base) (*Parameters, error) {
 		},
 	})
 
-	prm.WebServer.AddMenuItem(web.MenuItem{})
+	prm.server.AddMenuItem(web.MenuItem{})
 
-	// Development subsidy address of the current network
-	// devSubsidyAddress, err := web.DevSubsidyAddress(b.Params)
-	// if err != nil {
-	// 	log.Warnf("parameters.New: %v", err)
-	// 	return nil, err
-	// }
-	// log.Debugf("Organization address: %s", devSubsidyAddress)
-
-	// exp.pageData = &web.PageData{
-	// 	BlockInfo: new(web.BlockInfo),
-	// 	HomeInfo: &web.HomeInfo{
-	// 		DevAddress: devSubsidyAddress,
-	// 		Params: web.ChainParams{
-	// 			WindowSize:       exp.ChainParams.StakeDiffWindowSize,
-	// 			RewardWindowSize: exp.ChainParams.SubsidyReductionInterval,
-	// 			BlockTime:        exp.ChainParams.TargetTimePerBlock.Nanoseconds(),
-	// 			MeanVotingBlocks: exp.MeanVotingBlocks,
-	// 		},
-	// 		PoolInfo: web.TicketPoolInfo{
-	// 			Target: uint32(exp.ChainParams.TicketPoolSize * exp.ChainParams.TicketsPerBlock),
-	// 		},
-	// 	},
-	// }
-
-	err := prm.WebServer.Templates.AddTemplate("parameters")
+	err := prm.server.Templates.AddTemplate("parameters")
 	if err != nil {
 		return nil, err
 	}
 
-	prm.WebServer.AddRoute("/parameters", web.GET, prm.handle)
+	prm.server.AddRoute("/parameters", web.GET, prm.handle)
 
 	return prm, nil
 }
 
 func (prm *Parameters) handle(w http.ResponseWriter, r *http.Request) {
-	params := prm.Params
-	addrPrefix := web.AddressPrefixes(params)
+	params := prm.client.Params
+	addrPrefix := AddressPrefixes(params)
 	actualTicketPoolSize := int64(params.TicketPoolSize * params.TicketsPerBlock)
 
 	// exp.pageData.RLock()
@@ -81,14 +59,14 @@ func (prm *Parameters) handle(w http.ResponseWriter, r *http.Request) {
 	type ExtendedParams struct {
 		MaximumBlockSize     int64
 		ActualTicketPoolSize int64
-		AddressPrefix        []web.AddrPrefix
+		AddressPrefix        []AddrPrefix
 	}
 
-	str, err := prm.WebServer.Templates.ExecTemplateToString("parameters", struct {
+	str, err := prm.server.Templates.ExecTemplateToString("parameters", struct {
 		*web.CommonPageData
 		ExtendedParams
 	}{
-		CommonPageData: prm.WebServer.CommonData(r, prm.Params),
+		CommonPageData: prm.server.CommonData(r),
 		ExtendedParams: ExtendedParams{
 			MaximumBlockSize:     maxBlockSize,
 			AddressPrefix:        addrPrefix,
@@ -98,7 +76,7 @@ func (prm *Parameters) handle(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Errorf("Template execute failure: %v", err)
-		prm.WebServer.StatusPage(w, r, web.DefaultErrorCode, web.DefaultErrorMessage, "", web.ExpStatusError, prm.Params)
+		prm.server.StatusPage(w, r, web.DefaultErrorCode, web.DefaultErrorMessage, "", web.ExpStatusError)
 		return
 	}
 	w.Header().Set("Content-Type", "text/html")

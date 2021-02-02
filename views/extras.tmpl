@@ -57,7 +57,7 @@
 <header class="top-nav d-flex align-items-center" id="navBar" data-blocktime="{{.BlockTimeUnix}}">
 	<div class="container d-flex justify-content-between align-items-center">
 		<a class="no-underline d-block home-link dcrdata-logo" href="/"></a>
-		<form
+		{{/* <form
 			class="search-form"
 			role="search"
 			id="search-form"
@@ -76,7 +76,7 @@
 				autocomplete="off"
 			/>
 			<button class="search-bttn" type="submit"><span class="dcricon-search"></span></button>
-		</form>
+		</form> */}}
 		<nav id="hamburger-menu" data-controller="menu" data-turbolinks-permanent>
 			<div id="menuToggle">
 				<input type="checkbox" data-target="menu.toggle" data-action="change->menu#toggle"/>
@@ -127,22 +127,22 @@
 {{define "footer"}}
 <footer class="navbar-fixed-bottom">
 	<div class="container d-flex justify-content-between align-items-center">
-		<span>
+		{{/* <span>
 			{{ if not $.Tip }}
 			<span>Unknown </span>
 			{{ else }}
 			<span data-controller="time" data-target="time.blocktime" data-stamp="{{$.Tip.Time}}"></span> 
 			{{ end }}
 			<span class="d-none d-sm-inline">since last block</span>
-		</span>
+		</span> */}}
 		<span>
 			<a
 				class="text-nowrap d-none d-md-inline-block pr-3"
 				href="{{.Links.Github}}"
-				title="dcrdata on GitHub"
+				title="pdanalytics on GitHub"
 				target="_blank"
 				rel="noopener noreferrer"
-			>dcrdata v{{.Version}}</a>
+			>pdanalytics v{{.Version}}</a>
 			{{- if ne .Links.OnionURL "" }}
 			<a
 				class="text-nowrap d-none d-md-inline-block pr-3"
@@ -157,9 +157,9 @@
 				href="{{.Links.License}}"
 				target="_blank"
 				rel="noopener noreferrer"
-			>© 2020 The Decred developers (ISC)</a>
+			>© 2020 Planet Decred (ISC)</a>
 		</span>
-		<span
+		{{/* <span
 			id="connection"
 			class="text-nowrap align-items-center clickable d-inline-block"
 			data-turbolinks-permanent
@@ -168,7 +168,7 @@
 			data-action="click->connection#requestNotifyPermission"
 			title="While connected, you will receive live page updates and, if enabled, desktop notifications (click to enable)."
 			><span class="d-none d-sm-inline" data-target="connection.status">Connecting <span class="d-none d-md-inline-block">to WebSocket...</span></span><div></div>
-		</span>
+		</span> */}}
 	</div>
 	<script
 		src="/dist/js/vendors~app.bundle.js?x=65tv3"

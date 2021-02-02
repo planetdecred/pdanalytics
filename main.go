@@ -16,7 +16,7 @@ import (
 	"github.com/decred/dcrdata/exchanges/v2"
 	"github.com/go-chi/chi"
 	"github.com/google/gops/agent"
-	"github.com/planetdecred/pdanalytics/base"
+	"github.com/planetdecred/pdanalytics/dcrd"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
@@ -74,7 +74,7 @@ func _main(ctx context.Context) error {
 	// SetPreviousBlock and start receiving notifications with Listen. Create
 	// the notifier now so the *rpcclient.NotificationHandlers can be obtained,
 	// using (*Notifier).DcrdHandlers, for the rpcclient.Client constructor.
-	notifier := NewNotifier(ctx)
+	notifier := dcrd.NewNotifier(ctx)
 
 	// Connect to dcrd RPC server using a websocket.
 	dcrdClient, err := connectNodeRPC(cfg, notifier.DcrdHandlers())
@@ -151,14 +151,11 @@ func _main(ctx context.Context) error {
 
 	webServer.MountAssetPaths("/", "./web/public")
 
-	//b :=
-
-	err = setupModules(cfg, &base.Base{
-		DcrdClient: dcrdClient,
-		WebServer:  webServer,
-		XcBot:      xcBot,
-		Params:     activeChain,
-	})
+	err = setupModules(cfg, &dcrd.Dcrd{
+		Rpc:    dcrdClient,
+		Params: activeChain,
+		Notif:  notifier,
+	}, webServer, xcBot)
 
 	if err != nil {
 		return err

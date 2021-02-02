@@ -9,6 +9,7 @@ import (
 
 	"github.com/decred/dcrd/chaincfg/v2"
 	"github.com/go-chi/chi"
+	"github.com/planetdecred/pdanalytics/version"
 )
 
 const (
@@ -72,16 +73,24 @@ func (e ExpStatus) IsSyncing() bool {
 }
 
 // NewServer
-func NewServer(cfg Config, mux *chi.Mux, chainParams *chaincfg.Params) (*Server, error) {
+func NewServer(cfg Config, mux *chi.Mux, params *chaincfg.Params) (*Server, error) {
 	commonTemplates := []string{"extras"}
-	templates := NewTemplates(cfg.Viewsfolder, cfg.ReloadHTML, commonTemplates, MakeTemplateFuncMap(chainParams))
+	templates := NewTemplates(cfg.Viewsfolder, cfg.ReloadHTML, commonTemplates, MakeTemplateFuncMap(params))
 	s := &Server{
 		webMux:      mux,
 		cfg:         cfg,
-		Templates:   &templates,
-		MenuItems:   []MenuItem{},
+		Templates:   templates,
 		routes:      map[string]route{},
 		routeGroups: []routeGroup{},
+		common: CommonPageData{
+			Version:       version.Version(),
+			ChainParams:   params,
+			BlockTimeUnix: int64(params.TargetTimePerBlock.Seconds()),
+			//DevAddress:    exp.pageData.HomeInfo.DevAddress,
+			//NetName:       exp.NetName,
+			MenuItems: make([]MenuItem, 0),
+			Links:     ExplorerLinks,
+		},
 	}
 
 	return s, nil
@@ -108,7 +117,7 @@ func (s *Server) MountAssetPaths(pathPrefix string, publicFolder string) {
 }
 
 func (s *Server) AddMenuItem(menuItem MenuItem) {
-	s.MenuItems = append(s.MenuItems, menuItem)
+	s.common.MenuItems = append(s.common.MenuItems, menuItem)
 }
 
 // FileServer conveniently sets up a http.FileServer handler to serve static

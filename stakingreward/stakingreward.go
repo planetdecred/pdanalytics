@@ -10,18 +10,16 @@ import (
 
 	"github.com/decred/dcrd/chaincfg/v2"
 	"github.com/decred/dcrd/dcrutil"
-	"github.com/decred/dcrd/rpcclient/v5"
 	"github.com/decred/dcrd/wire"
 	"github.com/decred/dcrdata/exchanges/v2"
+	"github.com/planetdecred/pdanalytics/dcrd"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
 type calculator struct {
-	templates web.Templates
 	webServer *web.Server
 	xcBot     *exchanges.ExchangeBot
-
-	pageData *web.PageData
+	client    *dcrd.Dcrd
 
 	Height       uint32
 	stakePerc    float64
@@ -30,56 +28,38 @@ type calculator struct {
 	TicketReward float64
 	RewardPeriod float64
 
-	ChainParams      *chaincfg.Params
-	Version          string
-	NetName          string
 	MeanVotingBlocks int64
 
-	dcrdChainSvr *rpcclient.Client
-	reorgLock    sync.Mutex
+	reorgLock sync.Mutex
 }
 
-func New(dcrdClient *rpcclient.Client, webServer *web.Server, viewFolder string,
-	xcBot *exchanges.ExchangeBot, params *chaincfg.Params) (*calculator, error) {
-
-	if viewFolder == "" {
-		viewFolder = "./pkgs/stakingreward/views"
+func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot) (*calculator, error) {
+	calc := &calculator{
+		webServer: webServer,
+		xcBot:     xcBot,
+		client:    client,
+		stakePerc: 45.0, // why this?
 	}
 
-	exp := &calculator{
-		templates:    web.NewTemplates(viewFolder, false, []string{"extras"}, web.MakeTemplateFuncMap(params)),
-		webServer:    webServer,
-		xcBot:        xcBot,
-		ChainParams:  params,
-		dcrdChainSvr: dcrdClient,
-		stakePerc:    45.0,
-	}
+	calc.MeanVotingBlocks = CalcMeanVotingBlocks(client.Params)
 
-	exp.MeanVotingBlocks = CalcMeanVotingBlocks(params)
-
-	hash, err := dcrdClient.GetBestBlockHash()
-	if err != nil {
-		return nil, err
-	}
-	blockHeader, err := dcrdClient.GetBlockHeader(hash)
+	hash, err := client.Rpc.GetBestBlockHash()
 	if err != nil {
 		return nil, err
 	}
 
-	if err = exp.ConnectBlock(blockHeader); err != nil {
+	blockHeader, err := client.Rpc.GetBlockHeader(hash)
+	if err != nil {
 		return nil, err
 	}
 
-	tmpls := []string{"stakingreward", "status"}
-
-	for _, name := range tmpls {
-		if err := exp.templates.AddTemplate(name); err != nil {
-			log.Errorf("Unable to create new html template: %v", err)
-			return nil, err
-		}
+	if err = calc.ConnectBlock(blockHeader); err != nil {
+		return nil, err
 	}
 
-	exp.webServer.AddMenuItem(web.MenuItem{
+	calc.client.Notif.RegisterBlockHandlerGroup(calc.ConnectBlock)
+
+	calc.webServer.AddMenuItem(web.MenuItem{
 		Href:      "/staking-reward",
 		HyperText: "Staking Reward",
 		Attributes: map[string]string{
@@ -88,34 +68,15 @@ func New(dcrdClient *rpcclient.Client, webServer *web.Server, viewFolder string,
 		},
 	})
 
-	// Development subsidy address of the current network
-	devSubsidyAddress, err := web.DevSubsidyAddress(params)
+	err = webServer.Templates.AddTemplate("stakingreward")
 	if err != nil {
-		log.Warnf("attackcost.New: %v", err)
 		return nil, err
 	}
-	log.Debugf("Organization address: %s", devSubsidyAddress)
 
-	exp.pageData = &web.PageData{
-		BlockInfo: new(web.BlockInfo),
-		HomeInfo: &web.HomeInfo{
-			DevAddress: devSubsidyAddress,
-			Params: web.ChainParams{
-				WindowSize:       exp.ChainParams.StakeDiffWindowSize,
-				RewardWindowSize: exp.ChainParams.SubsidyReductionInterval,
-				BlockTime:        exp.ChainParams.TargetTimePerBlock.Nanoseconds(),
-				MeanVotingBlocks: exp.MeanVotingBlocks,
-			},
-			PoolInfo: web.TicketPoolInfo{
-				Target: uint32(exp.ChainParams.TicketPoolSize * exp.ChainParams.TicketsPerBlock),
-			},
-		},
-	}
+	webServer.AddRoute("/staking-reward", web.GET, calc.stakingReward)
+	webServer.AddRoute("/staking-reward/get-future-reward", web.GET, calc.targetTicketReward)
 
-	webServer.AddRoute("/staking-reward", web.GET, exp.stakingReward)
-	webServer.AddRoute("/staking-reward/get-future-reward", web.GET, exp.targetTicketReward)
-
-	return exp, nil
+	return calc, nil
 }
 
 func (exp *calculator) ConnectBlock(w *wire.BlockHeader) error {
@@ -125,19 +86,19 @@ func (exp *calculator) ConnectBlock(w *wire.BlockHeader) error {
 	exp.Height = w.Height
 
 	// Stake difficulty (ticket price)
-	stakeDiff, err := exp.dcrdChainSvr.GetStakeDifficulty()
+	stakeDiff, err := exp.client.Rpc.GetStakeDifficulty()
 	if err != nil {
 		return err
 	}
 	exp.TicketPrice = stakeDiff.CurrentStakeDifficulty
 
-	nbSubsidy, err := exp.dcrdChainSvr.GetBlockSubsidy(int64(w.Height)+1, 5)
+	nbSubsidy, err := exp.client.Rpc.GetBlockSubsidy(int64(w.Height)+1, 5)
 	if err != nil {
 		log.Errorf("GetBlockSubsidy for %d failed: %v", w.Height, err)
 	}
 
 	posSubsPerVote := dcrutil.Amount(nbSubsidy.PoS).ToCoin() /
-		float64(exp.ChainParams.TicketsPerBlock)
+		float64(exp.client.Params.TicketsPerBlock)
 	exp.TicketReward = 100 * posSubsPerVote / stakeDiff.CurrentStakeDifficulty
 
 	// The actual reward of a ticket needs to also take into consideration the
@@ -145,20 +106,20 @@ func (exp *calculator) ConnectBlock(w *wire.BlockHeader) error {
 	// and coinbase maturity (time after vote until funds distributed to ticket
 	// holder are available to use).
 	avgSSTxToSSGenMaturity := exp.MeanVotingBlocks +
-		int64(exp.ChainParams.TicketMaturity) +
-		int64(exp.ChainParams.CoinbaseMaturity)
+		int64(exp.client.Params.TicketMaturity) +
+		int64(exp.client.Params.CoinbaseMaturity)
 	exp.RewardPeriod = float64(avgSSTxToSSGenMaturity) *
-		exp.ChainParams.TargetTimePerBlock.Hours() / 24
+		exp.client.Params.TargetTimePerBlock.Hours() / 24
 
 	// Coin supply
-	coinSupply, err := exp.dcrdChainSvr.GetCoinSupply()
+	coinSupply, err := exp.client.Rpc.GetCoinSupply()
 	if err != nil {
 		return err
 	}
 	exp.coinSupply = coinSupply.ToCoin()
 
 	// Ticket pool info
-	poolValue, err := exp.dcrdChainSvr.GetTicketPoolValue()
+	poolValue, err := exp.client.Rpc.GetTicketPoolValue()
 	if err != nil {
 		return err
 	}
@@ -194,18 +155,18 @@ func (exp *calculator) simulateStakingReward(numberOfDays float64, startingDCRBa
 
 	// Calculations are only useful on mainnet.  Short circuit calculations if
 	// on any other version of chain params.
-	if exp.ChainParams.Name != "mainnet" {
+	if exp.client.Params.Name != "mainnet" {
 		return 0, 0
 	}
 
-	blocksPerDay := 86400 / exp.ChainParams.TargetTimePerBlock.Seconds()
+	blocksPerDay := 86400 / exp.client.Params.TargetTimePerBlock.Seconds()
 	numberOfBlocks := numberOfDays * blocksPerDay
 	ticketsPurchased := float64(0)
 
 	StakeRewardAtBlock := func(blocknum float64) float64 {
 		// Option 1:  RPC Call
 
-		Subsidy, _ := exp.dcrdChainSvr.GetBlockSubsidy(int64(blocknum), 1)
+		Subsidy, _ := exp.client.Rpc.GetBlockSubsidy(int64(blocknum), 1)
 		return dcrutil.Amount(Subsidy.PoS).ToCoin()
 
 		// Option 2:  Calculation
@@ -230,8 +191,8 @@ func (exp *calculator) simulateStakingReward(numberOfDays float64, startingDCRBa
 
 	TheoreticalTicketPrice := func(blocknum float64) float64 {
 		ProjectedCoinsCirculating := MaxCoinSupplyAtBlock(blocknum) * CoinAdjustmentFactor * currentStakePercent
-		TicketPoolSize := (float64(exp.MeanVotingBlocks) + float64(exp.ChainParams.TicketMaturity) +
-			float64(exp.ChainParams.CoinbaseMaturity)) * float64(exp.ChainParams.TicketsPerBlock)
+		TicketPoolSize := (float64(exp.MeanVotingBlocks) + float64(exp.client.Params.TicketMaturity) +
+			float64(exp.client.Params.CoinbaseMaturity)) * float64(exp.client.Params.TicketsPerBlock)
 
 		return ProjectedCoinsCirculating / TicketPoolSize
 	}
@@ -258,7 +219,7 @@ func (exp *calculator) simulateStakingReward(numberOfDays float64, startingDCRBa
 		DCRBalance -= (TicketPrice * ticketsPurchased)
 
 		// Move forward to average vote
-		simblock += (float64(exp.ChainParams.TicketMaturity) + float64(exp.MeanVotingBlocks))
+		simblock += (float64(exp.client.Params.TicketMaturity) + float64(exp.MeanVotingBlocks))
 
 		// Simulate return of funds
 		DCRBalance += (TicketPrice * ticketsPurchased)
@@ -267,7 +228,7 @@ func (exp *calculator) simulateStakingReward(numberOfDays float64, startingDCRBa
 		DCRBalance += (StakeRewardAtBlock(simblock) * ticketsPurchased)
 
 		// Move forward to coinbase maturity
-		simblock += float64(exp.ChainParams.CoinbaseMaturity)
+		simblock += float64(exp.client.Params.CoinbaseMaturity)
 
 		// Need to receive funds before we can use them again so add 1 block
 		simblock++
@@ -279,42 +240,18 @@ func (exp *calculator) simulateStakingReward(numberOfDays float64, startingDCRBa
 	return
 }
 
-// commonData grabs the common page data that is available to every page.
-// This is particularly useful for extras.tmpl, parts of which
-// are used on every page
-func (exp *calculator) commonData(r *http.Request) *web.CommonPageData {
-
-	darkMode, err := r.Cookie(web.DarkModeCoookie)
-	if err != nil && err != http.ErrNoCookie {
-		log.Errorf("Cookie dcrdataDarkBG retrieval error: %v", err)
-	}
-	return &web.CommonPageData{
-		Version:       exp.Version,
-		ChainParams:   exp.ChainParams,
-		BlockTimeUnix: int64(exp.ChainParams.TargetTimePerBlock.Seconds()),
-		DevAddress:    exp.pageData.HomeInfo.DevAddress,
-		NetName:       exp.NetName,
-		Links:         web.ExplorerLinks,
-		Cookies: web.Cookies{
-			DarkMode: darkMode != nil && darkMode.Value == "1",
-		},
-		RequestURI: r.URL.RequestURI(),
-		MenuItems:  exp.webServer.MenuItems,
-	}
-}
-
 // stakingReward is the page handler for the "/ticket-reward" path.
-func (ac *calculator) stakingReward(w http.ResponseWriter, r *http.Request) {
-	price := 24.42
-	if ac.xcBot != nil {
-		if rate := ac.xcBot.Conversion(1.0); rate != nil {
+func (calc *calculator) stakingReward(w http.ResponseWriter, r *http.Request) {
+	price := 24.42 // why this value?
+	if calc.xcBot != nil {
+		if rate := calc.xcBot.Conversion(1.0); rate != nil {
 			price = rate.Value
 		}
 	}
 
-	ac.reorgLock.Lock()
+	calc.reorgLock.Lock()
 
-	str, err := ac.templates.ExecTemplateToString("stakingreward", struct {
+	str, err := calc.webServer.Templates.ExecTemplateToString("stakingreward", struct {
 		*web.CommonPageData
 		Height       uint32
 		TicketPrice  float64
@@ -322,18 +259,18 @@ func (ac *calculator) stakingReward(w http.ResponseWriter, r *http.Request) {
 		TicketReward float64
 		DCRPrice     float64
 	}{
-		CommonPageData: ac.commonData(r),
-		Height:         ac.Height,
-		TicketPrice:    ac.TicketPrice,
-		RewardPeriod:   ac.RewardPeriod,
-		TicketReward:   ac.TicketReward,
+		CommonPageData: calc.webServer.CommonData(r),
+		Height:         calc.Height,
+		TicketPrice:    calc.TicketPrice,
+		RewardPeriod:   calc.RewardPeriod,
+		TicketReward:   calc.TicketReward,
 		DCRPrice:       price,
 	})
-	ac.reorgLock.Unlock()
+	calc.reorgLock.Unlock()
 
 	if err != nil {
 		log.Errorf("Template execute failure: %v", err)
-		ac.StatusPage(w, r, web.DefaultErrorCode, web.DefaultErrorMessage, "", web.ExpStatusError)
+		calc.webServer.StatusPage(w, r, web.DefaultErrorCode, web.DefaultErrorMessage, "", web.ExpStatusError)
 		return
 	}
 
@@ -371,7 +308,7 @@ func (exp *calculator) targetTicketReward(w http.ResponseWriter, r *http.Request
 	// starting height
 	var height uint32
 	duration := startDate.Sub(time.Now())
-	blockDiff := duration.Minutes() / float64(exp.ChainParams.TargetTimePerBlock)
+	blockDiff := duration.Minutes() / float64(exp.client.Params.TargetTimePerBlock)
 	if time.Now().Before(startDate) {
 		height = exp.Height + uint32(blockDiff)
 	} else {
@@ -391,58 +328,4 @@ func (exp *calculator) targetTicketReward(w http.ResponseWriter, r *http.Request
 		Reward:      asr,
 		TicketPrice: ticketPrice,
 	})
-}
-
-// StatusPage provides a page for displaying status messages and exception
-// handling without redirecting. Be sure to return after calling StatusPage if
-// this completes the processing of the calling http handler.
-func (exp *calculator) StatusPage(w http.ResponseWriter, r *http.Request, code, message, additionalInfo string, sType web.ExpStatus) {
-	commonPageData := exp.commonData(r)
-	if commonPageData == nil {
-		// exp.blockData.GetTip likely failed due to empty DB.
-		http.Error(w, "The database is initializing. Try again later.",
-			http.StatusServiceUnavailable)
-		return
-	}
-	str, err := exp.templates.Exec("status", struct {
-		*web.CommonPageData
-		StatusType     web.ExpStatus
-		Code           string
-		Message        string
-		AdditionalInfo string
-	}{
-		CommonPageData: commonPageData,
-		StatusType:     sType,
-		Code:           code,
-		Message:        message,
-		AdditionalInfo: additionalInfo,
-	})
-	if err != nil {
-		log.Errorf("Template execute failure: %v", err)
-		str = "Something went very wrong if you can see this, try refreshing" + err.Error()
-	}
-
-	w.Header().Set("Content-Type", "text/html")
-	switch sType {
-	case web.ExpStatusDBTimeout:
-		w.WriteHeader(http.StatusServiceUnavailable)
-	case web.ExpStatusNotFound:
-		w.WriteHeader(http.StatusNotFound)
-	case web.ExpStatusFutureBlock:
-		w.WriteHeader(http.StatusOK)
-	case web.ExpStatusError:
-		w.WriteHeader(http.StatusInternalServerError)
-	// When blockchain sync is running, status 202 is used to imply that the
-	// other requests apart from serving the status sync page have been received
-	// and accepted but cannot be processed now till the sync is complete.
-	case web.ExpStatusSyncing:
-		w.WriteHeader(http.StatusAccepted)
-	case web.ExpStatusNotSupported:
-		w.WriteHeader(http.StatusUnprocessableEntity)
-	case web.ExpStatusBadRequest:
-		w.WriteHeader(http.StatusBadRequest)
-	default:
-		w.WriteHeader(http.StatusServiceUnavailable)
-	}
-	io.WriteString(w, str)
 }
