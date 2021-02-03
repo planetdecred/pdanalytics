@@ -8,7 +8,10 @@ import (
 	"github.com/decred/slog"
 	"github.com/jrick/logrotate/rotator"
 	"github.com/planetdecred/pdanalytics/attackcost"
+	"github.com/planetdecred/pdanalytics/chart"
 	"github.com/planetdecred/pdanalytics/homepage"
+	"github.com/planetdecred/pdanalytics/mempool"
+	"github.com/planetdecred/pdanalytics/mempool/postgres"
 	"github.com/planetdecred/pdanalytics/parameters"
 	"github.com/planetdecred/pdanalytics/stakingreward"
 )
@@ -46,6 +49,8 @@ var (
 	attackcostLog    = backendLog.Logger("ATCK")
 	stakingrewardLog = backendLog.Logger("STCK")
 	homeLog          = backendLog.Logger(("HOME"))
+	mempoolLog       = backendLog.Logger("MEMP")
+	chartLog         = backendLog.Logger("CHRT")
 )
 
 // Initialize package-global logger variables.
@@ -54,6 +59,9 @@ func init() {
 	stakingreward.UseLogger(stakingrewardLog)
 	attackcost.UseLogger(attackcostLog)
 	homepage.UseLogger(homeLog)
+	mempool.UseLogger(mempoolLog)
+	postgres.UseLogger(mempoolLog)
+	chart.UseLogger(chartLog)
 }
 
 // subsystemLoggers maps each subsystem identifier to its associated logger.
