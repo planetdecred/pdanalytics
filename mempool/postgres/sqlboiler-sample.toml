@@ -1,0 +1,10 @@
+[psql]
+    dbname = "dcrextdata"
+    host = "localhost"
+    user = "user"
+    pass = "pass"
+    sslmode = "disable"
+    whitelist=[
+        "mempool",
+        "mempool_bin"
+    ]
