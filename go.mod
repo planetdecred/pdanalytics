@@ -16,6 +16,7 @@ require (
 	github.com/google/gops v0.3.13
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/jrick/logrotate v1.0.0
+	github.com/lib/pq v1.2.0
 	github.com/planetdecred/pdanalytics/dcrd v0.0.0-00010101000000-000000000000
 	github.com/planetdecred/pdanalytics/web v0.0.0-20210121232737-d068a16f7d67
 )

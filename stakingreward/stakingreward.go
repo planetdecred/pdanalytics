@@ -122,7 +122,7 @@ func (exp *Calculator) ConnectBlock(w *wire.BlockHeader) error {
 	if err != nil {
 		return err
 	}
-	exp.stakePerc = poolValue.ToCoin() / dcrutil.Amount(coinSupply).ToCoin()
+	exp.stakePerc = poolValue.ToCoin() / coinSupply.ToCoin()
 
 	return nil
 }
@@ -306,7 +306,7 @@ func (exp *Calculator) targetTicketReward(w http.ResponseWriter, r *http.Request
 
 	// starting height
 	var height uint32
-	duration := startDate.Sub(time.Now())
+	duration := time.Until(startDate)
 	blockDiff := duration.Minutes() / float64(exp.client.Params.TargetTimePerBlock)
 	if time.Now().Before(startDate) {
 		height = exp.Height + uint32(blockDiff)
