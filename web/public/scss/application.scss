@@ -63,3 +63,7 @@
 @import "./home.scss";
 @import "./cards.scss";
 @import "./attackcost.scss";
+
+// imported dcrextdata page styles. the order matters
+@import "./style.scss";
+@import "./tile.scss";
