@@ -151,7 +151,7 @@ func _main(ctx context.Context) error {
 
 	webServer.MountAssetPaths("/", "./web/public")
 
-	err = setupModules(cfg, &dcrd.Dcrd{
+	err = setupModules(ctx, cfg, &dcrd.Dcrd{
 		Rpc:    dcrdClient,
 		Params: activeChain,
 		Notif:  notifier,

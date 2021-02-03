@@ -5,7 +5,7 @@ package postgres
 import (
 	"context"
 
-	"github.com/planetdecred/pdanalytics/dbhelpers"
+	"github.com/planetdecred/pdanalytics/dbhelper"
 )
 
 var (
@@ -60,12 +60,12 @@ func (pg *PgDb) createMempoolDayBinTable() error {
 }
 
 func (pg *PgDb) mempoolDataTableExits() bool {
-	exists, _ := dbhelpers.TableExists(pg.db, "mempool")
+	exists, _ := dbhelper.TableExists(pg.db, "mempool")
 	return exists
 }
 
 func (pg *PgDb) mempoolBinDataTableExits() bool {
-	exists, _ := dbhelpers.TableExists(pg.db, "mempool_bin")
+	exists, _ := dbhelper.TableExists(pg.db, "mempool_bin")
 	return exists
 }
 
@@ -85,12 +85,12 @@ func (pg *PgDb) tableExists(name string) (bool, error) {
 func (pg *PgDb) DropTables() error {
 
 	// mempool
-	if err := dbhelpers.DropTable(pg.db, "mempool"); err != nil {
+	if err := dbhelper.DropTable(pg.db, "mempool"); err != nil {
 		return err
 	}
 
 	// mempool_bin
-	if err := dbhelpers.DropTable(pg.db, "mempool_bin"); err != nil {
+	if err := dbhelper.DropTable(pg.db, "mempool_bin"); err != nil {
 		return err
 	}
 

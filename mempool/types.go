@@ -4,8 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/decred/dcrd/chaincfg/v2"
-	"github.com/decred/dcrd/rpcclient/v5"
+	"github.com/planetdecred/pdanalytics/dcrd"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
@@ -49,9 +48,8 @@ type DataStore interface {
 type Collector struct {
 	ctx                context.Context
 	collectionInterval float64
-	dcrClient          *rpcclient.Client
+	client             *dcrd.Dcrd
 	dataStore          DataStore
-	activeChain        *chaincfg.Params
 	syncIsDone         bool
 	bestBlockHeight    uint32
 

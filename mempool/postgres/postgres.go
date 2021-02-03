@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/planetdecred/pdanalytics/chart"
-	"github.com/planetdecred/pdanalytics/dbhelpers"
+	"github.com/planetdecred/pdanalytics/dbhelper"
 	"github.com/planetdecred/pdanalytics/mempool"
 	"github.com/planetdecred/pdanalytics/mempool/postgres/models"
 	"github.com/volatiletech/null"
@@ -34,12 +34,7 @@ func (l logWriter) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func NewPgDb(host, port, user, pass, dbname string, debug bool) (*PgDb, error) {
-	db, err := dbhelpers.Connect(host, port, user, pass, dbname)
-	if err != nil {
-		return nil, err
-	}
-	db.SetMaxOpenConns(5)
+func NewPgDb(db *sql.DB, debug bool) *PgDb {
 	if debug {
 		boil.DebugMode = true
 		boil.DebugWriter = logWriter{}
@@ -47,7 +42,7 @@ func NewPgDb(host, port, user, pass, dbname string, debug bool) (*PgDb, error) {
 	return &PgDb{
 		db:           db,
 		queryTimeout: time.Second * 30,
-	}, nil
+	}
 }
 
 func (pg *PgDb) Close() error {
@@ -69,7 +64,7 @@ func (pg PgDb) StoreMempool(ctx context.Context, mempoolDto mempool.Mempool) err
 	}
 	//  tx count 76, total size 54205 B, fees 0.00367100
 	log.Infof("Added mempool entry at %s, tx count %2d, total size: %6d B, Total Fee: %010.8f",
-		mempoolDto.Time.Format(dbhelpers.DateTemplate), mempoolDto.NumberOfTransactions, mempoolDto.Size, mempoolDto.TotalFee)
+		mempoolDto.Time.Format(dbhelper.DateTemplate), mempoolDto.NumberOfTransactions, mempoolDto.Size, mempoolDto.TotalFee)
 	if err = pg.UpdateMempoolAggregateData(ctx); err != nil {
 		return err
 	}
@@ -118,12 +113,12 @@ func (pg *PgDb) Mempools(ctx context.Context, offtset int, limit int) ([]mempool
 	for _, m := range mempoolSlice {
 		result = append(result, mempool.Dto{
 			TotalFee:             m.TotalFee.Float64,
-			FirstSeenTime:        m.FirstSeenTime.Time.Format(dbhelpers.DateTemplate),
+			FirstSeenTime:        m.FirstSeenTime.Time.Format(dbhelper.DateTemplate),
 			Total:                m.Total.Float64,
 			Voters:               m.Voters.Int,
 			Tickets:              m.Tickets.Int,
 			Revocations:          m.Revocations.Int,
-			Time:                 m.Time.Format(dbhelpers.DateTemplate),
+			Time:                 m.Time.Format(dbhelper.DateTemplate),
 			Size:                 int32(m.Size.Int),
 			NumberOfTransactions: m.NumberOfTransactions.Int,
 		})

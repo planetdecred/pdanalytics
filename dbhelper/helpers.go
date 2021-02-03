@@ -1,4 +1,4 @@
-package dbhelpers
+package dbhelper
 
 import (
 	"database/sql"

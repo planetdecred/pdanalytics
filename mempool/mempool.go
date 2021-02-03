@@ -11,32 +11,31 @@ import (
 	"github.com/decred/dcrd/chaincfg/chainhash"
 	"github.com/decred/dcrd/chaincfg/v2"
 	dcrjson "github.com/decred/dcrd/rpc/jsonrpc/types/v2"
-	"github.com/decred/dcrd/rpcclient/v5"
 	"github.com/decred/dcrd/wire"
+	"github.com/planetdecred/pdanalytics/dcrd"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
-func NewCollector(ctx context.Context, client *rpcclient.Client, interval float64,
-	activeChain *chaincfg.Params, dataStore DataStore, webServer *web.Server) (*Collector, error) {
+func NewCollector(ctx context.Context, client *dcrd.Dcrd, interval float64,
+	dataStore DataStore, webServer *web.Server) (*Collector, error) {
 
 	c := &Collector{
 		ctx:                ctx,
 		webServer:          webServer,
-		dcrClient:          client,
+		client:             client,
 		collectionInterval: interval,
 		dataStore:          dataStore,
-		activeChain:        activeChain,
 	}
 
 	if err := c.SetExplorerBestBlock(ctx); err != nil {
 		return nil, err
 	}
 
-	hash, err := client.GetBestBlockHash()
+	hash, err := client.Rpc.GetBestBlockHash()
 	if err != nil {
 		return nil, err
 	}
-	blockHeader, err := client.GetBlockHeader(hash)
+	blockHeader, err := client.Rpc.GetBlockHeader(hash)
 	if err != nil {
 		return nil, err
 	}
@@ -44,6 +43,8 @@ func NewCollector(ctx context.Context, client *rpcclient.Client, interval float6
 	if err = c.ConnectBlock(blockHeader); err != nil {
 		return nil, err
 	}
+
+	client.Notif.RegisterBlockHandlerGroup(c.ConnectBlock)
 
 	if err := c.webServer.Templates.AddTemplate("mempool"); err != nil {
 		log.Errorf("Unable to create new html template: %v", err)
@@ -68,7 +69,7 @@ func NewCollector(ctx context.Context, client *rpcclient.Client, interval float6
 
 func (c *Collector) SetExplorerBestBlock(ctx context.Context) error {
 	var explorerUrl string
-	switch c.activeChain.Name {
+	switch c.client.Params.Name {
 	case chaincfg.MainNetParams().Name:
 		explorerUrl = "https://explorer.dcrdata.org/api/block/best" //TODO: use dcrd server
 	case chaincfg.TestNet3Params().Name:
@@ -106,7 +107,7 @@ func (c *Collector) StartMonitoring(ctx context.Context) {
 		mu.Lock()
 		defer mu.Unlock()
 
-		mempoolTransactionMap, err := c.dcrClient.GetRawMempoolVerbose(dcrjson.GRMAll)
+		mempoolTransactionMap, err := c.client.Rpc.GetRawMempoolVerbose(dcrjson.GRMAll)
 		if err != nil {
 			log.Error(err)
 			return
@@ -128,7 +129,7 @@ func (c *Collector) StartMonitoring(ctx context.Context) {
 				log.Error(err)
 				continue
 			}
-			rawTx, err := c.dcrClient.GetRawTransactionVerbose(hash)
+			rawTx, err := c.client.Rpc.GetRawTransactionVerbose(hash)
 			if err != nil {
 				log.Error(err)
 				continue
@@ -148,21 +149,21 @@ func (c *Collector) StartMonitoring(ctx context.Context) {
 
 		}
 
-		votes, err := c.dcrClient.GetRawMempool(dcrjson.GRMVotes)
+		votes, err := c.client.Rpc.GetRawMempool(dcrjson.GRMVotes)
 		if err != nil {
 			log.Error(err)
 			return
 		}
 		mempoolDto.Voters = len(votes)
 
-		tickets, err := c.dcrClient.GetRawMempool(dcrjson.GRMTickets)
+		tickets, err := c.client.Rpc.GetRawMempool(dcrjson.GRMTickets)
 		if err != nil {
 			log.Error(err)
 			return
 		}
 		mempoolDto.Tickets = len(tickets)
 
-		revocations, err := c.dcrClient.GetRawMempool(dcrjson.GRMRevocations)
+		revocations, err := c.client.Rpc.GetRawMempool(dcrjson.GRMRevocations)
 		if err != nil {
 			log.Error(err)
 			return

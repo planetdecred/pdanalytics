@@ -26,7 +26,7 @@ func (c *Collector) mempoolPage(w http.ResponseWriter, r *http.Request) {
 	}{
 		CommonPageData: c.webServer.CommonData(r),
 		Mempool:        mempoolData,
-		BlockTime:      c.activeChain.MinDiffReductionTime.Seconds(),
+		BlockTime:      c.client.Params.MinDiffReductionTime.Seconds(),
 	})
 
 	if err != nil {
