@@ -54,7 +54,11 @@ func (hm *Home) homepage(w http.ResponseWriter, r *http.Request) {
 		AttackCostEnabled:    ac,
 	})
 
-	
+	if err != nil {
+		log.Errorf("Template execute failure: %v", err)
+		hm.server.StatusPage(w, r, web.DefaultErrorCode, web.DefaultErrorMessage, "", web.ExpStatusError)
+		return
+	}
 
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
