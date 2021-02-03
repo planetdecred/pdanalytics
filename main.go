@@ -16,9 +16,7 @@ import (
 	"github.com/decred/dcrdata/exchanges/v2"
 	"github.com/go-chi/chi"
 	"github.com/google/gops/agent"
-	"github.com/planetdecred/pdanalytics/pkgs/attackcost"
-	"github.com/planetdecred/pdanalytics/pkgs/parameters"
-	"github.com/planetdecred/pdanalytics/pkgs/stakingreward"
+	"github.com/planetdecred/pdanalytics/dcrd"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
@@ -76,7 +74,7 @@ func _main(ctx context.Context) error {
 	// SetPreviousBlock and start receiving notifications with Listen. Create
 	// the notifier now so the *rpcclient.NotificationHandlers can be obtained,
 	// using (*Notifier).DcrdHandlers, for the rpcclient.Client constructor.
-	notifier := NewNotifier(ctx)
+	notifier := dcrd.NewNotifier(ctx)
 
 	// Connect to dcrd RPC server using a websocket.
 	dcrdClient, err := connectNodeRPC(cfg, notifier.DcrdHandlers())
@@ -143,6 +141,7 @@ func _main(ctx context.Context) error {
 	webServer, err := web.NewServer(web.Config{
 		CacheControlMaxAge: int64(cfg.CacheControlMaxAge),
 		Viewsfolder:        "./views",
+		AssetsFolder:       "./web/public",
 		ReloadHTML:         cfg.ReloadHTML,
 	}, webMux, activeChain)
 	if err != nil {
@@ -150,34 +149,16 @@ func _main(ctx context.Context) error {
 		return fmt.Errorf("failed to create new web server (templates missing?)")
 	}
 
-	webServer.MountAssetPaths("/", "./public")
+	webServer.MountAssetPaths("/", "./web/public")
 
-	if cfg.EnableStakingRewardCalculator == 1 {
-		rewardCalculator, err := stakingreward.New(dcrdClient, webServer, "", xcBot, activeChain)
-		if err != nil {
-			log.Error(err)
-			return fmt.Errorf("Failed to create new staking reward component, %s", err.Error())
-		}
+	err = setupModules(cfg, &dcrd.Dcrd{
+		Rpc:    dcrdClient,
+		Params: activeChain,
+		Notif:  notifier,
+	}, webServer, xcBot)
 
-		notifier.RegisterBlockHandlerGroup(rewardCalculator.ConnectBlock)
-	}
-
-	if cfg.EnableChainParameters == 1 {
-		_, err := parameters.New(dcrdClient, webServer, "", activeChain)
-		if err != nil {
-			log.Error(err)
-			return fmt.Errorf("Failed to create new parameters component, %s", err.Error())
-		}
-	}
-
-	if cfg.EnableAttackCost == 1 {
-		attCost, err := attackcost.New(dcrdClient, webServer, "", xcBot, activeChain)
-		if err != nil {
-			log.Error(err)
-			return fmt.Errorf("Failed to create new attackcost component, %s", err.Error())
-		}
-
-		notifier.RegisterBlockHandlerGroup(attCost.ConnectBlock)
+	if err != nil {
+		return err
 	}
 
 	// (*notify.Notifier).processBlock will discard incoming block if PrevHash does not match

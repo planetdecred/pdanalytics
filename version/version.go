@@ -20,8 +20,8 @@ const (
 // versioning 2.0.0 spec (http://semver.org/).
 const (
 	AppName  string = "pdanalytics"
-	AppMajor uint   = 1
-	AppMinor uint   = 0
+	AppMajor uint   = 0
+	AppMinor uint   = 1
 	AppPatch uint   = 0
 )
 

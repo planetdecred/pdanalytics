@@ -13,9 +13,9 @@ import (
 	"github.com/caarlos0/env"
 	"github.com/decred/dcrd/chaincfg/v2"
 	"github.com/decred/dcrd/dcrutil/v2"
+	"github.com/decred/dcrdata/v5/netparams"
 	"github.com/decred/slog"
 	flags "github.com/jessevdk/go-flags"
-	"github.com/planetdecred/pdanalytics/netparams"
 	"github.com/planetdecred/pdanalytics/version"
 )
 
@@ -43,9 +43,9 @@ var (
 	defaultHost               = "localhost"
 	defaultHTTPProfPath       = "/p"
 	defaultAPIProto           = "http"
-	defaultMainnetPort        = "7777"
-	defaultTestnetPort        = "17778"
-	defaultSimnetPort         = "17779"
+	defaultMainnetPort        = "7070"
+	defaultTestnetPort        = "7171"
+	defaultSimnetPort         = "7272"
 	defaultCacheControlMaxAge = 86400
 	defaultServerHeader       = "pdanalytics"
 
@@ -104,9 +104,9 @@ type config struct {
 	RateCertificate   string `long:"ratecert" description:"File containing DCRRates TLS certificate file." env:"DCRDATA_RATE_MASTER"`
 
 	// Modules config
-	EnableChainParameters         int `long:"parameters" description:"Enable/Disables the chain parameter component from running."`
-	EnableAttackCost              int `long:"attackcost" description:"Enable/Disables the attack cost calculator component from running."`
-	EnableStakingRewardCalculator int `long:"stakingreward" description:"Enable/Disables the staking reward calculator component from running."`
+	EnableChainParameters         bool `long:"parameters" description:"Enable/Disables the chain parameter component."`
+	EnableAttackCost              bool `long:"attackcost" description:"Enable/Disables the attack cost calculator component."`
+	EnableStakingRewardCalculator bool `long:"stakingreward" description:"Enable/Disables the staking reward calculator component."`
 }
 
 var (
@@ -128,9 +128,9 @@ var (
 		MainnetLink:                   defaultMainnetLink,
 		TestnetLink:                   defaultTestnetLink,
 		OnionAddress:                  defaultOnionAddress,
-		EnableStakingRewardCalculator: 1,
-		EnableChainParameters:         1,
-		EnableAttackCost:              1,
+		EnableStakingRewardCalculator: true,
+		EnableChainParameters:         true,
+		EnableAttackCost:              true,
 	}
 )
 

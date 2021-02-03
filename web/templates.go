@@ -64,7 +64,7 @@ var shortPeriods = &periodMap{
 }
 
 // NewTemplates creates a new Templates obj. The default folder is ./views
-func NewTemplates(folder string, reload bool, common []string, helpers template.FuncMap) Templates {
+func NewTemplates(folder string, reload bool, common []string, helpers template.FuncMap) *Templates {
 	if folder == "" {
 		folder = defaultFolder
 	}
@@ -91,7 +91,7 @@ func NewTemplates(folder string, reload bool, common []string, helpers template.
 		t.Exec = t.ExecWithReload
 	}
 
-	return t
+	return &t
 }
 
 func (t *Templates) AddTemplate(name string) error {
@@ -124,7 +124,7 @@ func (t *Templates) ReloadTemplates() error {
 // ExecTemplateToString executes the associated input template using the
 // supplied data, and writes the result into a string. If the template fails to
 // execute or isn't found, a non-nil error will be returned. Check it before
-// writing to theclient, otherwise you might as well execute directly into
+// writing to the client, otherwise you might as well execute directly into
 // your response writer instead of the internal buffer of this function.
 func (t *Templates) ExecTemplateToString(name string, data interface{}) (string, error) {
 	temp, ok := t.templates[name]

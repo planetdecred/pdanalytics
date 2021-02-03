@@ -17,9 +17,9 @@ type Server struct {
 	webMux      *chi.Mux
 	cfg         Config
 	Templates   *Templates
-	MenuItems   []MenuItem
 	routes      map[string]route
 	routeGroups []routeGroup
+	common      CommonPageData
 }
 
 // Links to be passed with common page data.
