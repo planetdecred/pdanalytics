@@ -61,6 +61,10 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 		db.SetMaxOpenConns(5)
 
 		mpdb := postgres.NewPgDb(db, cfg.DebugLevel == "debug")
+		if err = mpdb.CreateTables(ctx); err != nil {
+			log.Error("Error creating mempool tables: ", err)
+			return err
+		}
 
 		mp, err = mempool.NewCollector(ctx, client, cfg.MempoolInterval, mpdb, server)
 		if err != nil {
