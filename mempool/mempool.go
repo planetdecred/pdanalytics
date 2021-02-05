@@ -99,8 +99,8 @@ func (c *Collector) StartMonitoring(ctx context.Context) {
 	var mu sync.Mutex
 
 	collectMempool := func() {
-		log.Info("c.syncIsDone", c.syncIsDone)
 		if !c.syncIsDone {
+			log.Info("Mempool data collection skipped because dcrd is not fully synced")
 			return
 		}
 
