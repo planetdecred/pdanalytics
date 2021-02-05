@@ -80,7 +80,7 @@ func (c *Collector) SetExplorerBestBlock(ctx context.Context) error {
 		Height uint32 `json:"height"`
 	}{}
 
-	err := GetResponse(ctx, &http.Client{Timeout: 10 * time.Second}, explorerUrl, &bestBlock)
+	err := web.GetResponse(ctx, &http.Client{Timeout: 10 * time.Second}, explorerUrl, &bestBlock)
 	if err != nil {
 		return err
 	}
@@ -119,8 +119,8 @@ func (c *Collector) StartMonitoring(ctx context.Context) {
 
 		mempoolDto := Mempool{
 			NumberOfTransactions: len(mempoolTransactionMap),
-			Time:                 NowUTC(),
-			FirstSeenTime:        NowUTC(), //todo: use the time of the first tx in the mempool
+			Time:                 web.NowUTC(),
+			FirstSeenTime:        web.NowUTC(), //todo: use the time of the first tx in the mempool
 		}
 
 		for hashString, tx := range mempoolTransactionMap {
@@ -144,7 +144,7 @@ func (c *Collector) StartMonitoring(ctx context.Context) {
 			mempoolDto.TotalFee += tx.Fee
 			mempoolDto.Size += tx.Size
 			if mempoolDto.FirstSeenTime.Unix() > tx.Time {
-				mempoolDto.FirstSeenTime = UnixTime(tx.Time)
+				mempoolDto.FirstSeenTime = web.UnixTime(tx.Time)
 			}
 
 		}

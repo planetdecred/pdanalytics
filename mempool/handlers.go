@@ -12,6 +12,10 @@ import (
 	"github.com/planetdecred/pdanalytics/web"
 )
 
+const (
+	mempoolDefaultChartDataType = "size"
+)
+
 func (c *Collector) mempoolPage(w http.ResponseWriter, r *http.Request) {
 	mempoolData, err := c.fetchMempoolData(r)
 	if err != nil {
@@ -42,16 +46,16 @@ func (c *Collector) mempoolPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// /getmempool
-func (s *Collector) getMempool(res http.ResponseWriter, req *http.Request) {
-	data, err := s.fetchMempoolData(req)
+// getMempool is a handler for the "/getMempool" path.
+func (s *Collector) getMempool(w http.ResponseWriter, r *http.Request) {
+	data, err := s.fetchMempoolData(r)
 
 	if err != nil {
-		web.RenderErrorfJSON(res, err.Error())
+		web.RenderErrorfJSON(w, err.Error())
 		return
 	}
 
-	web.RenderJSON(res, data)
+	web.RenderJSON(w, data)
 }
 
 func (s *Collector) fetchMempoolData(req *http.Request) (map[string]interface{}, error) {
@@ -66,16 +70,16 @@ func (s *Collector) fetchMempoolData(req *http.Request) (map[string]interface{},
 	}
 
 	if viewOption == "" {
-		viewOption = defaultViewOption
+		viewOption = web.DefaultViewOption
 	}
 
 	var pageSize int
 	numRows, err := strconv.Atoi(numberOfRows)
 	switch {
 	case err != nil || numRows <= 0:
-		pageSize = defaultPageSize
-	case numRows > maxPageSize:
-		pageSize = maxPageSize
+		pageSize = web.DefaultPageSize
+	case numRows > web.MaxPageSize:
+		pageSize = web.MaxPageSize
 	default:
 		pageSize = numRows
 	}
@@ -91,14 +95,14 @@ func (s *Collector) fetchMempoolData(req *http.Request) (map[string]interface{},
 		"chartView":            true,
 		"chartDataType":        chartDataType,
 		"selectedViewOption":   viewOption,
-		"pageSizeSelector":     pageSizeSelector,
+		"pageSizeSelector":     web.PageSizeSelector,
 		"selectedNumberOfRows": pageSize,
 		"currentPage":          pageToLoad,
 		"previousPage":         pageToLoad - 1,
 		"totalPages":           0,
 	}
 
-	if viewOption == defaultViewOption {
+	if viewOption == web.DefaultViewOption {
 		return data, nil
 	}
 
@@ -115,7 +119,7 @@ func (s *Collector) fetchMempoolData(req *http.Request) (map[string]interface{},
 	}
 
 	if len(mempoolSlice) == 0 {
-		data["message"] = fmt.Sprintf("Mempool %s", noDataMessage)
+		data["message"] = fmt.Sprintf("Mempool %s", web.NoDataMessage)
 		return data, nil
 	}
 

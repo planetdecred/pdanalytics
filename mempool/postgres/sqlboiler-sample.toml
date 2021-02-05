@@ -1,5 +1,5 @@
 [psql]
-    dbname = "dcrextdata"
+    dbname = "pdanalytics"
     host = "localhost"
     user = "user"
     pass = "pass"
