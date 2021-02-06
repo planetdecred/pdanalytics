@@ -37,10 +37,9 @@ v3
 v4
 v5
 tmp/runner-build
-node_modules/
-public/dist/
-public/js/dist/
-public/**/*.gz
+web/node_modules/
+web/public/dist/
+web/public/**/*.gz
 testutil/apiload/results/
 testutil/apiload/apiload.conf
 testutil/apiload/apiload
@@ -53,7 +52,4 @@ dcrrates/rateserver/logs/
 pgsql_*.sql
 sqlite_*.sql
 db/dcrpg/chkdcrpg/chkdcrpg
-
-public/dist/
-public/js/dist/
-public/**/*.gz
+/**/sqlboiler.toml

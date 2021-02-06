@@ -1,18 +1,22 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/decred/dcrdata/exchanges/v2"
 	"github.com/planetdecred/pdanalytics/attackcost"
+	"github.com/planetdecred/pdanalytics/dbhelper"
 	"github.com/planetdecred/pdanalytics/dcrd"
 	"github.com/planetdecred/pdanalytics/homepage"
+	"github.com/planetdecred/pdanalytics/mempool"
+	"github.com/planetdecred/pdanalytics/mempool/postgres"
 	"github.com/planetdecred/pdanalytics/parameters"
 	"github.com/planetdecred/pdanalytics/stakingreward"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
-func setupModules(cfg *config, client *dcrd.Dcrd, server *web.Server, xcBot *exchanges.ExchangeBot) error {
+func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *web.Server, xcBot *exchanges.ExchangeBot) error {
 	var err error
 
 	var stk *stakingreward.Calculator
@@ -46,6 +50,28 @@ func setupModules(cfg *config, client *dcrd.Dcrd, server *web.Server, xcBot *exc
 		}
 
 		log.Info("Attack Cost Calculator Enabled")
+	}
+
+	var mp *mempool.Collector
+	if cfg.EnableMempool {
+		db, err := dbhelper.Connect(cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPass, cfg.DBName)
+		if err != nil {
+			return fmt.Errorf("error in establishing database connection: %s", err.Error())
+		}
+		db.SetMaxOpenConns(5)
+
+		mpdb := postgres.NewPgDb(db, cfg.DebugLevel == "debug")
+		if err = mpdb.CreateTables(ctx); err != nil {
+			log.Error("Error creating mempool tables: ", err)
+			return err
+		}
+
+		mp, err = mempool.NewCollector(ctx, client, cfg.MempoolInterval, mpdb, server)
+		if err != nil {
+			log.Error(err)
+			return fmt.Errorf("Failed to create new mempool component, %s", err.Error())
+		}
+		go mp.StartMonitoring(ctx)
 	}
 
 	_, err = homepage.New(server, homepage.Mods{

@@ -234,6 +234,9 @@ func MakeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 			inString = hex.EncodeToString(arr)
 			return
 		},
+		"normalizeBalance": func(balance float64) string {
+			return fmt.Sprintf("%010.8f DCR", balance)
+		},
 	}
 }
 

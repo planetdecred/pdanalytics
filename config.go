@@ -26,6 +26,11 @@ const (
 	defaultDataDirname    = "data"
 	defaultLogLevel       = "info"
 	defaultLogDirname     = "logs"
+	defaultDbHost         = "localhost"
+	defaultDbPort         = "5432"
+	defaultDbUser         = "postgres"
+	defaultDbPass         = "dbpass"
+	defaultDbName         = "pdanalytics"
 )
 
 var activeNet = &netparams.MainNetParams
@@ -57,6 +62,8 @@ var (
 	defaultMainnetLink  = "https://explorer.planetdecred.org/"
 	defaultTestnetLink  = "https://testnet.planetdecred.org/"
 	defaultOnionAddress = ""
+
+	defaultMempoolInterval = 60.0
 )
 
 type config struct {
@@ -85,6 +92,13 @@ type config struct {
 	UseGops      bool   `short:"g" long:"gops" description:"Run with gops diagnostics agent listening. See github.com/google/gops for more information." env:"PDANALYTICS_USE_GOPS"`
 	ReloadHTML   bool   `long:"reload-html" description:"Reload HTML templates on every request" env:"DCRDATA_RELOAD_HTML"`
 
+	// Postgresql Configuration
+	DBHost string `long:"dbhost" description:"Database host"`
+	DBPort string `long:"dbport" description:"Database port"`
+	DBUser string `long:"dbuser" description:"Database username"`
+	DBPass string `long:"dbpass" description:"Database password"`
+	DBName string `long:"dbname" description:"Database name"`
+
 	// API/server
 	APIProto           string `long:"apiproto" description:"Protocol for API (http or https)" env:"PDANALYTICS_ENABLE_HTTPS"`
 	APIListen          string `long:"apilisten" description:"Listen address for API. default localhost:7777, :17778 testnet, :17779 simnet" env:"PDANALYTICS_LISTEN_URL"`
@@ -107,6 +121,10 @@ type config struct {
 	EnableChainParameters         bool `long:"parameters" description:"Enable/Disables the chain parameter component."`
 	EnableAttackCost              bool `long:"attackcost" description:"Enable/Disables the attack cost calculator component."`
 	EnableStakingRewardCalculator bool `long:"stakingreward" description:"Enable/Disables the staking reward calculator component."`
+	EnableMempool                 bool `long:"mempool" description:"Enable/Disables the mempool component from running."`
+
+	// Mempool
+	MempoolInterval float64 `long:"mempoolinterval" description:"The duration of time between mempool collection"`
 }
 
 var (
@@ -114,6 +132,11 @@ var (
 		HomeDir:                       defaultHomeDir,
 		DataDir:                       defaultDataDir,
 		LogDir:                        defaultLogDir,
+		DBHost:                        defaultDbHost,
+		DBPort:                        defaultDbPort,
+		DBUser:                        defaultDbUser,
+		DBPass:                        defaultDbPass,
+		DBName:                        defaultDbName,
 		MaxLogZips:                    defaultMaxLogZips,
 		ConfigFile:                    defaultConfigFile,
 		DebugLevel:                    defaultLogLevel,
@@ -131,6 +154,9 @@ var (
 		EnableStakingRewardCalculator: true,
 		EnableChainParameters:         true,
 		EnableAttackCost:              true,
+		EnableMempool:                 true,
+
+		MempoolInterval: defaultMempoolInterval,
 	}
 )
 

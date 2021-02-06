@@ -14,15 +14,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/decred/dcrdata.git"
+    "url": "git+https://github.com/planetdecreed/pdanalytics.git"
   },
   "keywords": [],
   "author": "Decred",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/decred/dcrdata/issues"
+    "url": "https://github.com/planetdecreed/pdanalytics/issues"
   },
-  "homepage": "https://github.com/decred/dcrdata#readme",
+  "homepage": "https://github.com/planetdecreed/pdanalytics#readme",
   "devDependencies": {
     "@babel/core": "^7.7.5",
     "@babel/plugin-syntax-dynamic-import": "^7.7.4",
