@@ -50,8 +50,6 @@ type Collector struct {
 	collectionInterval float64
 	client             *dcrd.Dcrd
 	dataStore          DataStore
-	syncIsDone         bool
-	bestBlockHeight    uint32
 
 	webServer *web.Server
 

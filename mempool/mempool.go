@@ -4,14 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"math"
-	"net/http"
 	"sync"
 	"time"
 
 	"github.com/decred/dcrd/chaincfg/chainhash"
-	"github.com/decred/dcrd/chaincfg/v2"
 	dcrjson "github.com/decred/dcrd/rpc/jsonrpc/types/v2"
-	"github.com/decred/dcrd/wire"
 	"github.com/planetdecred/pdanalytics/dcrd"
 	"github.com/planetdecred/pdanalytics/web"
 )
@@ -26,25 +23,6 @@ func NewCollector(ctx context.Context, client *dcrd.Dcrd, interval float64,
 		collectionInterval: interval,
 		dataStore:          dataStore,
 	}
-
-	if err := c.SetExplorerBestBlock(ctx); err != nil {
-		return nil, err
-	}
-
-	hash, err := client.Rpc.GetBestBlockHash()
-	if err != nil {
-		return nil, err
-	}
-	blockHeader, err := client.Rpc.GetBlockHeader(hash)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = c.ConnectBlock(blockHeader); err != nil {
-		return nil, err
-	}
-
-	client.Notif.RegisterBlockHandlerGroup(c.ConnectBlock)
 
 	if err := c.webServer.Templates.AddTemplate("mempool"); err != nil {
 		log.Errorf("Unable to create new html template: %v", err)
@@ -67,42 +45,10 @@ func NewCollector(ctx context.Context, client *dcrd.Dcrd, interval float64,
 	return c, nil
 }
 
-func (c *Collector) SetExplorerBestBlock(ctx context.Context) error {
-	var explorerUrl string
-	switch c.client.Params.Name {
-	case chaincfg.MainNetParams().Name:
-		explorerUrl = "https://explorer.dcrdata.org/api/block/best" //TODO: use dcrd server
-	case chaincfg.TestNet3Params().Name:
-		explorerUrl = "https://testnet.dcrdata.org/api/block/best"
-	}
-
-	var bestBlock = struct {
-		Height uint32 `json:"height"`
-	}{}
-
-	err := web.GetResponse(ctx, &http.Client{Timeout: 10 * time.Second}, explorerUrl, &bestBlock)
-	if err != nil {
-		return err
-	}
-
-	log.Infof("Current best block height: %d", bestBlock.Height)
-	c.bestBlockHeight = bestBlock.Height
-	return nil
-}
-
-func (c *Collector) ConnectBlock(blockHeader *wire.BlockHeader) error {
-	c.syncIsDone = blockHeader.Height >= c.bestBlockHeight
-	return nil
-}
-
 func (c *Collector) StartMonitoring(ctx context.Context) {
 	var mu sync.Mutex
 
 	collectMempool := func() {
-		if !c.syncIsDone {
-			log.Info("Mempool data collection skipped because dcrd is not fully synced")
-			return
-		}
 
 		mu.Lock()
 		defer mu.Unlock()
