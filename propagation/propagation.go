@@ -12,13 +12,13 @@ import (
 	chainjson "github.com/decred/dcrd/rpc/jsonrpc/types/v2"
 	"github.com/decred/dcrd/wire"
 	"github.com/planetdecred/dcrextdata/app/helpers"
-	"github.com/planetdecred/dcrextdata/datasync"
+	"github.com/planetdecred/pdanalytics/datasync"
 	"github.com/planetdecred/pdanalytics/dcrd"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
 func New(ctx context.Context, client *dcrd.Dcrd, dataStore store,
-	webServer *web.Server) (*propagation, error) {
+	webServer *web.Server, syncCoordinator *datasync.SyncCoordinator) (*propagation, error) {
 
 	prop := &propagation{
 		ctx:        ctx,
@@ -56,12 +56,14 @@ func New(ctx context.Context, client *dcrd.Dcrd, dataStore store,
 	prop.client.Notif.RegisterBlockHandlerGroup(prop.ConnectBlock)
 	prop.client.Notif.RegisterTxHandlerGroup(prop.TxReceived)
 
+	prop.RegisterSyncer(syncCoordinator)
+
 	return prop, nil
 }
 
-func (c *propagation) ConnectBlock(blockHeader *wire.BlockHeader) error {
-	if !c.syncIsDone {
-		done, err := c.client.IsSynced()
+func (prop *propagation) ConnectBlock(blockHeader *wire.BlockHeader) error {
+	if !prop.syncIsDone {
+		done, err := prop.client.IsSynced()
 		if err != nil {
 			log.Infof("Unable to determine the sync status of dcrd, %v", err)
 			return err
@@ -70,7 +72,7 @@ func (c *propagation) ConnectBlock(blockHeader *wire.BlockHeader) error {
 			log.Infof("Received a staled block height %d, block dropped", blockHeader.Height)
 			return nil
 		}
-		c.syncIsDone = true
+		prop.syncIsDone = true
 	}
 
 	block := Block{
@@ -79,18 +81,18 @@ func (c *propagation) ConnectBlock(blockHeader *wire.BlockHeader) error {
 		BlockHash:         blockHeader.BlockHash().String(),
 		BlockHeight:       blockHeader.Height,
 	}
-	if err := c.dataStore.SaveBlock(c.ctx, block); err != nil {
+	if err := prop.dataStore.SaveBlock(prop.ctx, block); err != nil {
 		log.Error(err)
 		return err
 	}
-	if err := c.dataStore.UpdateBlockBinData(c.ctx); err != nil {
+	if err := prop.dataStore.UpdateBlockBinData(prop.ctx); err != nil {
 		log.Errorf("Error in block bin data update, %s", err.Error())
 		return err
 	}
 	return nil
 }
 
-func (c *propagation) TxReceived(txDetails *chainjson.TxRawResult) error {
+func (prop *propagation) TxReceived(txDetails *chainjson.TxRawResult) error {
 	if !c.syncIsDone {
 		return nil
 	}
@@ -171,16 +173,16 @@ func (c *propagation) TxReceived(txDetails *chainjson.TxRawResult) error {
 	return nil
 }
 
-func (c *propagation) RegisterSyncer(syncCoordinator *datasync.SyncCoordinator) {
-	c.registerBlockSyncer(syncCoordinator)
-	c.registerVoteSyncer(syncCoordinator)
+func (prop *propagation) RegisterSyncer(syncCoordinator *datasync.SyncCoordinator) {
+	prop.registerBlockSyncer(syncCoordinator)
+	prop.registerVoteSyncer(syncCoordinator)
 }
 
-func (c *propagation) registerBlockSyncer(syncCoordinator *datasync.SyncCoordinator) {
-	syncCoordinator.AddSyncer(c.dataStore.BlockTableName(), datasync.Syncer{
+func (prop *propagation) registerBlockSyncer(syncCoordinator *datasync.SyncCoordinator) {
+	syncCoordinator.AddSyncer(prop.dataStore.BlockTableName(), datasync.Syncer{
 		LastEntry: func(ctx context.Context, db datasync.Store) (string, error) {
 			var lastHeight int64
-			err := db.LastEntry(ctx, c.dataStore.BlockTableName(), &lastHeight)
+			err := db.LastEntry(ctx, prop.dataStore.BlockTableName(), &lastHeight)
 			if err != nil && err != sql.ErrNoRows {
 				return "0", fmt.Errorf("error in fetching last block height, %s", err.Error())
 			}
@@ -195,7 +197,7 @@ func (c *propagation) registerBlockSyncer(syncCoordinator *datasync.SyncCoordina
 		Retrieve: func(ctx context.Context, last string, skip, take int) (result *datasync.Result, err error) {
 			blockHeight, _ := strconv.ParseInt(last, 10, 64)
 			result = new(datasync.Result)
-			blocks, totalCount, err := c.dataStore.FetchBlockForSync(ctx, blockHeight, skip, take)
+			blocks, totalCount, err := prop.dataStore.FetchBlockForSync(ctx, blockHeight, skip, take)
 			if err != nil {
 				result.Message = err.Error()
 				return
@@ -219,24 +221,24 @@ func (c *propagation) registerBlockSyncer(syncCoordinator *datasync.SyncCoordina
 			}
 
 			for _, block := range blocks {
-				err := store.SaveBlockFromSync(ctx, block)
+				err := store.SaveFromSync(ctx, block)
 				if err != nil {
 					log.Errorf("Error while appending block synced data, %s", err.Error())
 				}
 			}
 			// update propagation data
-			if err := store.UpdatePropagationData(ctx); err != nil {
+			if err := store.ProcessEntries(ctx); err != nil {
 				log.Errorf("Error in initial propagation data update, %s", err.Error())
 			}
 		},
 	})
 }
 
-func (c *propagation) registerVoteSyncer(syncCoordinator *datasync.SyncCoordinator) {
-	syncCoordinator.AddSyncer(c.dataStore.VoteTableName(), datasync.Syncer{
+func (prop *propagation) registerVoteSyncer(syncCoordinator *datasync.SyncCoordinator) {
+	syncCoordinator.AddSyncer(prop.dataStore.VoteTableName(), datasync.Syncer{
 		LastEntry: func(ctx context.Context, db datasync.Store) (string, error) {
 			var receiveTime time.Time
-			err := db.LastEntry(ctx, c.dataStore.VoteTableName(), &receiveTime)
+			err := db.LastEntry(ctx, prop.dataStore.VoteTableName(), &receiveTime)
 			if err != nil && err != sql.ErrNoRows {
 				return "0", fmt.Errorf("error in fetching last vote receive time, %s", err.Error())
 			}
@@ -251,7 +253,7 @@ func (c *propagation) registerVoteSyncer(syncCoordinator *datasync.SyncCoordinat
 		Retrieve: func(ctx context.Context, last string, skip, take int) (result *datasync.Result, err error) {
 			unixDate, _ := strconv.ParseInt(last, 10, 64)
 			result = new(datasync.Result)
-			votes, totalCount, err := c.dataStore.FetchVoteForSync(ctx, helpers.UnixTime(unixDate), skip, take)
+			votes, totalCount, err := prop.dataStore.FetchVoteForSync(ctx, helpers.UnixTime(unixDate), skip, take)
 			if err != nil {
 				result.Message = err.Error()
 				return
