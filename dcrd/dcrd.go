@@ -3,6 +3,7 @@ package dcrd
 import (
 	"fmt"
 	"math"
+	"time"
 
 	"github.com/decred/dcrd/chaincfg/v2"
 	"github.com/decred/dcrd/rpcclient/v5"
@@ -13,6 +14,21 @@ type Dcrd struct {
 	Rpc    *rpcclient.Client
 	Params *chaincfg.Params
 	Notif  *Notifier
+}
+
+// IsSynced returns the sync status of dcrd node by checking the age of
+// the best block against the TargetTimePerBlock and a 5 mins tolerance
+func (d Dcrd) IsSynced() (bool, error) {
+	hash, err := d.Rpc.GetBestBlockHash()
+	if err != nil {
+		return false, err
+	}
+	blockHeader, err := d.Rpc.GetBlockHeader(hash)
+	if err != nil {
+		return false, err
+	}
+	maxAge := d.Params.TargetTimePerBlock + 5*time.Minute
+	return time.Since(blockHeader.Timestamp) <= maxAge, nil
 }
 
 // DevSubsidyAddress returns the development subsidy address for the specified

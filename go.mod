@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0 // indirect
 	github.com/caarlos0/env v3.5.0+incompatible
+	github.com/decred/dcrd/blockchain/stake v1.2.1
 	github.com/decred/dcrd/chaincfg/chainhash v1.0.2
 	github.com/decred/dcrd/chaincfg/v2 v2.3.0
 	github.com/decred/dcrd/dcrutil v1.4.0
@@ -23,6 +24,7 @@ require (
 	github.com/jrick/logrotate v1.0.0
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
 	github.com/lib/pq v1.2.0
+	github.com/planetdecred/dcrextdata v0.0.0-20201006010145-cddd04eb454b
 	github.com/planetdecred/pdanalytics/dcrd v0.0.0-00010101000000-000000000000
 	github.com/planetdecred/pdanalytics/web v0.0.0-20210121232737-d068a16f7d67
 	github.com/spf13/cast v1.3.1 // indirect
