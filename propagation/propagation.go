@@ -54,6 +54,7 @@ func New(ctx context.Context, client *dcrd.Dcrd, dataStore store,
 	prop.server.AddRoute("/api/charts/propagation/{chartDataType}", web.GET, prop.chart, chartDataTypeCtx)
 
 	prop.client.Notif.RegisterBlockHandlerGroup(prop.ConnectBlock)
+	prop.client.Notif.RegisterTxHandlerGroup(prop.TxReceived)
 
 	return prop, nil
 }
