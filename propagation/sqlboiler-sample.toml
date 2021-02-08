@@ -1,0 +1,13 @@
+[psql]
+    dbname = "dcrextdata"
+    host = "localhost"
+    user = "user"
+    pass = "pass"
+    sslmode = "disable"
+    whitelist=[
+        "propagation",
+        "block",
+        "block_bin",
+        "vote",
+        "vote_receive_time_deviation"
+    ]
