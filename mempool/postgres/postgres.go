@@ -17,6 +17,7 @@ import (
 )
 
 const (
+	// chart data types
 	MempoolSize    = "size"
 	MempoolFees    = "fees"
 	MempoolTxCount = "tx-count"

@@ -44,10 +44,6 @@ type store interface {
 
 	FetchEncodePropagationChart(ctx context.Context, dataType, axis string,
 		binString string, extras ...string) ([]byte, error)
-
-	SaveBlockFromSync(ctx context.Context, block interface{}) error
-	SaveVoteFromSync(ctx context.Context, vote interface{}) error
-	UpdatePropagationData(ctx context.Context) error
 }
 
 type Dto struct {

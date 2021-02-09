@@ -93,7 +93,7 @@ func (prop *propagation) ConnectBlock(blockHeader *wire.BlockHeader) error {
 }
 
 func (prop *propagation) TxReceived(txDetails *chainjson.TxRawResult) error {
-	if !c.syncIsDone {
+	if !prop.syncIsDone {
 		return nil
 	}
 	receiveTime := helpers.NowUTC()
@@ -109,7 +109,7 @@ func (prop *propagation) TxReceived(txDetails *chainjson.TxRawResult) error {
 	}
 
 	var voteInfo *dcrd.VoteInfo
-	validation, version, bits, choices, err := dcrd.SSGenVoteChoices(msgTx, c.client.Params)
+	validation, version, bits, choices, err := dcrd.SSGenVoteChoices(msgTx, prop.client.Params)
 	if err != nil {
 		log.Errorf("Error in getting vote choice: %s", err.Error())
 		return err
@@ -127,9 +127,9 @@ func (prop *propagation) TxReceived(txDetails *chainjson.TxRawResult) error {
 		TicketSpent: msgTx.TxIn[1].PreviousOutPoint.Hash.String(),
 	}
 
-	c.ticketIndsMutex.Lock()
-	voteInfo.SetTicketIndex(c.ticketInds)
-	c.ticketIndsMutex.Unlock()
+	prop.ticketIndsMutex.Lock()
+	voteInfo.SetTicketIndex(prop.ticketInds)
+	prop.ticketIndsMutex.Unlock()
 
 	vote := Vote{
 		ReceiveTime: receiveTime,
@@ -150,7 +150,7 @@ func (prop *propagation) TxReceived(txDetails *chainjson.TxRawResult) error {
 	// try to get the block from the blockchain until the number of retries has elapsed
 	for i := 0; i <= retries; i++ {
 		hash, _ := chainhash.NewHashFromStr(validation.Hash)
-		targetedBlock, err = c.client.Rpc.GetBlock(hash)
+		targetedBlock, err = prop.client.Rpc.GetBlock(hash)
 		if err == nil {
 			break
 		}
@@ -163,11 +163,11 @@ func (prop *propagation) TxReceived(txDetails *chainjson.TxRawResult) error {
 		vote.BlockHash = targetedBlock.Header.BlockHash().String()
 	}
 
-	if err = c.dataStore.SaveVote(c.ctx, vote); err != nil {
+	if err = prop.dataStore.SaveVote(prop.ctx, vote); err != nil {
 		log.Error(err)
 	}
 
-	if err = c.dataStore.UpdateVoteTimeDeviationData(c.ctx); err != nil {
+	if err = prop.dataStore.UpdateVoteTimeDeviationData(prop.ctx); err != nil {
 		log.Errorf("Error in vote receive time deviation data update, %s", err.Error())
 	}
 	return nil
@@ -278,7 +278,7 @@ func (prop *propagation) registerVoteSyncer(syncCoordinator *datasync.SyncCoordi
 			}
 
 			for _, vote := range votes {
-				err := store.SaveVoteFromSync(ctx, vote)
+				err := store.SaveFromSync(ctx, vote)
 				if err != nil {
 					log.Errorf("Error while appending vote synced data, %s", err.Error())
 				}

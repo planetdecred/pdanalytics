@@ -64,6 +64,7 @@ var (
 	defaultOnionAddress = ""
 
 	defaultMempoolInterval = 60.0
+	defaultSyncInterval    = 60
 )
 
 type config struct {
@@ -122,9 +123,16 @@ type config struct {
 	EnableAttackCost              bool `long:"attackcost" description:"Enable/Disables the attack cost calculator component."`
 	EnableStakingRewardCalculator bool `long:"stakingreward" description:"Enable/Disables the staking reward calculator component."`
 	EnableMempool                 bool `long:"mempool" description:"Enable/Disables the mempool component from running."`
+	EnablePropagation             bool `long:"parameters" description:"Enable/Disable the propagation module from running"`
 
 	// Mempool
 	MempoolInterval float64 `long:"mempoolinterval" description:"The duration of time between mempool collection"`
+
+	// sync
+	DisableSync   bool     `long:"disablesync" description:"Disables data sharing operation"`
+	SyncInterval  int      `long:"syncinterval" description:"The number of minuets between sync operations"`
+	SyncSources   []string `long:"syncsource" description:"Address of remote instance to sync data from"`
+	SyncDatabases []string `long:"syncdatabase" description:"Database to sync remote data to"`
 }
 
 var (
@@ -151,6 +159,7 @@ var (
 		MainnetLink:                   defaultMainnetLink,
 		TestnetLink:                   defaultTestnetLink,
 		OnionAddress:                  defaultOnionAddress,
+		SyncInterval:                  defaultSyncInterval,
 		EnableStakingRewardCalculator: true,
 		EnableChainParameters:         true,
 		EnableAttackCost:              true,

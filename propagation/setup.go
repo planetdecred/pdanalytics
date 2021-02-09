@@ -5,7 +5,7 @@ package propagation
 import (
 	"context"
 
-	"github.com/planetdecred/pdanalytics/dbhelpers"
+	"github.com/planetdecred/pdanalytics/dbhelper"
 )
 
 const (
@@ -64,8 +64,8 @@ func (db *PgDb) CreateTables(ctx context.Context) error {
 			return err
 		}
 	}
-	if !db.blockTableExits() {
-		if err := db.createBlockTable(); err != nil {
+	if !db.BlockTableExits() {
+		if err := db.CreateBlockTable(); err != nil {
 			return err
 		}
 	}
@@ -74,8 +74,8 @@ func (db *PgDb) CreateTables(ctx context.Context) error {
 			return err
 		}
 	}
-	if !db.voteTableExits() {
-		if err := db.createVoteTable(); err != nil {
+	if !db.VoteTableExits() {
+		if err := db.CreateVoteTable(); err != nil {
 			return err
 		}
 	}
@@ -93,18 +93,18 @@ func (pg *PgDb) createPropagationTable() error {
 }
 
 func (pg *PgDb) propagationTableExists() bool {
-	exists, _ := dbhelpers.TableExists(pg.db, "propagation")
+	exists, _ := dbhelper.TableExists(pg.db, "propagation")
 	return exists
 }
 
 // block table
-func (pg *PgDb) createBlockTable() error {
+func (pg *PgDb) CreateBlockTable() error {
 	_, err := pg.db.Exec(createBlockTableScript)
 	return err
 }
 
-func (pg *PgDb) blockTableExits() bool {
-	exists, _ := dbhelpers.TableExists(pg.db, "block")
+func (pg *PgDb) BlockTableExits() bool {
+	exists, _ := dbhelper.TableExists(pg.db, "block")
 	return exists
 }
 
@@ -115,18 +115,18 @@ func (pg *PgDb) createBlockBinTable() error {
 }
 
 func (pg *PgDb) blockBinTableExits() bool {
-	exists, _ := dbhelpers.TableExists(pg.db, "block_bin")
+	exists, _ := dbhelper.TableExists(pg.db, "block_bin")
 	return exists
 }
 
 // vote table
-func (pg *PgDb) createVoteTable() error {
+func (pg *PgDb) CreateVoteTable() error {
 	_, err := pg.db.Exec(createVoteTableScript)
 	return err
 }
 
-func (pg *PgDb) voteTableExits() bool {
-	exists, _ := dbhelpers.TableExists(pg.db, "vote")
+func (pg *PgDb) VoteTableExits() bool {
+	exists, _ := dbhelper.TableExists(pg.db, "vote")
 	return exists
 }
 
@@ -137,34 +137,34 @@ func (pg *PgDb) createVoteReceiveTimeDeviationTable() error {
 }
 
 func (pg *PgDb) voteReceiveTimeDeviationTableExits() bool {
-	exists, _ := dbhelpers.TableExists(pg.db, "vote_receive_time_deviation")
+	exists, _ := dbhelper.TableExists(pg.db, "vote_receive_time_deviation")
 	return exists
 }
 
 func (pg *PgDb) DropTables() error {
 
 	// propagation
-	if err := dbhelpers.DropTable(pg.db, "propagation"); err != nil {
+	if err := dbhelper.DropTable(pg.db, "propagation"); err != nil {
 		return err
 	}
 
 	// block
-	if err := dbhelpers.DropTable(pg.db, "block"); err != nil {
+	if err := dbhelper.DropTable(pg.db, "block"); err != nil {
 		return err
 	}
 
 	// block_bin
-	if err := dbhelpers.DropTable(pg.db, "block_bin"); err != nil {
+	if err := dbhelper.DropTable(pg.db, "block_bin"); err != nil {
 		return err
 	}
 
 	// vote
-	if err := dbhelpers.DropTable(pg.db, "vote"); err != nil {
+	if err := dbhelper.DropTable(pg.db, "vote"); err != nil {
 		return err
 	}
 
 	// vote_receive_time_deviation
-	if err := dbhelpers.DropTable(pg.db, "vote_receive_time_deviation"); err != nil {
+	if err := dbhelper.DropTable(pg.db, "vote_receive_time_deviation"); err != nil {
 		return err
 	}
 

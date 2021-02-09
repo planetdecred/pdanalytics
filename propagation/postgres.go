@@ -9,12 +9,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/planetdecred/pdanalytics/dbhelpers"
-	"github.com/planetdecred/pdanalytics/pkgs/cache"
-	"github.com/planetdecred/pdanalytics/pkgs/propagation/models"
+	"github.com/planetdecred/pdanalytics/chart"
+	"github.com/planetdecred/pdanalytics/dbhelper"
+	"github.com/planetdecred/pdanalytics/propagation/models"
 	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries/qm"
+)
+
+const (
+	// chart data types
+	BlockPropagation = "block-propagation"
+	BlockTimestamp   = "block-timestamp"
+	VotesReceiveTime = "votes-receive-time"
 )
 
 type PgDb struct {
@@ -31,24 +38,15 @@ func (l logWriter) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func NewPgDb(host, port, user, pass, dbname string, debug bool, /*syncSources []string,
-syncSourceDbProvider func(source string) (*PgDb, error) */) (*PgDb, error) {
-
-	db, err := dbhelpers.Connect(host, port, user, pass, dbname)
-	if err != nil {
-		return nil, err
+func NewPgDb(db *sql.DB, debug bool) *PgDb {
+	if debug {
+		boil.DebugMode = true
+		boil.DebugWriter = logWriter{}
 	}
-	db.SetMaxOpenConns(5)
-
-	boil.DebugWriter = logWriter{}
-	boil.DebugMode = debug
-
 	return &PgDb{
 		db:           db,
 		queryTimeout: time.Second * 30,
-		// syncSources:          syncSources,
-		// syncSourceDbProvider: syncSourceDbProvider,
-	}, nil
+	}
 }
 
 func (pg *PgDb) Close() error {
@@ -89,12 +87,12 @@ func (pg *PgDb) SaveBlock(ctx context.Context, block Block) error {
 	}
 
 	log.Infof("New block received at %s, PropagationHeight: %d, Hash: ...%s",
-		block.BlockReceiveTime.Format(dbhelpers.DateMiliTemplate), block.BlockHeight, block.BlockHash[len(block.BlockHash)-23:])
+		block.BlockReceiveTime.Format(dbhelper.DateMiliTemplate), block.BlockHeight, block.BlockHash[len(block.BlockHash)-23:])
 	return nil
 }
 
-func (pg *PgDb) SaveBlockFromSync(ctx context.Context, block interface{}) error {
-	blockModel := blockDtoToModel(block.(Block))
+func (pg *PgDb) SaveBlockFromSync(ctx context.Context, block Block) error {
+	blockModel := blockDtoToModel(block)
 	err := blockModel.Insert(ctx, pg.db, boil.Infer())
 	if err != nil {
 		if !strings.Contains(err.Error(), "unique constraint") { // Ignore duplicate entries
@@ -102,6 +100,39 @@ func (pg *PgDb) SaveBlockFromSync(ctx context.Context, block interface{}) error 
 		}
 	}
 	return nil
+}
+
+func (pg *PgDb) SaveFromSync(ctx context.Context, item interface{}) error {
+	if block, ok := item.(Block); ok {
+		return pg.SaveBlockFromSync(ctx, block)
+	}
+
+	if vote, ok := item.(Vote); ok {
+		return pg.SaveVoteFromSync(ctx, vote)
+	}
+	return nil
+}
+
+func (pg *PgDb) ProcessEntries(ctx context.Context) error {
+	return pg.UpdatePropagationData(ctx)
+}
+
+func (pg *PgDb) TableNames() []string {
+	return []string{models.TableNames.Block, models.TableNames.Vote}
+}
+
+func (pg *PgDb) LastEntry(ctx context.Context, tableName string, receiver interface{}) error {
+	var columnName string
+	switch tableName {
+	case models.TableNames.Block:
+		columnName = models.BlockColumns.Height
+	case models.TableNames.Vote:
+		columnName = models.VoteColumns.ReceiveTime
+	}
+
+	rows := pg.db.QueryRow(fmt.Sprintf("SELECT %s FROM %s ORDER BY %s DESC LIMIT 1", columnName, tableName, columnName))
+	err := rows.Scan(receiver)
+	return err
 }
 
 func blockDtoToModel(block Block) models.Block {
@@ -138,8 +169,8 @@ func (pg *PgDb) Blocks(ctx context.Context, offset int, limit int) ([]BlockDto, 
 		blocks = append(blocks, BlockDto{
 			BlockHash:         block.Hash.String,
 			BlockHeight:       uint32(block.Height),
-			BlockInternalTime: block.InternalTimestamp.Time.Format(dbhelpers.DateTemplate),
-			BlockReceiveTime:  block.ReceiveTime.Time.Format(dbhelpers.DateTemplate),
+			BlockInternalTime: block.InternalTimestamp.Time.Format(dbhelper.DateTemplate),
+			BlockReceiveTime:  block.ReceiveTime.Time.Format(dbhelper.DateTemplate),
 			Delay:             fmt.Sprintf("%04.2f", timeDiff),
 			Votes:             votes,
 		})
@@ -162,8 +193,8 @@ func (pg *PgDb) BlocksWithoutVotes(ctx context.Context, offset int, limit int) (
 		blocks = append(blocks, BlockDto{
 			BlockHash:         block.Hash.String,
 			BlockHeight:       uint32(block.Height),
-			BlockInternalTime: block.InternalTimestamp.Time.Format(dbhelpers.DateTemplate),
-			BlockReceiveTime:  block.ReceiveTime.Time.Format(dbhelpers.DateTemplate),
+			BlockInternalTime: block.InternalTimestamp.Time.Format(dbhelper.DateTemplate),
+			BlockReceiveTime:  block.ReceiveTime.Time.Format(dbhelper.DateTemplate),
 			Delay:             fmt.Sprintf("%04.2f", timeDiff),
 		})
 	}
@@ -228,12 +259,11 @@ func (pg *PgDb) SaveVote(ctx context.Context, vote Vote) error {
 	}
 
 	log.Infof("New vote received at %s for %d, Validator Id %d, Hash ...%s",
-		vote.ReceiveTime.Format(dbhelpers.DateMiliTemplate), vote.VotingOn, vote.ValidatorId, vote.Hash[len(vote.Hash)-23:])
+		vote.ReceiveTime.Format(dbhelper.DateMiliTemplate), vote.VotingOn, vote.ValidatorId, vote.Hash[len(vote.Hash)-23:])
 	return nil
 }
 
-func (pg *PgDb) SaveVoteFromSync(ctx context.Context, voteData interface{}) error {
-	vote := voteData.(Vote)
+func (pg *PgDb) SaveVoteFromSync(ctx context.Context, vote Vote) error {
 	voteModel := models.Vote{
 		Hash:              vote.Hash,
 		VotingOn:          null.Int64From(vote.VotingOn),
@@ -310,7 +340,7 @@ func (pg *PgDb) voteModelToDto(vote *models.Vote) VoteDto {
 
 	return VoteDto{
 		Hash:                  vote.Hash,
-		ReceiveTime:           vote.ReceiveTime.Time.Format(dbhelpers.DateTemplate),
+		ReceiveTime:           vote.ReceiveTime.Time.Format(dbhelper.DateTemplate),
 		TargetedBlockTimeDiff: fmt.Sprintf("%04.2f", timeDiff),
 		BlockReceiveTimeDiff:  fmt.Sprintf("%04.2f", blockReceiveTimeDiff),
 		VotingOn:              vote.VotingOn.Int64,
@@ -450,7 +480,7 @@ func (pg *PgDb) updatePropagationDataForSource(ctx context.Context, source strin
 	// get the last entry for this source and prepage the propagation records
 	lastEntry, err := models.Propagations(
 		models.PropagationWhere.Source.EQ(source),
-		models.PropagationWhere.Bin.EQ(string(cache.DefaultBin)),
+		models.PropagationWhere.Bin.EQ(string(chart.DefaultBin)),
 		qm.OrderBy(fmt.Sprintf("%s desc", models.PropagationColumns.Time)),
 	).One(ctx, tx)
 	if err != nil && err != sql.ErrNoRows {
@@ -496,7 +526,7 @@ func (pg *PgDb) updatePropagationDataForSource(ctx context.Context, source strin
 		var propagation = models.Propagation{
 			Height: rec.BlockHeight,
 			Time:   rec.BlockTime.Unix(),
-			Bin:    string(cache.DefaultBin),
+			Bin:    string(chart.DefaultBin),
 			Source: source,
 		}
 		if sourceTime, found := receiveTimeMap[rec.BlockHeight]; found {
@@ -523,7 +553,7 @@ func (pg *PgDb) updatePropagationHourlyAvgForSource(ctx context.Context, source 
 
 	log.Infof("Updating propagation hourly average for %s", source)
 	lastHourEntry, err := models.Propagations(
-		models.PropagationWhere.Bin.EQ(string(cache.HourBin)),
+		models.PropagationWhere.Bin.EQ(string(chart.HourBin)),
 		models.PropagationWhere.Source.EQ(source),
 		qm.OrderBy(fmt.Sprintf("%s desc", models.PropagationColumns.Time)),
 	).One(ctx, tx)
@@ -534,10 +564,10 @@ func (pg *PgDb) updatePropagationHourlyAvgForSource(ctx context.Context, source 
 
 	var nextHour time.Time
 	if lastHourEntry != nil {
-		nextHour = time.Unix(lastHourEntry.Time, 0).Add(cache.AnHour * time.Second).UTC()
+		nextHour = time.Unix(lastHourEntry.Time, 0).Add(chart.AnHour * time.Second).UTC()
 	} else {
 		lastHourEntry, err = models.Propagations(
-			models.PropagationWhere.Bin.EQ(string(cache.DefaultBin)),
+			models.PropagationWhere.Bin.EQ(string(chart.DefaultBin)),
 			models.PropagationWhere.Source.EQ(source),
 			qm.OrderBy(models.PropagationColumns.Time),
 		).One(ctx, tx)
@@ -553,7 +583,7 @@ func (pg *PgDb) updatePropagationHourlyAvgForSource(ctx context.Context, source 
 	}
 
 	totalCount, err := models.Propagations(
-		models.PropagationWhere.Bin.EQ(string(cache.DefaultBin)),
+		models.PropagationWhere.Bin.EQ(string(chart.DefaultBin)),
 		models.PropagationWhere.Time.GTE(nextHour.Unix()),
 		models.PropagationWhere.Source.EQ(source),
 	).Count(ctx, pg.db)
@@ -566,7 +596,7 @@ func (pg *PgDb) updatePropagationHourlyAvgForSource(ctx context.Context, source 
 	var processed int64
 	for processed < totalCount {
 		nextEntry, err := models.Propagations(
-			models.PropagationWhere.Bin.EQ(string(cache.DefaultBin)),
+			models.PropagationWhere.Bin.EQ(string(chart.DefaultBin)),
 			models.PropagationWhere.Time.GTE(nextHour.Unix()),
 			qm.OrderBy(models.PropagationColumns.Time),
 		).One(ctx, tx)
@@ -578,7 +608,7 @@ func (pg *PgDb) updatePropagationHourlyAvgForSource(ctx context.Context, source 
 		nextHour = time.Unix(nextEntry.Time, 0)
 
 		propagations, err := models.Propagations(
-			models.PropagationWhere.Bin.EQ(string(cache.DefaultBin)),
+			models.PropagationWhere.Bin.EQ(string(chart.DefaultBin)),
 			models.PropagationWhere.Time.GTE(nextHour.Unix()),
 			models.PropagationWhere.Time.LT(nextHour.Add(step).Unix()),
 			models.PropagationWhere.Source.EQ(source),
@@ -589,19 +619,19 @@ func (pg *PgDb) updatePropagationHourlyAvgForSource(ctx context.Context, source 
 			return err
 		}
 		dLen := len(propagations)
-		var dates, heights = make(cache.ChartUints, dLen), make(cache.ChartUints, dLen)
-		var deviations = make(cache.ChartFloats, dLen)
+		var dates, heights = make(chart.ChartUints, dLen), make(chart.ChartUints, dLen)
+		var deviations = make(chart.ChartFloats, dLen)
 		for i, rec := range propagations {
 			dates[i] = uint64(rec.Time)
 			heights[i] = uint64(rec.Height)
 			deviations[i] = rec.Deviation
 		}
-		hours, hourHeights, hourIntervals := cache.GenerateHourBin(dates, heights)
+		hours, hourHeights, hourIntervals := chart.GenerateHourBin(dates, heights)
 		for i, interval := range hourIntervals {
 			propagationBin := models.Propagation{
 				Time:      int64(hours[i]),
 				Height:    int64(hourHeights[i]),
-				Bin:       string(cache.HourBin),
+				Bin:       string(chart.HourBin),
 				Source:    source,
 				Deviation: deviations.Avg(interval[0], interval[1]),
 			}
@@ -630,7 +660,7 @@ func (pg *PgDb) updatePropagationDailyAvgForSource(ctx context.Context, source s
 	}
 	log.Infof("Updating propagation daily average for %s", source)
 	lastDayEntry, err := models.Propagations(
-		models.PropagationWhere.Bin.EQ(string(cache.DayBin)),
+		models.PropagationWhere.Bin.EQ(string(chart.DayBin)),
 		models.PropagationWhere.Source.EQ(source),
 		qm.OrderBy(fmt.Sprintf("%s desc", models.PropagationColumns.Time)),
 	).One(ctx, tx)
@@ -641,10 +671,10 @@ func (pg *PgDb) updatePropagationDailyAvgForSource(ctx context.Context, source s
 
 	var nextDay time.Time
 	if lastDayEntry != nil {
-		nextDay = time.Unix(lastDayEntry.Time, 0).Add(cache.ADay * time.Second).UTC()
+		nextDay = time.Unix(lastDayEntry.Time, 0).Add(chart.ADay * time.Second).UTC()
 	} else {
 		lastDayEntry, err = models.Propagations(
-			models.PropagationWhere.Bin.EQ(string(cache.DefaultBin)),
+			models.PropagationWhere.Bin.EQ(string(chart.DefaultBin)),
 			models.PropagationWhere.Source.EQ(source),
 			qm.OrderBy(models.PropagationColumns.Time),
 		).One(ctx, tx)
@@ -672,7 +702,7 @@ func (pg *PgDb) updatePropagationDailyAvgForSource(ctx context.Context, source s
 	step := 30 * 24 * time.Hour
 	for processed < totalCount {
 		nextEntry, err := models.Propagations(
-			models.PropagationWhere.Bin.EQ(string(cache.DefaultBin)),
+			models.PropagationWhere.Bin.EQ(string(chart.DefaultBin)),
 			models.PropagationWhere.Time.GTE(nextDay.Unix()),
 			qm.OrderBy(models.PropagationColumns.Time),
 		).One(ctx, tx)
@@ -683,7 +713,7 @@ func (pg *PgDb) updatePropagationDailyAvgForSource(ctx context.Context, source s
 		}
 		nextDay = time.Unix(nextEntry.Time, 0)
 		propagations, err := models.Propagations(
-			models.PropagationWhere.Bin.EQ(string(cache.DefaultBin)),
+			models.PropagationWhere.Bin.EQ(string(chart.DefaultBin)),
 			models.PropagationWhere.Time.GTE(nextDay.Unix()),
 			models.PropagationWhere.Time.LT(nextDay.Add(step).Unix()),
 			models.PropagationWhere.Source.EQ(source),
@@ -694,19 +724,19 @@ func (pg *PgDb) updatePropagationDailyAvgForSource(ctx context.Context, source s
 			return err
 		}
 		dLen := len(propagations)
-		var dates, heights = make(cache.ChartUints, dLen), make(cache.ChartUints, dLen)
-		var deviations = make(cache.ChartFloats, dLen)
+		var dates, heights = make(chart.ChartUints, dLen), make(chart.ChartUints, dLen)
+		var deviations = make(chart.ChartFloats, dLen)
 		for i, rec := range propagations {
 			dates[i] = uint64(rec.Time)
 			heights[i] = uint64(rec.Height)
 			deviations[i] = rec.Deviation
 		}
-		days, dayHeight, dayIntervals := cache.GenerateDayBin(dates, heights)
+		days, dayHeight, dayIntervals := chart.GenerateDayBin(dates, heights)
 		for i, interval := range dayIntervals {
 			propagationBin := models.Propagation{
 				Time:      int64(days[i]),
 				Height:    int64(dayHeight[i]),
-				Bin:       string(cache.DayBin),
+				Bin:       string(chart.DayBin),
 				Source:    source,
 				Deviation: deviations.Avg(interval[0], interval[1]),
 			}
@@ -741,7 +771,7 @@ func (pg *PgDb) UpdateBlockBinData(ctx context.Context) error {
 
 func (pg *PgDb) updateBlockHourlyAvgData(ctx context.Context) error {
 	lastEntry, err := models.BlockBins(
-		models.BlockBinWhere.Bin.EQ(string(cache.HourBin)),
+		models.BlockBinWhere.Bin.EQ(string(chart.HourBin)),
 		qm.OrderBy(fmt.Sprintf("%s desc", models.BlockBinColumns.Height)),
 	).One(ctx, pg.db)
 	if err != nil && err != sql.ErrNoRows {
@@ -752,7 +782,7 @@ func (pg *PgDb) updateBlockHourlyAvgData(ctx context.Context) error {
 	var lastHeight int64
 	if lastEntry != nil {
 		lastHeight = lastEntry.Height
-		nextHour = time.Unix(lastEntry.InternalTimestamp, 0).Add(cache.AnHour * time.Second).UTC()
+		nextHour = time.Unix(lastEntry.InternalTimestamp, 0).Add(chart.AnHour * time.Second).UTC()
 	}
 
 	if time.Now().Before(nextHour) {
@@ -788,15 +818,15 @@ func (pg *PgDb) updateBlockHourlyAvgData(ctx context.Context) error {
 		if err == sql.ErrNoRows {
 			break
 		}
-		var dates, heights cache.ChartUints
-		var diffs cache.ChartFloats
+		var dates, heights chart.ChartUints
+		var diffs chart.ChartFloats
 		for _, block := range blockSlice {
 			dates = append(dates, uint64(block.InternalTimestamp.Time.Unix()))
 			heights = append(heights, uint64(block.Height))
 			blockReceiveTimeDiff := block.ReceiveTime.Time.Sub(block.InternalTimestamp.Time).Seconds()
 			diffs = append(diffs, blockReceiveTimeDiff)
 		}
-		hours, hourHeights, hourIntervals := cache.GenerateHourBin(dates, heights)
+		hours, hourHeights, hourIntervals := chart.GenerateHourBin(dates, heights)
 		for i, interval := range hourIntervals {
 			if int64(hours[i]) < nextHour.Unix() {
 				continue
@@ -804,7 +834,7 @@ func (pg *PgDb) updateBlockHourlyAvgData(ctx context.Context) error {
 			blockBin := models.BlockBin{
 				InternalTimestamp: int64(hours[i]),
 				Height:            int64(hourHeights[i]),
-				Bin:               string(cache.HourBin),
+				Bin:               string(chart.HourBin),
 				ReceiveTimeDiff:   diffs.Avg(interval[0], interval[1]),
 			}
 			if err = blockBin.Insert(ctx, tx, boil.Infer()); err != nil {
@@ -824,7 +854,7 @@ func (pg *PgDb) updateBlockHourlyAvgData(ctx context.Context) error {
 
 func (pg *PgDb) updateBlockDailyAvgData(ctx context.Context) error {
 	lastEntry, err := models.BlockBins(
-		models.BlockBinWhere.Bin.EQ(string(cache.DayBin)),
+		models.BlockBinWhere.Bin.EQ(string(chart.DayBin)),
 		qm.OrderBy(fmt.Sprintf("%s desc", models.BlockBinColumns.Height)),
 	).One(ctx, pg.db)
 	if err != nil && err != sql.ErrNoRows {
@@ -835,7 +865,7 @@ func (pg *PgDb) updateBlockDailyAvgData(ctx context.Context) error {
 	var lastHeight int64
 	if lastEntry != nil {
 		lastHeight = lastEntry.Height
-		nextDay = time.Unix(lastEntry.InternalTimestamp, 0).Add(cache.ADay * time.Second).UTC()
+		nextDay = time.Unix(lastEntry.InternalTimestamp, 0).Add(chart.ADay * time.Second).UTC()
 	}
 
 	if time.Now().Before(nextDay) {
@@ -871,15 +901,15 @@ func (pg *PgDb) updateBlockDailyAvgData(ctx context.Context) error {
 		if err == sql.ErrNoRows {
 			break
 		}
-		var dates, heights cache.ChartUints
-		var diffs cache.ChartFloats
+		var dates, heights chart.ChartUints
+		var diffs chart.ChartFloats
 		for _, block := range blockSlice {
 			dates = append(dates, uint64(block.InternalTimestamp.Time.Unix()))
 			heights = append(heights, uint64(block.Height))
 			blockReceiveTimeDiff := block.ReceiveTime.Time.Sub(block.InternalTimestamp.Time).Seconds()
 			diffs = append(diffs, blockReceiveTimeDiff)
 		}
-		days, dayHeights, dayIntervals := cache.GenerateDayBin(dates, heights)
+		days, dayHeights, dayIntervals := chart.GenerateDayBin(dates, heights)
 		for i, interval := range dayIntervals {
 			if int64(days[i]) < nextDay.Unix() {
 				continue
@@ -887,7 +917,7 @@ func (pg *PgDb) updateBlockDailyAvgData(ctx context.Context) error {
 			blockBin := models.BlockBin{
 				InternalTimestamp: int64(days[i]),
 				Height:            int64(dayHeights[i]),
-				Bin:               string(cache.DayBin),
+				Bin:               string(chart.DayBin),
 				ReceiveTimeDiff:   diffs.Avg(interval[0], interval[1]),
 			}
 			if err = blockBin.Insert(ctx, tx, boil.Infer()); err != nil {
@@ -919,7 +949,7 @@ func (pg *PgDb) UpdateVoteTimeDeviationData(ctx context.Context) error {
 
 func (pg *PgDb) updateVoteTimeDeviationHourlyAvgData(ctx context.Context) error {
 	lastEntry, err := models.VoteReceiveTimeDeviations(
-		models.VoteReceiveTimeDeviationWhere.Bin.EQ(string(cache.HourBin)),
+		models.VoteReceiveTimeDeviationWhere.Bin.EQ(string(chart.HourBin)),
 		qm.OrderBy(fmt.Sprintf("%s desc", models.VoteReceiveTimeDeviationColumns.BlockTime)),
 		// The retrival process below ensure that all votes for the block is processed in one circle
 		// qm.OrderBy(fmt.Sprintf("%s desc", models.VoteReceiveTimeDeviationColumns.Hash)),
@@ -930,7 +960,7 @@ func (pg *PgDb) updateVoteTimeDeviationHourlyAvgData(ctx context.Context) error 
 
 	var nextHour time.Time
 	if lastEntry != nil {
-		nextHour = time.Unix(lastEntry.BlockTime, 0).Add(cache.AnHour * time.Second).UTC()
+		nextHour = time.Unix(lastEntry.BlockTime, 0).Add(chart.AnHour * time.Second).UTC()
 	} else {
 		firstBlock, err := models.Blocks(
 			qm.OrderBy(models.BlockColumns.Height),
@@ -984,15 +1014,15 @@ func (pg *PgDb) updateVoteTimeDeviationHourlyAvgData(ctx context.Context) error 
 			return nil
 		}
 
-		var dates, heights cache.ChartUints
-		var diffs cache.ChartFloats
+		var dates, heights chart.ChartUints
+		var diffs chart.ChartFloats
 		for _, vote := range voteSlice {
 			dates = append(dates, uint64(vote.TargetedBlockTime.Time.Unix()))
 			heights = append(heights, uint64(vote.VotingOn.Int64))
 			blockReceiveTimeDiff := vote.ReceiveTime.Time.Sub(vote.BlockReceiveTime.Time).Seconds()
 			diffs = append(diffs, blockReceiveTimeDiff)
 		}
-		hours, hourHeights, hourIntervals := cache.GenerateHourBin(dates, heights)
+		hours, hourHeights, hourIntervals := chart.GenerateHourBin(dates, heights)
 		for i, interval := range hourIntervals {
 			if int64(hours[i]) < nextHour.Unix() {
 				continue
@@ -1000,7 +1030,7 @@ func (pg *PgDb) updateVoteTimeDeviationHourlyAvgData(ctx context.Context) error 
 			m := models.VoteReceiveTimeDeviation{
 				BlockTime:             int64(hours[i]),
 				BlockHeight:           int64(hourHeights[i]),
-				Bin:                   string(cache.HourBin),
+				Bin:                   string(chart.HourBin),
 				ReceiveTimeDifference: diffs.Avg(interval[0], interval[1]),
 			}
 			if err = m.Insert(ctx, tx, boil.Infer()); err != nil {
@@ -1023,7 +1053,7 @@ func (pg *PgDb) updateVoteTimeDeviationHourlyAvgData(ctx context.Context) error 
 
 func (pg *PgDb) updateVoteTimeDeviationDailyAvgData(ctx context.Context) error {
 	lastEntry, err := models.VoteReceiveTimeDeviations(
-		models.VoteReceiveTimeDeviationWhere.Bin.EQ(string(cache.DayBin)),
+		models.VoteReceiveTimeDeviationWhere.Bin.EQ(string(chart.DayBin)),
 		qm.OrderBy(fmt.Sprintf("%s desc", models.VoteReceiveTimeDeviationColumns.BlockTime)),
 		// The retrival process below ensure that all votes for the block is processed in one circle
 		// qm.OrderBy(fmt.Sprintf("%s desc", models.VoteReceiveTimeDeviationColumns.Hash)),
@@ -1034,7 +1064,7 @@ func (pg *PgDb) updateVoteTimeDeviationDailyAvgData(ctx context.Context) error {
 
 	var nextDay time.Time
 	if lastEntry != nil {
-		nextDay = time.Unix(lastEntry.BlockTime, 0).Add(cache.ADay * time.Second).UTC()
+		nextDay = time.Unix(lastEntry.BlockTime, 0).Add(chart.ADay * time.Second).UTC()
 	} else {
 		firstBlock, err := models.Blocks(
 			qm.OrderBy(models.BlockColumns.Height),
@@ -1088,15 +1118,15 @@ func (pg *PgDb) updateVoteTimeDeviationDailyAvgData(ctx context.Context) error {
 			return nil
 		}
 
-		var dates, heights cache.ChartUints
-		var diffs cache.ChartFloats
+		var dates, heights chart.ChartUints
+		var diffs chart.ChartFloats
 		for _, vote := range voteSlice {
 			dates = append(dates, uint64(vote.TargetedBlockTime.Time.Unix()))
 			heights = append(heights, uint64(vote.VotingOn.Int64))
 			blockReceiveTimeDiff := vote.ReceiveTime.Time.Sub(vote.BlockReceiveTime.Time).Seconds()
 			diffs = append(diffs, blockReceiveTimeDiff)
 		}
-		days, dayHeights, dayIntervals := cache.GenerateDayBin(dates, heights)
+		days, dayHeights, dayIntervals := chart.GenerateDayBin(dates, heights)
 		for i, interval := range dayIntervals {
 			if int64(days[i]) < nextDay.Unix() {
 				continue
@@ -1104,7 +1134,7 @@ func (pg *PgDb) updateVoteTimeDeviationDailyAvgData(ctx context.Context) error {
 			m := models.VoteReceiveTimeDeviation{
 				BlockTime:             int64(days[i]),
 				BlockHeight:           int64(dayHeights[i]),
-				Bin:                   string(cache.DayBin),
+				Bin:                   string(chart.DayBin),
 				ReceiveTimeDifference: diffs.Avg(interval[0], interval[1]),
 			}
 			if err = m.Insert(ctx, tx, boil.Infer()); err != nil {
@@ -1134,11 +1164,11 @@ func (pg *PgDb) FetchEncodePropagationChart(ctx context.Context, dataType, axis 
 		return nil, err
 	}
 
-	var xAxis cache.ChartUints
-	var blockDelay cache.ChartFloats
+	var xAxis chart.ChartUints
+	var blockDelay chart.ChartFloats
 	localBlockReceiveTime := make(map[uint64]float64)
 	for _, record := range blockDelays {
-		if axis == string(cache.HeightAxis) {
+		if axis == string(chart.HeightAxis) {
 			xAxis = append(xAxis, uint64(record.BlockHeight))
 		} else {
 			xAxis = append(xAxis, uint64(record.BlockTime.Unix()))
@@ -1150,9 +1180,9 @@ func (pg *PgDb) FetchEncodePropagationChart(ctx context.Context, dataType, axis 
 	}
 
 	switch dataType {
-	case cache.BlockPropagation:
-		blockPropagation := make(map[string]cache.ChartFloats)
-		var dates cache.ChartUints
+	case BlockPropagation:
+		blockPropagation := make(map[string]chart.ChartFloats)
+		var dates chart.ChartUints
 		dateMap := make(map[int64]bool)
 		for _, source := range pg.syncSources {
 			data, err := models.Propagations(
@@ -1165,7 +1195,7 @@ func (pg *PgDb) FetchEncodePropagationChart(ctx context.Context, dataType, axis 
 
 			for _, rec := range data {
 				if _, f := dateMap[rec.Height]; !f {
-					if axis == string(cache.HeightAxis) {
+					if axis == string(chart.HeightAxis) {
 						dates = append(dates, uint64(rec.Height))
 					} else {
 						dates = append(dates, uint64(rec.Time))
@@ -1175,15 +1205,15 @@ func (pg *PgDb) FetchEncodePropagationChart(ctx context.Context, dataType, axis 
 				blockPropagation[source] = append(blockPropagation[source], rec.Deviation)
 			}
 		}
-		var data = []cache.Lengther{dates}
+		var data = []chart.Lengther{dates}
 		for _, d := range blockPropagation {
 			data = append(data, d)
 		}
-		return cache.Encode(nil, data...)
+		return chart.Encode(nil, data...)
 
-	case cache.BlockTimestamp:
-		if binString == string(cache.DefaultBin) {
-			return cache.Encode(nil, xAxis, blockDelay)
+	case BlockTimestamp:
+		if binString == string(chart.DefaultBin) {
+			return chart.Encode(nil, xAxis, blockDelay)
 		} else {
 			blocks, err := models.BlockBins(
 				models.BlockBinWhere.Bin.EQ(binString),
@@ -1192,32 +1222,32 @@ func (pg *PgDb) FetchEncodePropagationChart(ctx context.Context, dataType, axis 
 			if err != nil {
 				return nil, err
 			}
-			var xAxis cache.ChartUints
-			var blockDelay cache.ChartFloats
+			var xAxis chart.ChartUints
+			var blockDelay chart.ChartFloats
 			for _, block := range blocks {
-				if axis == string(cache.HeightAxis) {
+				if axis == string(chart.HeightAxis) {
 					xAxis = append(xAxis, uint64(block.Height))
 				} else {
 					xAxis = append(xAxis, uint64(block.InternalTimestamp))
 				}
 				blockDelay = append(blockDelay, block.ReceiveTimeDiff)
 			}
-			return cache.Encode(nil, xAxis, blockDelay)
+			return chart.Encode(nil, xAxis, blockDelay)
 		}
 
-	case cache.VotesReceiveTime:
-		if binString == string(cache.DefaultBin) {
+	case VotesReceiveTime:
+		if binString == string(chart.DefaultBin) {
 			votesReceiveTime, err := pg.propagationVoteChartDataByHeight(ctx, 0)
 			if err != nil && err != sql.ErrNoRows {
 				return nil, err
 			}
-			var votesTimeDeviations = make(map[int64]cache.ChartFloats)
+			var votesTimeDeviations = make(map[int64]chart.ChartFloats)
 
 			for _, record := range votesReceiveTime {
 				votesTimeDeviations[record.BlockHeight] = append(votesTimeDeviations[record.BlockHeight], record.TimeDifference)
 			}
 
-			var voteReceiveTimeDeviations cache.ChartFloats
+			var voteReceiveTimeDeviations chart.ChartFloats
 			for _, height := range xAxis {
 				if deviations, found := votesTimeDeviations[int64(height)]; found {
 					var totalTime float64
@@ -1230,7 +1260,7 @@ func (pg *PgDb) FetchEncodePropagationChart(ctx context.Context, dataType, axis 
 				}
 				voteReceiveTimeDeviations = append(voteReceiveTimeDeviations, 0)
 			}
-			return cache.Encode(nil, xAxis, voteReceiveTimeDeviations)
+			return chart.Encode(nil, xAxis, voteReceiveTimeDeviations)
 		} else {
 			records, err := models.VoteReceiveTimeDeviations(
 				models.VoteReceiveTimeDeviationWhere.Bin.EQ(binString),
@@ -1239,18 +1269,18 @@ func (pg *PgDb) FetchEncodePropagationChart(ctx context.Context, dataType, axis 
 			if err != nil {
 				return nil, err
 			}
-			var xAxis cache.ChartUints
-			var diffs cache.ChartFloats
+			var xAxis chart.ChartUints
+			var diffs chart.ChartFloats
 			for _, rec := range records {
-				if axis == string(cache.HeightAxis) {
+				if axis == string(chart.HeightAxis) {
 					xAxis = append(xAxis, uint64(rec.BlockHeight))
 				} else {
 					xAxis = append(xAxis, uint64(rec.BlockTime))
 				}
 				diffs = append(diffs, rec.ReceiveTimeDifference)
 			}
-			return cache.Encode(nil, xAxis, diffs)
+			return chart.Encode(nil, xAxis, diffs)
 		}
 	}
-	return nil, cache.UnknownChartErr
+	return nil, chart.UnknownChartErr
 }
