@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi"
-	"github.com/planetdecred/dcrextdata/datasync"
+	"github.com/planetdecred/pdanalytics/datasync"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
