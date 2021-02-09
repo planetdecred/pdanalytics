@@ -123,7 +123,7 @@ type config struct {
 	EnableAttackCost              bool `long:"attackcost" description:"Enable/Disables the attack cost calculator component."`
 	EnableStakingRewardCalculator bool `long:"stakingreward" description:"Enable/Disables the staking reward calculator component."`
 	EnableMempool                 bool `long:"mempool" description:"Enable/Disables the mempool component from running."`
-	EnablePropagation             bool `long:"parameters" description:"Enable/Disable the propagation module from running"`
+	EnablePropagation             bool `long:"propagation" description:"Enable/Disable the propagation module from running"`
 
 	// Mempool
 	MempoolInterval float64 `long:"mempoolinterval" description:"The duration of time between mempool collection"`
@@ -164,6 +164,7 @@ var (
 		EnableChainParameters:         true,
 		EnableAttackCost:              true,
 		EnableMempool:                 true,
+		EnablePropagation:             true,
 
 		MempoolInterval: defaultMempoolInterval,
 	}
