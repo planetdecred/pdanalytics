@@ -96,6 +96,10 @@ func (s *SyncCoordinator) sync(ctx context.Context, source instance, tableName s
 	}
 
 	for {
+		// Empty URL means http requests should not be made to the source
+		if strings.Trim(source.url, " ") == "" {
+			continue
+		}
 		retries := 0
 		url := fmt.Sprintf("%s/api/sync/%s?last=%s&skip=%d&take=%d", strings.TrimSuffix(source.url, "/"),
 			tableName, lastEntry, skip, take)
