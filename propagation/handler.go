@@ -54,7 +54,6 @@ func (c *propagation) propagationPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// /getPropagationData
 func (c *propagation) getPropagationData(w http.ResponseWriter, r *http.Request) {
 	data, err := c.fetchPropagationData(r)
 	if err != nil {

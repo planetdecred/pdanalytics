@@ -102,7 +102,7 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 			}
 			dbConn.SetMaxOpenConns(5)
 
-			syncDb := propagation.NewPgDb(dbConn, cfg.DebugLevel == "Debug")
+			syncDb := propagation.NewPgDb(dbConn, nil, nil, cfg.DebugLevel == "Debug")
 
 			if !syncDb.BlockTableExits() {
 				if err := syncDb.CreateBlockTable(); err != nil {
@@ -127,7 +127,15 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 		if err != nil {
 			return err
 		}
-		propDb := propagation.NewPgDb(dbConn, cfg.DebugLevel == "Debug")
+
+		syncDBProvider := func(name string) (*propagation.PgDb, error) {
+			db, found := syncDbs[name]
+			if !found {
+				return nil, fmt.Errorf("no db is registered for the source, %s", name)
+			}
+			return db, nil
+		}
+		propDb := propagation.NewPgDb(dbConn, cfg.SyncDatabases, syncDBProvider, cfg.DebugLevel == "Debug")
 		_, err = propagation.New(ctx, client, propDb, server, syncCoordinator)
 		if err != nil {
 			log.Error(err)

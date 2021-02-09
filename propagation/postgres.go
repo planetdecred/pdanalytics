@@ -24,10 +24,12 @@ const (
 	VotesReceiveTime = "votes-receive-time"
 )
 
+type syncDbProvider func(source string) (*PgDb, error)
+
 type PgDb struct {
 	db                   *sql.DB
 	queryTimeout         time.Duration
-	syncSourceDbProvider func(source string) (*PgDb, error)
+	syncSourceDbProvider syncDbProvider
 	syncSources          []string
 }
 
@@ -38,14 +40,16 @@ func (l logWriter) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func NewPgDb(db *sql.DB, debug bool) *PgDb {
+func NewPgDb(db *sql.DB, syncSources []string, syncSourceDbProvider syncDbProvider, debug bool) *PgDb {
 	if debug {
 		boil.DebugMode = true
 		boil.DebugWriter = logWriter{}
 	}
 	return &PgDb{
-		db:           db,
-		queryTimeout: time.Second * 30,
+		db:                   db,
+		queryTimeout:         time.Second * 30,
+		syncSources:          syncSources,
+		syncSourceDbProvider: syncSourceDbProvider,
 	}
 }
 
