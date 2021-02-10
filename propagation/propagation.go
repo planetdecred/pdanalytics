@@ -11,7 +11,6 @@ import (
 	"github.com/decred/dcrd/chaincfg/chainhash"
 	chainjson "github.com/decred/dcrd/rpc/jsonrpc/types/v2"
 	"github.com/decred/dcrd/wire"
-	"github.com/planetdecred/dcrextdata/app/helpers"
 	"github.com/planetdecred/pdanalytics/datasync"
 	"github.com/planetdecred/pdanalytics/dcrd"
 	"github.com/planetdecred/pdanalytics/web"
@@ -52,6 +51,7 @@ func New(ctx context.Context, client *dcrd.Dcrd, dataStore store,
 	prop.server.AddRoute("/getvotes", web.GET, prop.getVotes)
 	prop.server.AddRoute("/getvotebyblock", web.GET, prop.getVoteByBlock)
 	prop.server.AddRoute("/api/charts/propagation/{chartDataType}", web.GET, prop.chart, chartDataTypeCtx)
+	prop.server.AddRoute("/api/sync/{dataType}", web.GET, prop.sync, syncDataType)
 
 	prop.client.Notif.RegisterBlockHandlerGroup(prop.ConnectBlock)
 	prop.client.Notif.RegisterTxHandlerGroup(prop.TxReceived)
@@ -77,7 +77,7 @@ func (prop *propagation) ConnectBlock(blockHeader *wire.BlockHeader) error {
 
 	block := Block{
 		BlockInternalTime: blockHeader.Timestamp.UTC(),
-		BlockReceiveTime:  helpers.NowUTC(),
+		BlockReceiveTime:  web.NowUTC(),
 		BlockHash:         blockHeader.BlockHash().String(),
 		BlockHeight:       blockHeader.Height,
 	}
@@ -96,7 +96,7 @@ func (prop *propagation) TxReceived(txDetails *chainjson.TxRawResult) error {
 	if !prop.syncIsDone {
 		return nil
 	}
-	receiveTime := helpers.NowUTC()
+	receiveTime := web.NowUTC()
 
 	msgTx, err := dcrd.MsgTxFromHex(txDetails.Hex)
 	if err != nil {
@@ -191,7 +191,7 @@ func (prop *propagation) registerBlockSyncer(syncCoordinator *datasync.SyncCoord
 		Collect: func(ctx context.Context, url string) (result *datasync.Result, err error) {
 			result = new(datasync.Result)
 			result.Records = []Block{}
-			err = helpers.GetResponse(ctx, &http.Client{Timeout: 10 * time.Second}, url, result)
+			err = web.GetResponse(ctx, &http.Client{Timeout: 10 * time.Second}, url, result)
 			return
 		},
 		Retrieve: func(ctx context.Context, last string, skip, take int) (result *datasync.Result, err error) {
@@ -247,13 +247,13 @@ func (prop *propagation) registerVoteSyncer(syncCoordinator *datasync.SyncCoordi
 		Collect: func(ctx context.Context, url string) (result *datasync.Result, err error) {
 			result = new(datasync.Result)
 			result.Records = []Vote{}
-			err = helpers.GetResponse(ctx, &http.Client{Timeout: 10 * time.Second}, url, result)
+			err = web.GetResponse(ctx, &http.Client{Timeout: 10 * time.Second}, url, result)
 			return
 		},
 		Retrieve: func(ctx context.Context, last string, skip, take int) (result *datasync.Result, err error) {
 			unixDate, _ := strconv.ParseInt(last, 10, 64)
 			result = new(datasync.Result)
-			votes, totalCount, err := prop.dataStore.FetchVoteForSync(ctx, helpers.UnixTime(unixDate), skip, take)
+			votes, totalCount, err := prop.dataStore.FetchVoteForSync(ctx, web.UnixTime(unixDate), skip, take)
 			if err != nil {
 				result.Message = err.Error()
 				return

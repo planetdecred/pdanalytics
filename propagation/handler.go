@@ -374,3 +374,63 @@ func getChartDataTypeCtx(r *http.Request) string {
 	}
 	return chartAxisType
 }
+
+func syncDataType(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), "ctxSyncDataType",
+			chi.URLParam(r, "dataType"))
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// getSyncTypeCtx retrieves the syncDataType data from the request context.
+// If not set, the return value is an empty string.
+func getSyncDataTypeCtx(r *http.Request) string {
+	syncType, ok := r.Context().Value("ctxSyncDataType").(string)
+	if !ok {
+		log.Trace("sync type not set")
+		return ""
+	}
+	return syncType
+}
+
+// sync handles the api/sync/{dataType} path for data sharing
+func (c *propagation) sync(w http.ResponseWriter, r *http.Request) {
+	dataType := getSyncDataTypeCtx(r)
+	result := new(datasync.Result)
+	defer web.RenderJSON(w, result)
+
+	if dataType == "" {
+		result.Message = "Invalid data type"
+		return
+	}
+
+	dataType = strings.Replace(dataType, "-", "_", -1)
+
+	r.ParseForm()
+
+	last := r.FormValue("last")
+
+	skip, err := strconv.Atoi(r.FormValue("skip"))
+	if err != nil {
+		result.Message = "Invalid skip value"
+		return
+	}
+
+	take, err := strconv.Atoi(r.FormValue("take"))
+	if err != nil {
+		result.Message = "Invalid take value"
+		return
+	}
+
+	response, err := datasync.Retrieve(r.Context(), dataType, last, skip, take)
+
+	if err != nil {
+		result.Message = err.Error()
+		return
+	}
+
+	result.Success = response.Success
+	result.Records = response.Records
+	result.TotalCount = response.TotalCount
+}
