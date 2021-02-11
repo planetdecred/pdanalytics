@@ -2,6 +2,7 @@ package propagation
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/decred/dcrd/chaincfg/chainhash"
@@ -88,6 +89,10 @@ func (prop *propagation) ConnectBlock(blockHeader *wire.BlockHeader) error {
 		log.Errorf("Error in block bin data update, %s", err.Error())
 		return err
 	}
+	if err := prop.UpdatePropagationData(prop.ctx); err != nil {
+		log.Errorf("Error in block propagation data update, %s", err.Error())
+		return err
+	}
 	return nil
 }
 
@@ -169,5 +174,30 @@ func (prop *propagation) TxReceived(txDetails *chainjson.TxRawResult) error {
 	if err = prop.dataStore.UpdateVoteTimeDeviationData(prop.ctx); err != nil {
 		log.Errorf("Error in vote receive time deviation data update, %s", err.Error())
 	}
+	return nil
+}
+
+// UpdatePropagationData computes block receive time difference
+// between this instance and all the configured external sources
+func (prop *propagation) UpdatePropagationData(ctx context.Context) error {
+	log.Info("Updating propagation data")
+
+	if len(prop.externalDBNames) == 0 {
+		log.Info("Please add one or more propagation sources")
+		return nil
+	}
+
+	for _, source := range prop.externalDBNames {
+		if err := prop.dataStore.UpdatePropagationDataForSource(ctx, source, prop.externalDBs[source]); err != nil && err != sql.ErrNoRows {
+			return err
+		}
+		if err := prop.dataStore.UpdatePropagationHourlyAvgForSource(ctx, source); err != nil && err != sql.ErrNoRows {
+			return err
+		}
+		if err := prop.dataStore.UpdatePropagationDailyAvgForSource(ctx, source); err != nil && err != sql.ErrNoRows {
+			return err
+		}
+	}
+	log.Info("Updated propagation data")
 	return nil
 }

@@ -17,20 +17,9 @@ import (
 	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
-const (
-	// chart data types
-	BlockPropagation = "block-propagation"
-	BlockTimestamp   = "block-timestamp"
-	VotesReceiveTime = "votes-receive-time"
-)
-
-type syncDbProvider func(source string) (*PgDb, error)
-
 type PgDb struct {
-	db                   *sql.DB
-	queryTimeout         time.Duration
-	syncSourceDbProvider syncDbProvider
-	syncSources          []string
+	db           *sql.DB
+	queryTimeout time.Duration
 }
 
 type logWriter struct{}
@@ -331,31 +320,10 @@ func (pg *PgDb) fetchBlockReceiveTimeByHeight(ctx context.Context, height int32)
 	return chartData, nil
 }
 
-// UpdatePropagationData
-func (pg PgDb) UpdatePropagationData(ctx context.Context) error {
-	log.Info("Updating propagation data")
-
-	if len(pg.syncSources) == 0 {
-		log.Info("Please add one or more propagation sources")
-		return nil
-	}
-
-	for _, source := range pg.syncSources {
-		if err := pg.updatePropagationDataForSource(ctx, source); err != nil && err != sql.ErrNoRows {
-			return err
-		}
-		if err := pg.updatePropagationHourlyAvgForSource(ctx, source); err != nil && err != sql.ErrNoRows {
-			return err
-		}
-		if err := pg.updatePropagationDailyAvgForSource(ctx, source); err != nil && err != sql.ErrNoRows {
-			return err
-		}
-	}
-	log.Info("Updated propagation data")
-	return nil
-}
-
-func (pg *PgDb) updatePropagationDataForSource(ctx context.Context, source string) error {
+// UpdatePropagationDataForSource computes and store the difference
+// in block receive time of this instance and provided source
+// for all the blocks received since the last update of the source
+func (pg *PgDb) UpdatePropagationDataForSource(ctx context.Context, source string, sourceDB Store) error {
 
 	tx, err := pg.db.Begin()
 	if err != nil {
@@ -390,13 +358,7 @@ func (pg *PgDb) updatePropagationDataForSource(ctx context.Context, source strin
 		localBlockReceiveTime[record.BlockHeight] = timeDifference
 	}
 
-	db, err := pg.syncSourceDbProvider(source)
-	if err != nil {
-		_ = tx.Rollback()
-		return err
-	}
-
-	blockDelays, err := db.BlockDelays(ctx, int(chartsBlockHeight))
+	blockDelays, err := sourceDB.BlockDelays(ctx, int(chartsBlockHeight))
 	if err != nil {
 		_ = tx.Rollback()
 		return err
@@ -429,7 +391,9 @@ func (pg *PgDb) updatePropagationDataForSource(ctx context.Context, source strin
 	return nil
 }
 
-func (pg *PgDb) updatePropagationHourlyAvgForSource(ctx context.Context, source string) error {
+// UpdatePropagationHourlyAvgForSource updates the hourly average deviation of the
+// block receive time of the provided source from this instance
+func (pg *PgDb) UpdatePropagationHourlyAvgForSource(ctx context.Context, source string) error {
 
 	tx, err := pg.db.Begin()
 	if err != nil {
@@ -537,7 +501,9 @@ func (pg *PgDb) updatePropagationHourlyAvgForSource(ctx context.Context, source 
 	return nil
 }
 
-func (pg *PgDb) updatePropagationDailyAvgForSource(ctx context.Context, source string) error {
+// UpdatePropagationDailyAvgForSource updates the daily average deviation of the
+// block receive time of the provided source from this instance
+func (pg *PgDb) UpdatePropagationDailyAvgForSource(ctx context.Context, source string) error {
 
 	tx, err := pg.db.Begin()
 	if err != nil {

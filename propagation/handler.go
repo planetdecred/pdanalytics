@@ -15,6 +15,13 @@ import (
 	"github.com/planetdecred/pdanalytics/web"
 )
 
+const (
+	// chart data types
+	BlockPropagation = "block-propagation"
+	BlockTimestamp   = "block-timestamp"
+	VotesReceiveTime = "votes-receive-time"
+)
+
 var (
 	propagationRecordSet = map[string]string{
 		"blocks": "Blocks",

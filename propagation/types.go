@@ -42,6 +42,10 @@ type Store interface {
 	VotesByBlock(ctx context.Context, blockHash string) ([]VoteDto, error)
 	VotesCount(ctx context.Context) (int64, error)
 
+	UpdatePropagationDataForSource(ctx context.Context, source string, sourceDB Store) error
+	UpdatePropagationHourlyAvgForSource(ctx context.Context, source string) error
+	UpdatePropagationDailyAvgForSource(ctx context.Context, source string) error
+
 	BlockDelays(ctx context.Context, height int) ([]PropagationChartData, error)
 	SourceDeviations(ctx context.Context, source, bin string) ([]SourceDeviation, error)
 	BlockBinData(ctx context.Context, bin string) ([]BlockBinDto, error)
