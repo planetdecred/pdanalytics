@@ -9,7 +9,6 @@ import (
 	"github.com/jrick/logrotate/rotator"
 	"github.com/planetdecred/pdanalytics/attackcost"
 	"github.com/planetdecred/pdanalytics/chart"
-	"github.com/planetdecred/pdanalytics/datasync"
 	"github.com/planetdecred/pdanalytics/homepage"
 	"github.com/planetdecred/pdanalytics/mempool"
 	"github.com/planetdecred/pdanalytics/mempool/postgres"
@@ -53,7 +52,6 @@ var (
 	homeLog          = backendLog.Logger(("HOME"))
 	mempoolLog       = backendLog.Logger("MEMP")
 	chartLog         = backendLog.Logger("CHRT")
-	syncLog          = backendLog.Logger("SYNC")
 	propLog          = backendLog.Logger("PROP")
 )
 
@@ -66,7 +64,6 @@ func init() {
 	mempool.UseLogger(mempoolLog)
 	postgres.UseLogger(mempoolLog)
 	chart.UseLogger(chartLog)
-	datasync.UseLogger(syncLog)
 	propagation.UseLogger(propLog)
 }
 
@@ -77,7 +74,6 @@ var subsystemLoggers = map[string]slog.Logger{
 	"ATCK": attackcostLog,
 	"STCK": stakingrewardLog,
 	"HOME": homeLog,
-	"SYNC": syncLog,
 	"PROP": propLog,
 }
 

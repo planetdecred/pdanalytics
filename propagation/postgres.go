@@ -95,50 +95,6 @@ func (pg *PgDb) SaveBlock(ctx context.Context, block Block) error {
 	return nil
 }
 
-func (pg *PgDb) SaveBlockFromSync(ctx context.Context, block Block) error {
-	blockModel := blockDtoToModel(block)
-	err := blockModel.Insert(ctx, pg.db, boil.Infer())
-	if err != nil {
-		if !strings.Contains(err.Error(), "unique constraint") { // Ignore duplicate entries
-			return err
-		}
-	}
-	return nil
-}
-
-func (pg *PgDb) SaveFromSync(ctx context.Context, item interface{}) error {
-	if block, ok := item.(Block); ok {
-		return pg.SaveBlockFromSync(ctx, block)
-	}
-
-	if vote, ok := item.(Vote); ok {
-		return pg.SaveVoteFromSync(ctx, vote)
-	}
-	return nil
-}
-
-func (pg *PgDb) ProcessEntries(ctx context.Context) error {
-	return pg.UpdatePropagationData(ctx)
-}
-
-func (pg *PgDb) TableNames() []string {
-	return []string{models.TableNames.Block, models.TableNames.Vote}
-}
-
-func (pg *PgDb) LastEntry(ctx context.Context, tableName string, receiver interface{}) error {
-	var columnName string
-	switch tableName {
-	case models.TableNames.Block:
-		columnName = models.BlockColumns.Height
-	case models.TableNames.Vote:
-		columnName = models.VoteColumns.ReceiveTime
-	}
-
-	rows := pg.db.QueryRow(fmt.Sprintf("SELECT %s FROM %s ORDER BY %s DESC LIMIT 1", columnName, tableName, columnName))
-	err := rows.Scan(receiver)
-	return err
-}
-
 func blockDtoToModel(block Block) models.Block {
 	return models.Block{
 		Height:            int(block.BlockHeight),
@@ -215,28 +171,6 @@ func (pg *PgDb) getBlock(ctx context.Context, height int) (*models.Block, error)
 	return block, nil
 }
 
-func (pg *PgDb) FetchBlockForSync(ctx context.Context, blockHeight int64, offtset int, limit int) ([]Block, int64, error) {
-	blockSlice, err := models.Blocks(
-		models.BlockWhere.Height.GT(int(blockHeight)),
-		qm.OrderBy(models.BlockColumns.ReceiveTime),
-		qm.Offset(offtset), qm.Limit(limit)).All(ctx, pg.db)
-	if err != nil {
-		return nil, 0, err
-	}
-	var result []Block
-	for _, block := range blockSlice {
-		result = append(result, Block{
-			BlockHash:         block.Hash.String,
-			BlockHeight:       uint32(block.Height),
-			BlockInternalTime: block.InternalTimestamp.Time,
-			BlockReceiveTime:  block.ReceiveTime.Time,
-		})
-	}
-	totalCount, err := models.Blocks(models.BlockWhere.Height.GT(int(blockHeight))).Count(ctx, pg.db)
-
-	return result, totalCount, err
-}
-
 func (pg *PgDb) SaveVote(ctx context.Context, vote Vote) error {
 	voteModel := models.Vote{
 		Hash:              vote.Hash,
@@ -265,27 +199,6 @@ func (pg *PgDb) SaveVote(ctx context.Context, vote Vote) error {
 	log.Infof("New vote received at %s for %d, Validator Id %d, Hash ...%s",
 		vote.ReceiveTime.Format(dbhelper.DateMiliTemplate), vote.VotingOn, vote.ValidatorId, vote.Hash[len(vote.Hash)-23:])
 	return nil
-}
-
-func (pg *PgDb) SaveVoteFromSync(ctx context.Context, vote Vote) error {
-	voteModel := models.Vote{
-		Hash:              vote.Hash,
-		VotingOn:          null.Int64From(vote.VotingOn),
-		BlockHash:         null.StringFrom(vote.BlockHash),
-		ReceiveTime:       null.TimeFrom(vote.ReceiveTime),
-		BlockReceiveTime:  null.TimeFrom(vote.BlockReceiveTime),
-		TargetedBlockTime: null.TimeFrom(vote.TargetedBlockTime),
-		ValidatorID:       null.IntFrom(vote.ValidatorId),
-		Validity:          null.StringFrom(vote.Validity),
-	}
-
-	err := voteModel.Insert(ctx, pg.db, boil.Infer())
-	if err != nil {
-		if strings.Contains(err.Error(), "unique constraint") { // Ignore duplicate entries
-			return nil
-		}
-	}
-	return err
 }
 
 func (pg *PgDb) Votes(ctx context.Context, offset int, limit int) ([]VoteDto, error) {
@@ -357,35 +270,6 @@ func (pg *PgDb) voteModelToDto(vote *models.Vote) VoteDto {
 
 func (pg *PgDb) VotesCount(ctx context.Context) (int64, error) {
 	return models.Votes().Count(ctx, pg.db)
-}
-
-func (pg *PgDb) FetchVoteForSync(ctx context.Context, date time.Time, offtset int, limit int) ([]Vote, int64, error) {
-	voteSlices, err := models.Votes(
-		models.VoteWhere.ReceiveTime.GTE(null.TimeFrom(date)),
-		qm.OrderBy(models.VoteColumns.ReceiveTime),
-		qm.Offset(offtset), qm.Limit(limit)).All(ctx, pg.db)
-	if err != nil {
-		return nil, 0, err
-	}
-	var result []Vote
-	for _, vote := range voteSlices {
-		result = append(result, Vote{
-			Hash:              vote.Hash,
-			ReceiveTime:       vote.ReceiveTime.Time,
-			TargetedBlockTime: vote.TargetedBlockTime.Time,
-			BlockReceiveTime:  vote.BlockReceiveTime.Time,
-			VotingOn:          vote.VotingOn.Int64,
-			BlockHash:         vote.BlockHash.String,
-			ValidatorId:       vote.ValidatorID.Int,
-			Validity:          vote.Validity.String,
-		})
-	}
-	totalCount, err := models.Votes(models.VoteWhere.ReceiveTime.GTE(null.TimeFrom(date))).Count(ctx, pg.db)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	return result, totalCount, nil
 }
 
 func (pg *PgDb) propagationVoteChartDataByHeight(ctx context.Context, height int32) ([]PropagationChartData, error) {

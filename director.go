@@ -7,7 +7,6 @@ import (
 
 	"github.com/decred/dcrdata/exchanges/v2"
 	"github.com/planetdecred/pdanalytics/attackcost"
-	"github.com/planetdecred/pdanalytics/datasync"
 	"github.com/planetdecred/pdanalytics/dbhelper"
 	"github.com/planetdecred/pdanalytics/dcrd"
 	"github.com/planetdecred/pdanalytics/homepage"
@@ -89,8 +88,6 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 	}
 
 	if cfg.EnablePropagation {
-		syncCoordinator := datasync.NewCoordinator(true, cfg.SyncInterval)
-
 		var syncDbs = map[string]*propagation.PgDb{}
 		//register instances
 		for i := 0; i < len(cfg.SyncSources); i++ {
@@ -120,7 +117,6 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 				log.Info("Votes table created successfully.")
 			}
 			syncDbs[databaseName] = syncDb
-			syncCoordinator.AddSource(source, syncDb, databaseName)
 		}
 
 		dbConn, err := dbInstance()
@@ -136,7 +132,7 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 			return db, nil
 		}
 		propDb := propagation.NewPgDb(dbConn, cfg.SyncDatabases, syncDBProvider, cfg.DebugLevel == "Debug")
-		_, err = propagation.New(ctx, client, propDb, server, syncCoordinator)
+		_, err = propagation.New(ctx, client, propDb, cfg.SyncDatabases, server)
 		if err != nil {
 			log.Error(err)
 			return fmt.Errorf("Failed to create new propagation component, %s", err.Error())

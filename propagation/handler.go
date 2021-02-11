@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi"
-	"github.com/planetdecred/pdanalytics/datasync"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
@@ -22,28 +21,28 @@ var (
 )
 
 // propagationPage the handle the HTTP request to the /propagation endpoint
-func (c *propagation) propagationPage(w http.ResponseWriter, r *http.Request) {
+func (prop *propagation) propagationPage(w http.ResponseWriter, r *http.Request) {
 
-	block, err := c.fetchPropagationData(r)
+	block, err := prop.fetchPropagationData(r)
 	if err != nil {
 		log.Error(err)
-		c.server.StatusPage(w, r, web.DefaultErrorCode, web.DefaultErrorMessage, "", web.ExpStatusError)
+		prop.server.StatusPage(w, r, web.DefaultErrorCode, web.DefaultErrorMessage, "", web.ExpStatusError)
 		return
 	}
 
-	str, err := c.server.Templates.ExecTemplateToString("propagation", struct {
+	str, err := prop.server.Templates.ExecTemplateToString("propagation", struct {
 		*web.CommonPageData
 		Propagation map[string]interface{}
 		BlockTime   float64
 	}{
-		CommonPageData: c.server.CommonData(r),
+		CommonPageData: prop.server.CommonData(r),
 		Propagation:    block,
-		BlockTime:      c.client.Params.MinDiffReductionTime.Seconds(),
+		BlockTime:      prop.client.Params.MinDiffReductionTime.Seconds(),
 	})
 
 	if err != nil {
 		log.Errorf("Template execute failure: %v", err)
-		c.server.StatusPage(w, r, web.DefaultErrorCode, web.DefaultErrorMessage, "", web.ExpStatusError)
+		prop.server.StatusPage(w, r, web.DefaultErrorCode, web.DefaultErrorMessage, "", web.ExpStatusError)
 		return
 	}
 
@@ -54,8 +53,8 @@ func (c *propagation) propagationPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (c *propagation) getPropagationData(w http.ResponseWriter, r *http.Request) {
-	data, err := c.fetchPropagationData(r)
+func (prop *propagation) getPropagationData(w http.ResponseWriter, r *http.Request) {
+	data, err := prop.fetchPropagationData(r)
 	if err != nil {
 		web.RenderErrorfJSON(w, err.Error())
 		return
@@ -63,7 +62,7 @@ func (c *propagation) getPropagationData(w http.ResponseWriter, r *http.Request)
 	web.RenderJSON(w, data)
 }
 
-func (c *propagation) fetchPropagationData(req *http.Request) (map[string]interface{}, error) {
+func (prop *propagation) fetchPropagationData(req *http.Request) (map[string]interface{}, error) {
 	req.ParseForm()
 	page := req.FormValue("page")
 	numberOfRows := req.FormValue("records-per-page")
@@ -102,8 +101,6 @@ func (c *propagation) fetchPropagationData(req *http.Request) (map[string]interf
 
 	ctx := req.Context()
 
-	syncSources, _ := datasync.RegisteredSources()
-
 	data := map[string]interface{}{
 		"chartView":            viewOption == "chart",
 		"selectedViewOption":   viewOption,
@@ -117,27 +114,27 @@ func (c *propagation) fetchPropagationData(req *http.Request) (map[string]interf
 		"url":                  "/propagation",
 		"previousPage":         pageToLoad - 1,
 		"totalPages":           0,
-		"syncSources":          strings.Join(syncSources, "|"),
+		"syncSources":          strings.Join(prop.externalDBs, "|"),
 	}
 
 	if viewOption == web.DefaultViewOption {
 		return data, nil
 	}
 
-	blockSlice, err := c.dataStore.BlocksWithoutVotes(ctx, offset, pageSize)
+	blockSlice, err := prop.dataStore.BlocksWithoutVotes(ctx, offset, pageSize)
 	if err != nil {
 		return nil, err
 	}
 
 	for i := 0; i <= 1 && i <= len(blockSlice)-1; i++ {
-		votes, err := c.dataStore.VotesByBlock(ctx, blockSlice[i].BlockHash)
+		votes, err := prop.dataStore.VotesByBlock(ctx, blockSlice[i].BlockHash)
 		if err != nil {
 			return nil, err
 		}
 		blockSlice[i].Votes = votes
 	}
 
-	totalCount, err := c.dataStore.BlockCount(ctx)
+	totalCount, err := prop.dataStore.BlockCount(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -373,64 +370,4 @@ func getChartDataTypeCtx(r *http.Request) string {
 		return ""
 	}
 	return chartAxisType
-}
-
-func syncDataType(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), "ctxSyncDataType",
-			chi.URLParam(r, "dataType"))
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
-
-// getSyncTypeCtx retrieves the syncDataType data from the request context.
-// If not set, the return value is an empty string.
-func getSyncDataTypeCtx(r *http.Request) string {
-	syncType, ok := r.Context().Value("ctxSyncDataType").(string)
-	if !ok {
-		log.Trace("sync type not set")
-		return ""
-	}
-	return syncType
-}
-
-// sync handles the api/sync/{dataType} path for data sharing
-func (c *propagation) sync(w http.ResponseWriter, r *http.Request) {
-	dataType := getSyncDataTypeCtx(r)
-	result := new(datasync.Result)
-	defer web.RenderJSON(w, result)
-
-	if dataType == "" {
-		result.Message = "Invalid data type"
-		return
-	}
-
-	dataType = strings.Replace(dataType, "-", "_", -1)
-
-	r.ParseForm()
-
-	last := r.FormValue("last")
-
-	skip, err := strconv.Atoi(r.FormValue("skip"))
-	if err != nil {
-		result.Message = "Invalid skip value"
-		return
-	}
-
-	take, err := strconv.Atoi(r.FormValue("take"))
-	if err != nil {
-		result.Message = "Invalid take value"
-		return
-	}
-
-	response, err := datasync.Retrieve(r.Context(), dataType, last, skip, take)
-
-	if err != nil {
-		result.Message = err.Error()
-		return
-	}
-
-	result.Success = response.Success
-	result.Records = response.Records
-	result.TotalCount = response.TotalCount
 }

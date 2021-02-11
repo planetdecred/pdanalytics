@@ -13,6 +13,7 @@ type propagation struct {
 	ctx             context.Context
 	client          *dcrd.Dcrd
 	dataStore       store
+	externalDBs []string
 	ticketInds      dcrd.BlockValidatorIndex
 	syncIsDone      bool
 	ticketIndsMutex sync.Mutex
@@ -29,10 +30,8 @@ type store interface {
 	VoteTableName() string
 	SaveBlock(context.Context, Block) error
 	UpdateBlockBinData(context.Context) error
-	FetchBlockForSync(ctx context.Context, blockHeight int64, offtset int, limit int) ([]Block, int64, error)
 	SaveVote(ctx context.Context, vote Vote) error
 	UpdateVoteTimeDeviationData(context.Context) error
-	FetchVoteForSync(ctx context.Context, date time.Time, offtset int, limit int) ([]Vote, int64, error)
 
 	BlockCount(ctx context.Context) (int64, error)
 	Blocks(ctx context.Context, offset int, limit int) ([]BlockDto, error)
