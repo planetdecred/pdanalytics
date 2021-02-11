@@ -89,7 +89,7 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 	}
 
 	if cfg.EnablePropagation {
-		var syncDbs = map[string]*propagation.PgDb{}
+		var syncDbs = map[string]propagation.Store{}
 		//register instances
 		for i := 0; i < len(cfg.SyncDatabases); i++ {
 			databaseName := cfg.SyncDatabases[i]
@@ -100,7 +100,7 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 			dbConn.SetMaxOpenConns(5)
 
 			// the external db must be accessible and contain block and vote tables
-			syncDb := propagation.NewPgDb(dbConn, nil, nil, cfg.DebugLevel == "Debug")
+			syncDb := propagation.NewPgDb(dbConn, cfg.DebugLevel == "Debug")
 
 			if !syncDb.BlockTableExits() {
 				msg := fmt.Sprintf("the database, %s is missing the block table", databaseName)
@@ -121,15 +121,8 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 			return err
 		}
 
-		syncDBProvider := func(name string) (*propagation.PgDb, error) {
-			db, found := syncDbs[name]
-			if !found {
-				return nil, fmt.Errorf("no db is registered for the source, %s", name)
-			}
-			return db, nil
-		}
-		propDb := propagation.NewPgDb(dbConn, cfg.SyncDatabases, syncDBProvider, cfg.DebugLevel == "Debug")
-		_, err = propagation.New(ctx, client, propDb, cfg.SyncDatabases, server)
+		propDb := propagation.NewPgDb(dbConn, cfg.DebugLevel == "Debug")
+		_, err = propagation.New(ctx, client, propDb, syncDbs, server)
 		if err != nil {
 			log.Error(err)
 			return fmt.Errorf("Failed to create new propagation component, %s", err.Error())

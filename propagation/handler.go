@@ -2,6 +2,7 @@ package propagation
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"io"
 	"math"
@@ -10,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi"
+	"github.com/planetdecred/pdanalytics/chart"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
@@ -114,7 +116,7 @@ func (prop *propagation) fetchPropagationData(req *http.Request) (map[string]int
 		"url":                  "/propagation",
 		"previousPage":         pageToLoad - 1,
 		"totalPages":           0,
-		"syncSources":          strings.Join(prop.externalDBs, "|"),
+		"syncSources":          strings.Join(prop.externalDBNames, "|"),
 	}
 
 	if viewOption == web.DefaultViewOption {
@@ -156,8 +158,8 @@ func (prop *propagation) fetchPropagationData(req *http.Request) (map[string]int
 }
 
 // getblocks handles the HTTP request to the /getblocks endpoint
-func (c *propagation) getBlocks(res http.ResponseWriter, req *http.Request) {
-	data, err := c.fetchBlockData(req)
+func (prop *propagation) getBlocks(res http.ResponseWriter, req *http.Request) {
+	data, err := prop.fetchBlockData(req)
 	if err != nil {
 		web.RenderErrorfJSON(res, err.Error())
 		return
@@ -166,7 +168,7 @@ func (c *propagation) getBlocks(res http.ResponseWriter, req *http.Request) {
 	web.RenderJSON(res, data)
 }
 
-func (c *propagation) fetchBlockData(req *http.Request) (map[string]interface{}, error) {
+func (prop *propagation) fetchBlockData(req *http.Request) (map[string]interface{}, error) {
 	req.ParseForm()
 	page := req.FormValue("page")
 	numberOfRows := req.FormValue("records-per-page")
@@ -213,7 +215,7 @@ func (c *propagation) fetchBlockData(req *http.Request) (map[string]interface{},
 		return data, nil
 	}
 
-	blocksSlice, err := c.dataStore.BlocksWithoutVotes(ctx, offset, pageSize)
+	blocksSlice, err := prop.dataStore.BlocksWithoutVotes(ctx, offset, pageSize)
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +225,7 @@ func (c *propagation) fetchBlockData(req *http.Request) (map[string]interface{},
 		return data, nil
 	}
 
-	totalCount, err := c.dataStore.BlockCount(ctx)
+	totalCount, err := prop.dataStore.BlockCount(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -240,8 +242,8 @@ func (c *propagation) fetchBlockData(req *http.Request) (map[string]interface{},
 }
 
 // getvotes handles the HTTP request to the /getvotes endpoint
-func (c *propagation) getVotes(res http.ResponseWriter, req *http.Request) {
-	data, err := c.fetchVoteData(req)
+func (prop *propagation) getVotes(res http.ResponseWriter, req *http.Request) {
+	data, err := prop.fetchVoteData(req)
 
 	if err != nil {
 		web.RenderErrorfJSON(res, err.Error())
@@ -250,7 +252,7 @@ func (c *propagation) getVotes(res http.ResponseWriter, req *http.Request) {
 	web.RenderJSON(res, data)
 }
 
-func (c *propagation) fetchVoteData(req *http.Request) (map[string]interface{}, error) {
+func (prop *propagation) fetchVoteData(req *http.Request) (map[string]interface{}, error) {
 	req.ParseForm()
 	page := req.FormValue("page")
 	numberOfRows := req.FormValue("records-per-page")
@@ -297,7 +299,7 @@ func (c *propagation) fetchVoteData(req *http.Request) (map[string]interface{}, 
 		return data, nil
 	}
 
-	voteSlice, err := c.dataStore.Votes(ctx, offset, pageSize)
+	voteSlice, err := prop.dataStore.Votes(ctx, offset, pageSize)
 	if err != nil {
 		return nil, err
 	}
@@ -307,7 +309,7 @@ func (c *propagation) fetchVoteData(req *http.Request) (map[string]interface{}, 
 		return data, nil
 	}
 
-	totalCount, err := c.dataStore.VotesCount(ctx)
+	totalCount, err := prop.dataStore.VotesCount(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -324,10 +326,10 @@ func (c *propagation) fetchVoteData(req *http.Request) (map[string]interface{}, 
 }
 
 // getVoteByBlock handles the HTTP request to the /getVoteByBlock endpoint
-func (c *propagation) getVoteByBlock(res http.ResponseWriter, req *http.Request) {
+func (prop *propagation) getVoteByBlock(res http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	hash := req.FormValue("block_hash")
-	votes, err := c.dataStore.VotesByBlock(req.Context(), hash)
+	votes, err := prop.dataStore.VotesByBlock(req.Context(), hash)
 	if err != nil {
 		web.RenderErrorfJSON(res, err.Error())
 		return
@@ -335,20 +337,165 @@ func (c *propagation) getVoteByBlock(res http.ResponseWriter, req *http.Request)
 	web.RenderJSON(res, votes)
 }
 
-// api/charts/propagation/{dataType}
-func (c *propagation) chart(w http.ResponseWriter, r *http.Request) {
+// chart handles api/charts/propagation/{dataType} endpoint.
+// dataType is one of block, vote, block-propagation
+func (prop *propagation) chart(w http.ResponseWriter, r *http.Request) {
 	dataType := getChartDataTypeCtx(r)
 	bin := r.URL.Query().Get("bin")
 	axis := r.URL.Query().Get("axis")
-	extras := r.URL.Query().Get("extras")
 
-	chartData, err := c.dataStore.FetchEncodePropagationChart(r.Context(), dataType, axis, bin, extras)
+	chartData, err := prop.fetchEncodePropagationChart(r.Context(), dataType, axis, bin)
 	if err != nil {
 		web.RenderErrorfJSON(w, err.Error())
 		log.Warnf(`Error fetching mempool %s chart: %v`, dataType, err)
 		return
 	}
 	web.RenderJSONBytes(w, chartData)
+}
+
+func (prop *propagation) fetchEncodePropagationChart(ctx context.Context, dataType, axis string,
+	binString string) ([]byte, error) {
+
+	switch dataType {
+	case BlockPropagation:
+		return prop.blockPropagationChart(ctx, axis, binString)
+
+	case BlockTimestamp:
+		return prop.blockTimestampChart(ctx, axis, binString)
+
+	case VotesReceiveTime:
+		return prop.votesReceiveTimeChart(ctx, axis, binString)
+	}
+	return nil, chart.UnknownChartErr
+}
+
+func (prop *propagation) blockPropagationChart(ctx context.Context, axis string, binString string) ([]byte, error) {
+	blockPropagation := make(map[string]chart.ChartFloats)
+	var dates chart.ChartUints
+	dateMap := make(map[int64]bool)
+	for _, source := range prop.externalDBNames {
+		data, err := prop.dataStore.SourceDeviations(ctx, source, binString)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, rec := range data {
+			if _, f := dateMap[rec.Height]; !f {
+				if axis == string(chart.HeightAxis) {
+					dates = append(dates, uint64(rec.Height))
+				} else {
+					dates = append(dates, uint64(rec.Time))
+				}
+				dateMap[rec.Height] = true
+			}
+			blockPropagation[source] = append(blockPropagation[source], rec.Deviation)
+		}
+	}
+	var data = []chart.Lengther{dates}
+	for _, d := range blockPropagation {
+		data = append(data, d)
+	}
+	return chart.Encode(nil, data...)
+}
+
+func (prop *propagation) blockTimestampChart(ctx context.Context, axis string, binString string) ([]byte, error) {
+	if binString == string(chart.DefaultBin) {
+		blockDelays, err := prop.dataStore.BlockDelays(ctx, 0)
+		if err != nil && err != sql.ErrNoRows {
+			return nil, err
+		}
+
+		var xAxis chart.ChartUints
+		var blockDelay chart.ChartFloats
+		localBlockReceiveTime := make(map[uint64]float64)
+		for _, record := range blockDelays {
+			if axis == string(chart.HeightAxis) {
+				xAxis = append(xAxis, uint64(record.BlockHeight))
+			} else {
+				xAxis = append(xAxis, uint64(record.BlockTime.Unix()))
+			}
+			timeDifference, _ := strconv.ParseFloat(fmt.Sprintf("%04.2f", record.TimeDifference), 64)
+			blockDelay = append(blockDelay, timeDifference)
+
+			localBlockReceiveTime[uint64(record.BlockHeight)] = timeDifference
+		}
+		return chart.Encode(nil, xAxis, blockDelay)
+	} else {
+		blocks, err := prop.dataStore.BlockBinData(ctx, binString)
+		if err != nil {
+			return nil, err
+		}
+		var xAxis chart.ChartUints
+		var blockDelay chart.ChartFloats
+		for _, block := range blocks {
+			if axis == string(chart.HeightAxis) {
+				xAxis = append(xAxis, uint64(block.Height))
+			} else {
+				xAxis = append(xAxis, uint64(block.InternalTimestamp))
+			}
+			blockDelay = append(blockDelay, block.ReceiveTimeDiff)
+		}
+		return chart.Encode(nil, xAxis, blockDelay)
+	}
+}
+
+func (prop *propagation) votesReceiveTimeChart(ctx context.Context, axis string, binString string) ([]byte, error) {
+	blockDelays, err := prop.dataStore.BlockDelays(ctx, 0)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+
+	var xAxis chart.ChartUints
+	for _, record := range blockDelays {
+		if axis == string(chart.HeightAxis) {
+			xAxis = append(xAxis, uint64(record.BlockHeight))
+		} else {
+			xAxis = append(xAxis, uint64(record.BlockTime.Unix()))
+		}
+	}
+
+	if binString == string(chart.DefaultBin) {
+		votesReceiveTime, err := prop.dataStore.VotesBlockReceiveTimeDiffs(ctx)
+		if err != nil && err != sql.ErrNoRows {
+			return nil, err
+		}
+		var votesTimeDeviations = make(map[int64]chart.ChartFloats)
+
+		for _, record := range votesReceiveTime {
+			votesTimeDeviations[record.BlockHeight] = append(votesTimeDeviations[record.BlockHeight], record.TimeDifference)
+		}
+
+		var voteReceiveTimeDeviations chart.ChartFloats
+		for _, height := range xAxis {
+			if deviations, found := votesTimeDeviations[int64(height)]; found {
+				var totalTime float64
+				for _, timeDiff := range deviations {
+					totalTime += timeDiff
+				}
+				timeDifference, _ := strconv.ParseFloat(fmt.Sprintf("%04.2f", totalTime/float64(len(deviations))*1000), 64)
+				voteReceiveTimeDeviations = append(voteReceiveTimeDeviations, timeDifference)
+				continue
+			}
+			voteReceiveTimeDeviations = append(voteReceiveTimeDeviations, 0)
+		}
+		return chart.Encode(nil, xAxis, voteReceiveTimeDeviations)
+	} else {
+		records, err := prop.dataStore.VoteReceiveTimeDeviations(ctx, binString)
+		if err != nil {
+			return nil, err
+		}
+		var xAxis chart.ChartUints
+		var diffs chart.ChartFloats
+		for _, rec := range records {
+			if axis == string(chart.HeightAxis) {
+				xAxis = append(xAxis, uint64(rec.BlockHeight))
+			} else {
+				xAxis = append(xAxis, uint64(rec.BlockTime))
+			}
+			diffs = append(diffs, rec.ReceiveTimeDifference)
+		}
+		return chart.Encode(nil, xAxis, diffs)
+	}
 }
 
 // chartDataTypeCtx returns a http.HandlerFunc that embeds the value at the url

@@ -40,16 +40,14 @@ func (l logWriter) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func NewPgDb(db *sql.DB, syncSources []string, syncSourceDbProvider syncDbProvider, debug bool) *PgDb {
+func NewPgDb(db *sql.DB, debug bool) *PgDb {
 	if debug {
 		boil.DebugMode = true
 		boil.DebugWriter = logWriter{}
 	}
 	return &PgDb{
-		db:                   db,
-		queryTimeout:         time.Second * 30,
-		syncSources:          syncSources,
-		syncSourceDbProvider: syncSourceDbProvider,
+		db:           db,
+		queryTimeout: time.Second * 30,
 	}
 }
 
@@ -272,9 +270,8 @@ func (pg *PgDb) VotesCount(ctx context.Context) (int64, error) {
 	return models.Votes().Count(ctx, pg.db)
 }
 
-func (pg *PgDb) propagationVoteChartDataByHeight(ctx context.Context, height int32) ([]PropagationChartData, error) {
+func (pg *PgDb) VotesBlockReceiveTimeDiffs(ctx context.Context) ([]PropagationChartData, error) {
 	voteSlice, err := models.Votes(
-		models.VoteWhere.VotingOn.GT(null.Int64From(int64(height))),
 		qm.OrderBy(models.VoteColumns.VotingOn)).All(ctx, pg.db)
 	if err != nil {
 		return nil, err
@@ -291,7 +288,7 @@ func (pg *PgDb) propagationVoteChartDataByHeight(ctx context.Context, height int
 	return chartData, nil
 }
 
-func (pg *PgDb) propagationBlockChartData(ctx context.Context, height int) ([]PropagationChartData, error) {
+func (pg *PgDb) BlockDelays(ctx context.Context, height int) ([]PropagationChartData, error) {
 	blockSlice, err := models.Blocks(
 		models.BlockWhere.Height.GT(height),
 		qm.OrderBy(models.BlockColumns.Height)).All(ctx, pg.db)
@@ -381,7 +378,7 @@ func (pg *PgDb) updatePropagationDataForSource(ctx context.Context, source strin
 	}
 
 	chartsBlockHeight := int32(lastHeight)
-	mainBlockDelays, err := pg.propagationBlockChartData(ctx, int(chartsBlockHeight))
+	mainBlockDelays, err := pg.BlockDelays(ctx, int(chartsBlockHeight))
 	if err != nil {
 		_ = tx.Rollback()
 		return err
@@ -399,7 +396,7 @@ func (pg *PgDb) updatePropagationDataForSource(ctx context.Context, source strin
 		return err
 	}
 
-	blockDelays, err := db.propagationBlockChartData(ctx, int(chartsBlockHeight))
+	blockDelays, err := db.BlockDelays(ctx, int(chartsBlockHeight))
 	if err != nil {
 		_ = tx.Rollback()
 		return err
@@ -1043,132 +1040,58 @@ func (pg *PgDb) updateVoteTimeDeviationDailyAvgData(ctx context.Context) error {
 	return nil
 }
 
-// TODO: break down into individual chart type
-func (pg *PgDb) FetchEncodePropagationChart(ctx context.Context, dataType, axis string,
-	binString string, extras ...string) ([]byte, error) {
+func (pg *PgDb) SourceDeviations(ctx context.Context, source, bin string) (records []SourceDeviation, err error) {
+	data, err := models.Propagations(
+		qm.Select(models.PropagationColumns.Height, models.PropagationColumns.Time, models.PropagationColumns.Deviation),
+		models.PropagationWhere.Source.EQ(source),
+		models.PropagationWhere.Bin.EQ(bin),
+	).All(ctx, pg.db)
+	if err != nil {
+		return nil, err
+	}
+	for _, d := range data {
+		records = append(records, SourceDeviation{
+			Height:    d.Height,
+			Time:      d.Time,
+			Deviation: d.Deviation,
+		})
+	}
+	return
+}
 
-	blockDelays, err := pg.propagationBlockChartData(ctx, 0)
-	if err != nil && err != sql.ErrNoRows {
+func (pg *PgDb) BlockBinData(ctx context.Context, bin string) (records []BlockBinDto, err error) {
+	blocks, err := models.BlockBins(
+		models.BlockBinWhere.Bin.EQ(bin),
+		qm.OrderBy(models.BlockBinColumns.InternalTimestamp),
+	).All(ctx, pg.db)
+	if err != nil {
+		return nil, err
+	}
+	for _, b := range blocks {
+		records = append(records, BlockBinDto{
+			Height:            b.Height,
+			ReceiveTimeDiff:   b.ReceiveTimeDiff,
+			InternalTimestamp: b.InternalTimestamp,
+		})
+	}
+	return
+}
+
+func (pg *PgDb) VoteReceiveTimeDeviations(ctx context.Context, bin string) (result []VoteReceiveTimeDeviation, err error) {
+	records, err := models.VoteReceiveTimeDeviations(
+		models.VoteReceiveTimeDeviationWhere.Bin.EQ(bin),
+		qm.OrderBy(models.VoteReceiveTimeDeviationColumns.BlockTime),
+	).All(ctx, pg.db)
+	if err != nil {
 		return nil, err
 	}
 
-	var xAxis chart.ChartUints
-	var blockDelay chart.ChartFloats
-	localBlockReceiveTime := make(map[uint64]float64)
-	for _, record := range blockDelays {
-		if axis == string(chart.HeightAxis) {
-			xAxis = append(xAxis, uint64(record.BlockHeight))
-		} else {
-			xAxis = append(xAxis, uint64(record.BlockTime.Unix()))
-		}
-		timeDifference, _ := strconv.ParseFloat(fmt.Sprintf("%04.2f", record.TimeDifference), 64)
-		blockDelay = append(blockDelay, timeDifference)
-
-		localBlockReceiveTime[uint64(record.BlockHeight)] = timeDifference
+	for _, r := range records {
+		result = append(result, VoteReceiveTimeDeviation{
+			BlockHeight:           r.BlockHeight,
+			BlockTime:             r.BlockTime,
+			ReceiveTimeDifference: r.ReceiveTimeDifference,
+		})
 	}
-
-	switch dataType {
-	case BlockPropagation:
-		blockPropagation := make(map[string]chart.ChartFloats)
-		var dates chart.ChartUints
-		dateMap := make(map[int64]bool)
-		for _, source := range pg.syncSources {
-			data, err := models.Propagations(
-				models.PropagationWhere.Source.EQ(source),
-				models.PropagationWhere.Bin.EQ(binString),
-			).All(ctx, pg.db)
-			if err != nil {
-				return nil, err
-			}
-
-			for _, rec := range data {
-				if _, f := dateMap[rec.Height]; !f {
-					if axis == string(chart.HeightAxis) {
-						dates = append(dates, uint64(rec.Height))
-					} else {
-						dates = append(dates, uint64(rec.Time))
-					}
-					dateMap[rec.Height] = true
-				}
-				blockPropagation[source] = append(blockPropagation[source], rec.Deviation)
-			}
-		}
-		var data = []chart.Lengther{dates}
-		for _, d := range blockPropagation {
-			data = append(data, d)
-		}
-		return chart.Encode(nil, data...)
-
-	case BlockTimestamp:
-		if binString == string(chart.DefaultBin) {
-			return chart.Encode(nil, xAxis, blockDelay)
-		} else {
-			blocks, err := models.BlockBins(
-				models.BlockBinWhere.Bin.EQ(binString),
-				qm.OrderBy(models.BlockBinColumns.InternalTimestamp),
-			).All(ctx, pg.db)
-			if err != nil {
-				return nil, err
-			}
-			var xAxis chart.ChartUints
-			var blockDelay chart.ChartFloats
-			for _, block := range blocks {
-				if axis == string(chart.HeightAxis) {
-					xAxis = append(xAxis, uint64(block.Height))
-				} else {
-					xAxis = append(xAxis, uint64(block.InternalTimestamp))
-				}
-				blockDelay = append(blockDelay, block.ReceiveTimeDiff)
-			}
-			return chart.Encode(nil, xAxis, blockDelay)
-		}
-
-	case VotesReceiveTime:
-		if binString == string(chart.DefaultBin) {
-			votesReceiveTime, err := pg.propagationVoteChartDataByHeight(ctx, 0)
-			if err != nil && err != sql.ErrNoRows {
-				return nil, err
-			}
-			var votesTimeDeviations = make(map[int64]chart.ChartFloats)
-
-			for _, record := range votesReceiveTime {
-				votesTimeDeviations[record.BlockHeight] = append(votesTimeDeviations[record.BlockHeight], record.TimeDifference)
-			}
-
-			var voteReceiveTimeDeviations chart.ChartFloats
-			for _, height := range xAxis {
-				if deviations, found := votesTimeDeviations[int64(height)]; found {
-					var totalTime float64
-					for _, timeDiff := range deviations {
-						totalTime += timeDiff
-					}
-					timeDifference, _ := strconv.ParseFloat(fmt.Sprintf("%04.2f", totalTime/float64(len(deviations))*1000), 64)
-					voteReceiveTimeDeviations = append(voteReceiveTimeDeviations, timeDifference)
-					continue
-				}
-				voteReceiveTimeDeviations = append(voteReceiveTimeDeviations, 0)
-			}
-			return chart.Encode(nil, xAxis, voteReceiveTimeDeviations)
-		} else {
-			records, err := models.VoteReceiveTimeDeviations(
-				models.VoteReceiveTimeDeviationWhere.Bin.EQ(binString),
-				qm.OrderBy(models.VoteReceiveTimeDeviationColumns.BlockTime),
-			).All(ctx, pg.db)
-			if err != nil {
-				return nil, err
-			}
-			var xAxis chart.ChartUints
-			var diffs chart.ChartFloats
-			for _, rec := range records {
-				if axis == string(chart.HeightAxis) {
-					xAxis = append(xAxis, uint64(rec.BlockHeight))
-				} else {
-					xAxis = append(xAxis, uint64(rec.BlockTime))
-				}
-				diffs = append(diffs, rec.ReceiveTimeDifference)
-			}
-			return chart.Encode(nil, xAxis, diffs)
-		}
-	}
-	return nil, chart.UnknownChartErr
+	return
 }

@@ -12,8 +12,9 @@ import (
 type propagation struct {
 	ctx             context.Context
 	client          *dcrd.Dcrd
-	dataStore       store
-	externalDBs     []string
+	dataStore       Store
+	externalDBs     map[string]Store
+	externalDBNames []string
 	ticketInds      dcrd.BlockValidatorIndex
 	syncIsDone      bool
 	ticketIndsMutex sync.Mutex
@@ -25,7 +26,7 @@ type propagation struct {
 	server *web.Server
 }
 
-type store interface {
+type Store interface {
 	BlockTableName() string
 	VoteTableName() string
 	SaveBlock(context.Context, Block) error
@@ -41,8 +42,11 @@ type store interface {
 	VotesByBlock(ctx context.Context, blockHash string) ([]VoteDto, error)
 	VotesCount(ctx context.Context) (int64, error)
 
-	FetchEncodePropagationChart(ctx context.Context, dataType, axis string,
-		binString string, extras ...string) ([]byte, error)
+	BlockDelays(ctx context.Context, height int) ([]PropagationChartData, error)
+	SourceDeviations(ctx context.Context, source, bin string) ([]SourceDeviation, error)
+	BlockBinData(ctx context.Context, bin string) ([]BlockBinDto, error)
+	VotesBlockReceiveTimeDiffs(ctx context.Context) ([]PropagationChartData, error)
+	VoteReceiveTimeDeviations(ctx context.Context, bin string) ([]VoteReceiveTimeDeviation, error)
 }
 
 type Dto struct {
@@ -73,10 +77,24 @@ type BlockDto struct {
 	Votes             []VoteDto `json:"votes"`
 }
 
+// BlockBin is an object representing the database table.
+type BlockBinDto struct {
+	Height            int64   `json:"height" toml:"height" yaml:"height"`
+	ReceiveTimeDiff   float64 `json:"receive_time_diff" toml:"receive_time_diff" yaml:"receive_time_diff"`
+	InternalTimestamp int64   `json:"internal_timestamp" toml:"internal_timestamp" yaml:"internal_timestamp"`
+}
+
 type PropagationChartData struct {
 	BlockHeight    int64     `json:"block_height"`
 	TimeDifference float64   `json:"time_difference"`
 	BlockTime      time.Time `json:"block_time"`
+}
+
+// SourceDeviation give the difference in block receive time of this instance and an external source
+type SourceDeviation struct {
+	Height    int64   `json:"height" toml:"height" yaml:"height"`
+	Time      int64   `json:"time" toml:"time" yaml:"time"`
+	Deviation float64 `json:"deviation" toml:"deviation" yaml:"deviation"`
 }
 
 type BlockReceiveTime struct {
@@ -93,6 +111,13 @@ type Vote struct {
 	BlockHash         string
 	ValidatorId       int
 	Validity          string
+}
+
+// VoteReceiveTimeDeviation is used to keep track of the block/vote receive time
+type VoteReceiveTimeDeviation struct {
+	BlockHeight           int64   `json:"block_height" toml:"block_height" yaml:"block_height"`
+	BlockTime             int64   `json:"block_time" toml:"block_time" yaml:"block_time"`
+	ReceiveTimeDifference float64 `json:"receive_time_difference" toml:"receive_time_difference" yaml:"receive_time_difference"`
 }
 
 type VoteDto struct {

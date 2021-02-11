@@ -11,16 +11,22 @@ import (
 	"github.com/planetdecred/pdanalytics/web"
 )
 
-func New(ctx context.Context, client *dcrd.Dcrd, dataStore store, externalDBs []string,
+func New(ctx context.Context, client *dcrd.Dcrd, dataStore Store, externalDBs map[string]Store,
 	webServer *web.Server) (*propagation, error) {
 
+	var externalDBNames []string
+	for n := range externalDBs {
+		externalDBNames = append(externalDBNames, n)
+	}
+
 	prop := &propagation{
-		ctx:         ctx,
-		dataStore:   dataStore,
-		externalDBs: externalDBs,
-		server:      webServer,
-		ticketInds:  make(dcrd.BlockValidatorIndex),
-		client:      client,
+		ctx:             ctx,
+		dataStore:       dataStore,
+		externalDBs:     externalDBs,
+		server:          webServer,
+		ticketInds:      make(dcrd.BlockValidatorIndex),
+		client:          client,
+		externalDBNames: externalDBNames,
 	}
 
 	tmpls := []string{"propagation"}
