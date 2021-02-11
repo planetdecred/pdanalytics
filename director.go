@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/decred/dcrdata/exchanges/v2"
@@ -90,8 +91,7 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 	if cfg.EnablePropagation {
 		var syncDbs = map[string]*propagation.PgDb{}
 		//register instances
-		for i := 0; i < len(cfg.SyncSources); i++ {
-			source := cfg.SyncSources[i]
+		for i := 0; i < len(cfg.SyncDatabases); i++ {
 			databaseName := cfg.SyncDatabases[i]
 			dbConn, err := dbhelper.Connect(cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPass, databaseName)
 			if err != nil {
@@ -99,22 +99,19 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 			}
 			dbConn.SetMaxOpenConns(5)
 
+			// the external db must be accessible and contain block and vote tables
 			syncDb := propagation.NewPgDb(dbConn, nil, nil, cfg.DebugLevel == "Debug")
 
 			if !syncDb.BlockTableExits() {
-				if err := syncDb.CreateBlockTable(); err != nil {
-					log.Error("Error creating block table for sync source, %s: ", source, err)
-					return err
-				}
-				log.Info("Blocks table created successfully.")
+				msg := fmt.Sprintf("the database, %s is missing the block table", databaseName)
+				log.Error(msg)
+				return errors.New(msg)
 			}
 
 			if !syncDb.VoteTableExits() {
-				if err := syncDb.CreateVoteTable(); err != nil {
-					log.Error("Error creating vote table for sync source, %s: ", source, err)
-					return err
-				}
-				log.Info("Votes table created successfully.")
+				msg := fmt.Sprintf("the database, %s is missing the vote table", databaseName)
+				log.Error(msg)
+				return errors.New(msg)
 			}
 			syncDbs[databaseName] = syncDb
 		}

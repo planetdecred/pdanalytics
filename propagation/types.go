@@ -13,7 +13,7 @@ type propagation struct {
 	ctx             context.Context
 	client          *dcrd.Dcrd
 	dataStore       store
-	externalDBs []string
+	externalDBs     []string
 	ticketInds      dcrd.BlockValidatorIndex
 	syncIsDone      bool
 	ticketIndsMutex sync.Mutex

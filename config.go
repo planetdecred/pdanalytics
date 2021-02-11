@@ -64,7 +64,6 @@ var (
 	defaultOnionAddress = ""
 
 	defaultMempoolInterval = 60.0
-	defaultSyncInterval    = 60
 )
 
 type config struct {
@@ -129,10 +128,7 @@ type config struct {
 	MempoolInterval float64 `long:"mempoolinterval" description:"The duration of time between mempool collection"`
 
 	// sync
-	DisableSync   bool     `long:"disablesync" description:"Disables data sharing operation"`
-	SyncInterval  int      `long:"syncinterval" description:"The number of minuets between sync operations"`
-	SyncSources   []string `long:"syncsource" description:"Address of remote instance to sync data from"`
-	SyncDatabases []string `long:"syncdatabase" description:"Database to sync remote data to"`
+	SyncDatabases []string `long:"syncdatabase" description:"Database with external block propagation entry for comparison. Must comatain block and vote tables"`
 }
 
 var (
@@ -159,7 +155,6 @@ var (
 		MainnetLink:                   defaultMainnetLink,
 		TestnetLink:                   defaultTestnetLink,
 		OnionAddress:                  defaultOnionAddress,
-		SyncInterval:                  defaultSyncInterval,
 		EnableStakingRewardCalculator: true,
 		EnableChainParameters:         true,
 		EnableAttackCost:              true,
