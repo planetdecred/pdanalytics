@@ -5,6 +5,8 @@ package models
 
 var TableNames = struct {
 	Heartbeat          string
+	Mempool            string
+	MempoolBin         string
 	NetworkSnapshot    string
 	NetworkSnapshotBin string
 	Node               string
@@ -12,6 +14,8 @@ var TableNames = struct {
 	NodeVersion        string
 }{
 	Heartbeat:          "heartbeat",
+	Mempool:            "mempool",
+	MempoolBin:         "mempool_bin",
 	NetworkSnapshot:    "network_snapshot",
 	NetworkSnapshotBin: "network_snapshot_bin",
 	Node:               "node",

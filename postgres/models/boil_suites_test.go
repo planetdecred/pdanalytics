@@ -13,6 +13,8 @@ import "testing"
 // Separating the tests thusly grants avoidance of Postgres deadlocks.
 func TestParent(t *testing.T) {
 	t.Run("Heartbeats", testHeartbeats)
+	t.Run("Mempools", testMempools)
+	t.Run("MempoolBins", testMempoolBins)
 	t.Run("NetworkSnapshots", testNetworkSnapshots)
 	t.Run("NetworkSnapshotBins", testNetworkSnapshotBins)
 	t.Run("Nodes", testNodes)
@@ -22,6 +24,8 @@ func TestParent(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	t.Run("Heartbeats", testHeartbeatsDelete)
+	t.Run("Mempools", testMempoolsDelete)
+	t.Run("MempoolBins", testMempoolBinsDelete)
 	t.Run("NetworkSnapshots", testNetworkSnapshotsDelete)
 	t.Run("NetworkSnapshotBins", testNetworkSnapshotBinsDelete)
 	t.Run("Nodes", testNodesDelete)
@@ -31,6 +35,8 @@ func TestDelete(t *testing.T) {
 
 func TestQueryDeleteAll(t *testing.T) {
 	t.Run("Heartbeats", testHeartbeatsQueryDeleteAll)
+	t.Run("Mempools", testMempoolsQueryDeleteAll)
+	t.Run("MempoolBins", testMempoolBinsQueryDeleteAll)
 	t.Run("NetworkSnapshots", testNetworkSnapshotsQueryDeleteAll)
 	t.Run("NetworkSnapshotBins", testNetworkSnapshotBinsQueryDeleteAll)
 	t.Run("Nodes", testNodesQueryDeleteAll)
@@ -40,6 +46,8 @@ func TestQueryDeleteAll(t *testing.T) {
 
 func TestSliceDeleteAll(t *testing.T) {
 	t.Run("Heartbeats", testHeartbeatsSliceDeleteAll)
+	t.Run("Mempools", testMempoolsSliceDeleteAll)
+	t.Run("MempoolBins", testMempoolBinsSliceDeleteAll)
 	t.Run("NetworkSnapshots", testNetworkSnapshotsSliceDeleteAll)
 	t.Run("NetworkSnapshotBins", testNetworkSnapshotBinsSliceDeleteAll)
 	t.Run("Nodes", testNodesSliceDeleteAll)
@@ -49,6 +57,8 @@ func TestSliceDeleteAll(t *testing.T) {
 
 func TestExists(t *testing.T) {
 	t.Run("Heartbeats", testHeartbeatsExists)
+	t.Run("Mempools", testMempoolsExists)
+	t.Run("MempoolBins", testMempoolBinsExists)
 	t.Run("NetworkSnapshots", testNetworkSnapshotsExists)
 	t.Run("NetworkSnapshotBins", testNetworkSnapshotBinsExists)
 	t.Run("Nodes", testNodesExists)
@@ -58,6 +68,8 @@ func TestExists(t *testing.T) {
 
 func TestFind(t *testing.T) {
 	t.Run("Heartbeats", testHeartbeatsFind)
+	t.Run("Mempools", testMempoolsFind)
+	t.Run("MempoolBins", testMempoolBinsFind)
 	t.Run("NetworkSnapshots", testNetworkSnapshotsFind)
 	t.Run("NetworkSnapshotBins", testNetworkSnapshotBinsFind)
 	t.Run("Nodes", testNodesFind)
@@ -67,6 +79,8 @@ func TestFind(t *testing.T) {
 
 func TestBind(t *testing.T) {
 	t.Run("Heartbeats", testHeartbeatsBind)
+	t.Run("Mempools", testMempoolsBind)
+	t.Run("MempoolBins", testMempoolBinsBind)
 	t.Run("NetworkSnapshots", testNetworkSnapshotsBind)
 	t.Run("NetworkSnapshotBins", testNetworkSnapshotBinsBind)
 	t.Run("Nodes", testNodesBind)
@@ -76,6 +90,8 @@ func TestBind(t *testing.T) {
 
 func TestOne(t *testing.T) {
 	t.Run("Heartbeats", testHeartbeatsOne)
+	t.Run("Mempools", testMempoolsOne)
+	t.Run("MempoolBins", testMempoolBinsOne)
 	t.Run("NetworkSnapshots", testNetworkSnapshotsOne)
 	t.Run("NetworkSnapshotBins", testNetworkSnapshotBinsOne)
 	t.Run("Nodes", testNodesOne)
@@ -85,6 +101,8 @@ func TestOne(t *testing.T) {
 
 func TestAll(t *testing.T) {
 	t.Run("Heartbeats", testHeartbeatsAll)
+	t.Run("Mempools", testMempoolsAll)
+	t.Run("MempoolBins", testMempoolBinsAll)
 	t.Run("NetworkSnapshots", testNetworkSnapshotsAll)
 	t.Run("NetworkSnapshotBins", testNetworkSnapshotBinsAll)
 	t.Run("Nodes", testNodesAll)
@@ -94,6 +112,8 @@ func TestAll(t *testing.T) {
 
 func TestCount(t *testing.T) {
 	t.Run("Heartbeats", testHeartbeatsCount)
+	t.Run("Mempools", testMempoolsCount)
+	t.Run("MempoolBins", testMempoolBinsCount)
 	t.Run("NetworkSnapshots", testNetworkSnapshotsCount)
 	t.Run("NetworkSnapshotBins", testNetworkSnapshotBinsCount)
 	t.Run("Nodes", testNodesCount)
@@ -104,6 +124,10 @@ func TestCount(t *testing.T) {
 func TestInsert(t *testing.T) {
 	t.Run("Heartbeats", testHeartbeatsInsert)
 	t.Run("Heartbeats", testHeartbeatsInsertWhitelist)
+	t.Run("Mempools", testMempoolsInsert)
+	t.Run("Mempools", testMempoolsInsertWhitelist)
+	t.Run("MempoolBins", testMempoolBinsInsert)
+	t.Run("MempoolBins", testMempoolBinsInsertWhitelist)
 	t.Run("NetworkSnapshots", testNetworkSnapshotsInsert)
 	t.Run("NetworkSnapshots", testNetworkSnapshotsInsertWhitelist)
 	t.Run("NetworkSnapshotBins", testNetworkSnapshotBinsInsert)
@@ -166,6 +190,8 @@ func TestToManyRemove(t *testing.T) {}
 
 func TestReload(t *testing.T) {
 	t.Run("Heartbeats", testHeartbeatsReload)
+	t.Run("Mempools", testMempoolsReload)
+	t.Run("MempoolBins", testMempoolBinsReload)
 	t.Run("NetworkSnapshots", testNetworkSnapshotsReload)
 	t.Run("NetworkSnapshotBins", testNetworkSnapshotBinsReload)
 	t.Run("Nodes", testNodesReload)
@@ -175,6 +201,8 @@ func TestReload(t *testing.T) {
 
 func TestReloadAll(t *testing.T) {
 	t.Run("Heartbeats", testHeartbeatsReloadAll)
+	t.Run("Mempools", testMempoolsReloadAll)
+	t.Run("MempoolBins", testMempoolBinsReloadAll)
 	t.Run("NetworkSnapshots", testNetworkSnapshotsReloadAll)
 	t.Run("NetworkSnapshotBins", testNetworkSnapshotBinsReloadAll)
 	t.Run("Nodes", testNodesReloadAll)
@@ -184,6 +212,8 @@ func TestReloadAll(t *testing.T) {
 
 func TestSelect(t *testing.T) {
 	t.Run("Heartbeats", testHeartbeatsSelect)
+	t.Run("Mempools", testMempoolsSelect)
+	t.Run("MempoolBins", testMempoolBinsSelect)
 	t.Run("NetworkSnapshots", testNetworkSnapshotsSelect)
 	t.Run("NetworkSnapshotBins", testNetworkSnapshotBinsSelect)
 	t.Run("Nodes", testNodesSelect)
@@ -193,6 +223,8 @@ func TestSelect(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	t.Run("Heartbeats", testHeartbeatsUpdate)
+	t.Run("Mempools", testMempoolsUpdate)
+	t.Run("MempoolBins", testMempoolBinsUpdate)
 	t.Run("NetworkSnapshots", testNetworkSnapshotsUpdate)
 	t.Run("NetworkSnapshotBins", testNetworkSnapshotBinsUpdate)
 	t.Run("Nodes", testNodesUpdate)
@@ -202,6 +234,8 @@ func TestUpdate(t *testing.T) {
 
 func TestSliceUpdateAll(t *testing.T) {
 	t.Run("Heartbeats", testHeartbeatsSliceUpdateAll)
+	t.Run("Mempools", testMempoolsSliceUpdateAll)
+	t.Run("MempoolBins", testMempoolBinsSliceUpdateAll)
 	t.Run("NetworkSnapshots", testNetworkSnapshotsSliceUpdateAll)
 	t.Run("NetworkSnapshotBins", testNetworkSnapshotBinsSliceUpdateAll)
 	t.Run("Nodes", testNodesSliceUpdateAll)

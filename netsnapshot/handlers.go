@@ -111,10 +111,10 @@ func (t *taker) nodesPage(w http.ResponseWriter, r *http.Request) {
 
 	str, err := t.server.Templates.ExecTemplateToString("nodes", struct {
 		*web.CommonPageData
-		data map[string]interface{}
+		Data map[string]interface{}
 	}{
 		CommonPageData: t.server.CommonData(r),
-		data:           data,
+		Data:           data,
 	})
 
 	if err != nil {
@@ -207,7 +207,7 @@ func (t *taker) nodesCountUserAgentsChart(w http.ResponseWriter, r *http.Request
 	if len(sources) > 0 {
 		userAgents, _, err = t.dataStore.PeerCountByUserAgents(r.Context(), sources, offset, limit)
 		if err != nil {
-			web.RenderErrorfJSON(w, "Cannot fetch data: %s", w, err.Error())
+			web.RenderErrorfJSON(w, "Cannot fetch data: %s", err.Error())
 			return
 		}
 	}
@@ -448,7 +448,7 @@ func (t *taker) ipInfo(w http.ResponseWriter, r *http.Request) {
 func (t *taker) nodeVersions(w http.ResponseWriter, r *http.Request) {
 	version, err := t.dataStore.AllNodeVersions(r.Context())
 	if err != nil {
-		web.RenderErrorfJSON(w, "Cannot fetch node versions - %s", w, err.Error())
+		web.RenderErrorfJSON(w, "Cannot fetch node versions - %s", err.Error())
 		return
 	}
 	web.RenderJSON(w, version)

@@ -172,6 +172,8 @@ func defaultConfig() config {
 
 		MempoolInterval: defaultMempoolInterval,
 	}
+	cfg.EnableNetworkSnapshot = true
+	cfg.EnableNetworkSnapshotHTTP = true
 	cfg.SnapshotInterval = defaultSnapshotInterval
 	cfg.Seeder = defaultSeeder
 	cfg.SeederPort = uint16(defaultSeederPort)

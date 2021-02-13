@@ -26,7 +26,7 @@ func Snapshotinterval() int {
 	return snapshotinterval
 }
 
-func NewTaker(ctx context.Context, store DataStore, cfg NetworkSnapshotOptions, server *web.Server) (*taker, error) {
+func Activate(ctx context.Context, store DataStore, cfg NetworkSnapshotOptions, server *web.Server) error {
 	snapshotinterval = cfg.SnapshotInterval
 	t := &taker{
 		dataStore: store,
@@ -40,11 +40,11 @@ func NewTaker(ctx context.Context, store DataStore, cfg NetworkSnapshotOptions, 
 
 	if cfg.EnableNetworkSnapshotHTTP {
 		if err := t.configHTTPHandlers(); err != nil {
-			return nil, err
+			return err
 		}
 	}
 
-	return t, nil
+	return nil
 }
 
 func (t *taker) Start(ctx context.Context) {
@@ -259,6 +259,7 @@ func (t *taker) configHTTPHandlers() error {
 
 	t.server.AddRoute("/nodes", web.GET, t.nodesPage)
 	t.server.AddRoute("/api/charts/snapshot/{dataType}", web.GET, t.chart)
+	t.server.AddRoute("/api/snapshots", web.GET, t.snapshots)
 	t.server.AddRoute("/api/snapshots/user-agents", web.GET, t.nodesCountUserAgents)
 	t.server.AddRoute("/api/snapshots/user-agents/chart", web.GET, t.nodesCountUserAgentsChart)
 	t.server.AddRoute("/api/snapshots/countries", web.GET, t.nodesCountByCountries)

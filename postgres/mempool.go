@@ -10,7 +10,7 @@ import (
 	"github.com/planetdecred/pdanalytics/chart"
 	"github.com/planetdecred/pdanalytics/dbhelper"
 	"github.com/planetdecred/pdanalytics/mempool"
-	"github.com/planetdecred/pdanalytics/mempool/postgres/models"
+	"github.com/planetdecred/pdanalytics/postgres/models"
 	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries/qm"
@@ -22,34 +22,6 @@ const (
 	MempoolFees    = "fees"
 	MempoolTxCount = "tx-count"
 )
-
-type PgDb struct {
-	db           *sql.DB
-	queryTimeout time.Duration
-}
-
-type logWriter struct{}
-
-func (l logWriter) Write(p []byte) (n int, err error) {
-	log.Debug(string(p))
-	return len(p), nil
-}
-
-func NewPgDb(db *sql.DB, debug bool) *PgDb {
-	if debug {
-		boil.DebugMode = true
-		boil.DebugWriter = logWriter{}
-	}
-	return &PgDb{
-		db:           db,
-		queryTimeout: time.Second * 30,
-	}
-}
-
-func (pg *PgDb) Close() error {
-	log.Trace("Closing postgresql connection")
-	return pg.db.Close()
-}
 
 func (pg PgDb) MempoolTableName() string {
 	return models.TableNames.Mempool

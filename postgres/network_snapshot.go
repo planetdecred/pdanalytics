@@ -915,6 +915,55 @@ func (pg *PgDb) UpdateSnapshotNodesBin(ctx context.Context) error {
 	return nil
 }
 
+func (pg *PgDb) fetchSnapshotNodeVersions(ctx context.Context, startDate int64) (cache.ChartUints, cache.ChartUints, map[string]cache.ChartUints, error) {
+	datesMap, heightMap := map[int64]struct{}{}, map[int64]struct{}{}
+	allDates, allHeights := cache.ChartUints{}, cache.ChartUints{}
+
+	var userAgentMap = map[string]struct{}{}
+	var allUserAgents []string
+	var dateUserAgentCount = make(map[uint64]map[string]int64)
+
+	userAgents, err := pg.peerCountByUserAgentsByTime(ctx, uint64(startDate), 0)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	for _, item := range userAgents {
+		if _, exists := datesMap[item.Timestamp]; !exists {
+			datesMap[item.Timestamp] = struct{}{}
+			allDates = append(allDates, uint64(item.Timestamp))
+		}
+		if _, exists := heightMap[item.Height]; !exists {
+			datesMap[item.Height] = struct{}{}
+			allHeights = append(allHeights, uint64(item.Height))
+		}
+
+		if _, exists := dateUserAgentCount[uint64(item.Timestamp)]; !exists {
+			dateUserAgentCount[uint64(item.Timestamp)] = make(map[string]int64)
+		}
+
+		if _, exists := userAgentMap[item.UserAgent]; !exists {
+			userAgentMap[item.UserAgent] = struct{}{}
+			allUserAgents = append(allUserAgents, item.UserAgent)
+		}
+		dateUserAgentCount[uint64(item.Timestamp)][item.UserAgent] = item.Nodes
+	}
+
+	versions := map[string]cache.ChartUints{}
+	for _, d := range allDates {
+		for _, c := range allUserAgents {
+			rec := dateUserAgentCount[d][c]
+			if record, found := versions[c]; found {
+				versions[c] = append(record, uint64(rec))
+			} else {
+				versions[c] = cache.ChartUints{uint64(rec)}
+			}
+		}
+	}
+
+	return allDates, allHeights, versions, nil
+}
+
 func (pg *PgDb) UpdateNodeVersion(ctx context.Context) error {
 	log.Info("Updating snapshot node versions")
 	// default bin
@@ -966,6 +1015,54 @@ func (pg *PgDb) UpdateNodeVersion(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (pg *PgDb) fetchNodeLocationChart(ctx context.Context, startDate int64) (cache.ChartUints, cache.ChartUints, map[string]cache.ChartUints, error) {
+	var datesMap, heightsMap = map[int64]struct{}{}, map[int64]struct{}{}
+	var allDates, allHeights cache.ChartUints
+	var countryMap = map[string]struct{}{}
+	var allCountries []string
+	var dateCountryCount = make(map[uint64]map[string]int64)
+
+	locations, err := pg.peerCountByCountriesByTime(ctx, uint64(startDate), 0)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	for _, item := range locations {
+		if _, exists := datesMap[item.Timestamp]; !exists {
+			datesMap[item.Timestamp] = struct{}{}
+			allDates = append(allDates, uint64(item.Timestamp))
+		}
+		if _, exists := heightsMap[item.Height]; !exists {
+			datesMap[item.Height] = struct{}{}
+			allHeights = append(allHeights, uint64(item.Height))
+		}
+
+		if _, exists := dateCountryCount[uint64(item.Timestamp)]; !exists {
+			dateCountryCount[uint64(item.Timestamp)] = make(map[string]int64)
+		}
+
+		if _, exists := countryMap[item.Country]; !exists {
+			countryMap[item.Country] = struct{}{}
+			allCountries = append(allCountries, item.Country)
+		}
+		dateCountryCount[uint64(item.Timestamp)][item.Country] = item.Nodes
+	}
+
+	var locationSet = map[string]cache.ChartUints{}
+	for _, d := range allDates {
+		for _, c := range allCountries {
+			rec := dateCountryCount[d][c]
+			if record, found := locationSet[c]; found {
+				locationSet[c] = append(record, uint64(rec))
+			} else {
+				locationSet[c] = cache.ChartUints{uint64(rec)}
+			}
+		}
+	}
+
+	return allDates, allHeights, locationSet, nil
 }
 
 func (pg *PgDb) updateSnapshotVersionBinData(ctx context.Context) error {

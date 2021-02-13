@@ -1,19 +1,20 @@
+{{define "nodes"}}
 <!DOCTYPE html>
 <html lang="en">
-{{ template "html-head" }}
+{{ template "html-head" "Nodes"}}
 
 <body>
 <div class="body">
-    {{ template "header" }}
+    {{ template "navbar" . }}
     <div class="content" data-controller="nodes"
-         data-nodes-page-size="{{ .pageSize }}"
-         data-nodes-page="{{ .currentPage }}"
-         data-nodes-view-option="{{ .selectedViewOption }}"
-         data-nodes-data-type="{{ .dataType }}"
+         data-nodes-page-size="{{ .Data.pageSize }}"
+         data-nodes-page="{{ .Data.currentPage }}"
+         data-nodes-view-option="{{ .Data.selectedViewOption }}"
+         data-nodes-data-type="{{ .Data.dataType }}"
     >
         <div class="container-fluid">
 
-            {{$height := .snapshot.Height}}
+            {{$height := .Data.snapshot.Height}}
 
             <div class="control-wrapper">
                 <div class="d-flex flex-row bottom-ctl">
@@ -144,8 +145,7 @@
 
                 </div>
 
-                <div>
-                    <div class="inner-content d-hide col-8 offset-2" data-target="nodes.tableWrapper">
+                    <div class="inner-content d-hide offset-2" data-target="nodes.tableWrapper">
 
                         <div class="table-details">
                             <h3 data-target="nodes.tableTitle">Network Snapshots</h3>
@@ -155,8 +155,8 @@
                                     <div class="control-label">Page Size:</div>
                                     <select data-target="nodes.pageSize" data-action="change->nodes#changePageSize" class="form-control"
                                             style="width: 70px;">
-                                        {{$pageSize := .pageSize}}
-                                        {{ range $index, $filter := .pageSizeSelector}}
+                                        {{$pageSize := .Data.pageSize}}
+                                        {{ range $index, $filter := .Data.pageSizeSelector}}
                                             <option value="{{$index}}" {{ if eq $index $pageSize}} selected {{ end }}>{{$filter}}</option>
                                         {{ end }}
                                     </select>
@@ -164,16 +164,16 @@
                                 <div data-target="nodes.btnWrapper" class="page-size d-flex mt-1">
                                     <a href="javascript:void(0)" data-target="nodes.previousPageButton"
                                     data-action="click->nodes#loadPreviousPage"
-                                    class="mr-2 {{ if lt .previousPage 1 }}d-hide{{ end }}">&lt;Previous </a>
+                                    class="mr-2 {{ if lt .Data.previousPage 1 }}d-hide{{ end }}">&lt;Previous </a>
 
                                     <p class="text-muted" style="white-space: nowrap;"> Page <span
-                                                data-target="nodes.currentPage" class="text-muted">{{ .currentPage }}</span>
+                                                data-target="nodes.currentPage" class="text-muted">{{ .Data.currentPage }}</span>
                                         of <span data-target="nodes.totalPageCount"
-                                                class="text-muted">{{ .totalPages }}</span>
+                                                class="text-muted">{{ .Data.totalPages }}</span>
                                     </p>
                                     <a href="javascript:void(0)" data-target="nodes.nextPageButton"
                                     data-action="click->nodes#loadNextPage"
-                                    class="ml-2 {{ if not .nextPage }}d-hide{{ end }}"> Next&gt;</a>
+                                    class="ml-2 {{ if not .Data.nextPage }}d-hide{{ end }}"> Next&gt;</a>
                                 </div>
                             </div>
                         </div>
@@ -253,7 +253,6 @@
                     <div class="loading" data-target="nodes.loadingData">
                         <div class="loader"></div>
                     </div>
-                </div>
             </div>
         </div>
     </div>
@@ -261,7 +260,8 @@
 </div>
 
 
-{{ template "footer" }}
+{{ template "footer" . }}
 </body>
 
 </html>
+{{end}}

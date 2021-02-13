@@ -109,10 +109,9 @@ type DataStore interface {
 	AllNodeContries(ctx context.Context) ([]string, error)
 	FetchNodeLocations(ctx context.Context, offset, limit int) ([]CountryInfo, int64, error)
 	FetchNodeVersion(ctx context.Context, offset, limit int) ([]UserAgentInfo, int64, error)
-	FetchEncodeSnapshotChart(ctx context.Context, dataType, axis, binString string, extras ...string) ([]byte, error)
 	SnapshotsByTime(ctx context.Context, startDate int64, pageSize int) ([]SnapShot, error)
 	SnapshotsByBin(ctx context.Context, bin string) ([]SnapShot, error)
-	NodeVersionsByBin(ctx context.Context, userAgent, bin string) ([]UserAgentInfo, error) 
+	NodeVersionsByBin(ctx context.Context, userAgent, bin string) ([]UserAgentInfo, error)
 	NodeLocationsByBin(ctx context.Context, userAgent, bin string) ([]CountryInfo, error)
 }
 
@@ -160,7 +159,7 @@ type NetworkSnapshotOptions struct {
 	TestNet                   bool   `long:"snapshot-testnet" description:"Use testnet"`
 	EnableNetworkSnapshot     bool   `long:"snapshot" description:"Enable/Disable network snapshot taker from running"`
 	EnableNetworkSnapshotHTTP bool   `long:"snapshot-http" description:"Enable/Disable network snapshot web request handler from running"`
-	SeederPort                uint16 `short:"p" long:"seederport" description:"Port of a working node"`
+	SeederPort                uint16 `long:"seederport" description:"Port of a working node"`
 	Seeder                    string `short:"s" long:"seeder" description:"IP address of a working node"`
 	IpStackAccessKey          string `long:"ip-stack-access-key" description:"IP stack access key https://ipstack.com/"`
 	IpLocationProvidingPeer   string `long:"ip-location-providing-peer" description:"An optional peer address for getting IP info"`

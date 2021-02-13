@@ -8,6 +8,10 @@ import "testing"
 func TestUpsert(t *testing.T) {
 	t.Run("Heartbeats", testHeartbeatsUpsert)
 
+	t.Run("Mempools", testMempoolsUpsert)
+
+	t.Run("MempoolBins", testMempoolBinsUpsert)
+
 	t.Run("NetworkSnapshots", testNetworkSnapshotsUpsert)
 
 	t.Run("NetworkSnapshotBins", testNetworkSnapshotBinsUpsert)

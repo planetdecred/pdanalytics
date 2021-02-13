@@ -11,10 +11,10 @@ import (
 	"github.com/planetdecred/pdanalytics/chart"
 	"github.com/planetdecred/pdanalytics/homepage"
 	"github.com/planetdecred/pdanalytics/mempool"
-	"github.com/planetdecred/pdanalytics/mempool/postgres"
 	"github.com/planetdecred/pdanalytics/netsnapshot"
 	"github.com/planetdecred/pdanalytics/parameters"
 	"github.com/planetdecred/pdanalytics/propagation"
+	"github.com/planetdecred/pdanalytics/postgres"
 	"github.com/planetdecred/pdanalytics/stakingreward"
 	"github.com/planetdecred/pdanalytics/web"
 )
@@ -52,6 +52,7 @@ var (
 	attackcostLog    = backendLog.Logger("ATCK")
 	stakingrewardLog = backendLog.Logger("STCK")
 	homeLog          = backendLog.Logger(("HOME"))
+	psqlLog          = backendLog.Logger("PSQL")
 	mempoolLog       = backendLog.Logger("MEMP")
 	chartLog         = backendLog.Logger("CHRT")
 	propLog          = backendLog.Logger("PROP")
@@ -66,7 +67,7 @@ func init() {
 	attackcost.UseLogger(attackcostLog)
 	homepage.UseLogger(homeLog)
 	mempool.UseLogger(mempoolLog)
-	postgres.UseLogger(mempoolLog)
+	postgres.UseLogger(psqlLog)
 	chart.UseLogger(chartLog)
 	propagation.UseLogger(propLog)
 	netsnapshot.UseLogger(snapshotLog)
@@ -83,6 +84,8 @@ var subsystemLoggers = map[string]slog.Logger{
 	"PROP": propLog,
 	"NETS": snapshotLog,
 	"WEBL": webLogger,
+	"MEMP": mempoolLog,
+	"PSQL": psqlLog,
 }
 
 // initLogRotator initializes the logging rotater to write logs to logFile and
