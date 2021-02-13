@@ -9,6 +9,7 @@ require (
 	github.com/decred/dcrd/chaincfg/v2 v2.3.0
 	github.com/decred/dcrd/dcrutil v1.4.0
 	github.com/decred/dcrd/dcrutil/v2 v2.0.1
+	github.com/decred/dcrd/peer/v2 v2.2.0
 	github.com/decred/dcrd/rpc/jsonrpc/types/v2 v2.3.0
 	github.com/decred/dcrd/rpcclient/v5 v5.0.1
 	github.com/decred/dcrd/wire v1.4.0
@@ -24,6 +25,7 @@ require (
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/lib/pq v1.2.0
+	github.com/planetdecred/dcrextdata v0.0.0-20201006010145-cddd04eb454b
 	github.com/planetdecred/pdanalytics/dcrd v0.0.0-00010101000000-000000000000
 	github.com/planetdecred/pdanalytics/web v0.0.0-20210121232737-d068a16f7d67
 	github.com/spf13/cast v1.3.1 // indirect

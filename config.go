@@ -16,6 +16,7 @@ import (
 	"github.com/decred/dcrdata/v5/netparams"
 	"github.com/decred/slog"
 	flags "github.com/jessevdk/go-flags"
+	"github.com/planetdecred/pdanalytics/netsnapshot"
 	"github.com/planetdecred/pdanalytics/version"
 )
 
@@ -64,6 +65,12 @@ var (
 	defaultOnionAddress = ""
 
 	defaultMempoolInterval = 60.0
+
+	// network snapshot
+	defaultSnapshotInterval  = 720
+	defaultSeeder            = "127.0.0.1"
+	defaultSeederPort        = 9108
+	maxPeerConnectionFailure = 3
 )
 
 type config struct {
@@ -119,8 +126,8 @@ type config struct {
 
 	// Modules config
 	EnableChainParameters         bool `long:"parameters" description:"Enable/Disables the chain parameter component."`
-	EnableAttackCost              bool `long:"attackcost" description:"Enable/Disables the attack cost calculator component."`
-	EnableStakingRewardCalculator bool `long:"stakingreward" description:"Enable/Disables the staking reward calculator component."`
+	EnableAttackCost              bool `long:"attack-cost" description:"Enable/Disables the attack cost calculator component."`
+	EnableStakingRewardCalculator bool `long:"staking-reward" description:"Enable/Disables the staking reward calculator component."`
 	EnableMempool                 bool `long:"mempool" description:"Enable/Disables the mempool component from running."`
 	EnablePropagation             bool `long:"propagation" description:"Enable/Disable the propagation module from running"`
 
@@ -129,10 +136,12 @@ type config struct {
 
 	// sync
 	SyncDatabases []string `long:"syncdatabase" description:"Database with external block propagation entry for comparison. Must comatain block and vote tables"`
+
+	netsnapshot.NetworkSnapshotOptions
 }
 
-var (
-	defaultConfig = config{
+func defaultConfig() config {
+	cfg := config{
 		HomeDir:                       defaultHomeDir,
 		DataDir:                       defaultDataDir,
 		LogDir:                        defaultLogDir,
@@ -163,7 +172,13 @@ var (
 
 		MempoolInterval: defaultMempoolInterval,
 	}
-)
+	cfg.SnapshotInterval = defaultSnapshotInterval
+	cfg.Seeder = defaultSeeder
+	cfg.SeederPort = uint16(defaultSeederPort)
+	cfg.MaxPeerConnectionFailure = maxPeerConnectionFailure
+
+	return cfg
+}
 
 // cleanAndExpandPath expands environment variables and leading ~ in the passed
 // path, cleans the result, and returns it.
@@ -324,8 +339,8 @@ func loadConfig() (*config, error) {
 	}
 
 	// Default config
-	cfg := defaultConfig
-	defaultConfigNow := defaultConfig
+	cfg := defaultConfig()
+	defaultConfigNow := defaultConfig()
 
 	// Load settings from environment variables.
 	err := env.Parse(&cfg)

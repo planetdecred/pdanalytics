@@ -86,6 +86,8 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 			return fmt.Errorf("Failed to create new mempool component, %s", err.Error())
 		}
 		go mp.StartMonitoring(ctx)
+
+		log.Info("Attack Cost Calculator Enabled")
 	}
 
 	if cfg.EnablePropagation {
@@ -141,6 +143,5 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 	if err != nil {
 		log.Error(err)
 	}
-
 	return nil
 }
