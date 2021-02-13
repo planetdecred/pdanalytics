@@ -91,6 +91,24 @@ type DataStore interface {
 	LastSnapshot(ctx context.Context) (*SnapShot, error)
 	GetIPLocation(ctx context.Context, ip string) (string, int, error)
 	NodeExists(ctx context.Context, address string) (bool, error)
+
+	Snapshots(ctx context.Context, offset, limit int, forChart bool) ([]SnapShot, int64, error)
+	SnapshotCount(ctx context.Context) (int64, error)
+	FindNetworkSnapshot(ctx context.Context, timestamp int64) (*SnapShot, error)
+	PreviousSnapshot(ctx context.Context, timestamp int64) (*SnapShot, error)
+	NextSnapshot(ctx context.Context, timestamp int64) (*SnapShot, error)
+	TotalPeerCount(ctx context.Context, timestamp int64) (int64, error)
+	SeenNodesByTimestamp(ctx context.Context) ([]NodeCount, error)
+	NetworkPeers(ctx context.Context, timestamp int64, q string, offset int, limit int) ([]NetworkPeer, int64, error)
+	NetworkPeer(ctx context.Context, address string) (*NetworkPeer, error)
+	AverageLatency(ctx context.Context, address string) (int, error)
+	PeerCountByUserAgents(ctx context.Context, sources string, offset, limit int) (userAgents []UserAgentInfo, total int64, err error)
+	PeerCountByIPVersion(ctx context.Context, timestamp int64, iPVersion int) (int64, error)
+	PeerCountByCountries(ctx context.Context, sources string, offset, limit int) (countries []CountryInfo, total int64, err error)
+	AllNodeVersions(ctx context.Context) ([]string, error)
+	AllNodeContries(ctx context.Context) ([]string, error)
+	FetchNodeLocations(ctx context.Context, offset, limit int) ([]CountryInfo, int64, error)
+	FetchNodeVersion(ctx context.Context, offset, limit int) ([]UserAgentInfo, int64, error)
 }
 
 type Node struct {

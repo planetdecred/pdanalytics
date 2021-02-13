@@ -257,7 +257,7 @@ func (t *taker) setupWebServer() error {
 		},
 	})
 
-	// t.server.AddRoute("/mempool", web.GET, c.nodes)
+	t.server.AddRoute("/nodes", web.GET, t.nodesPage)
 
 	return nil
 }
