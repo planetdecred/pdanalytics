@@ -16,6 +16,7 @@ import (
 	"github.com/planetdecred/pdanalytics/parameters"
 	"github.com/planetdecred/pdanalytics/propagation"
 	"github.com/planetdecred/pdanalytics/stakingreward"
+	"github.com/planetdecred/pdanalytics/web"
 )
 
 // logWriter implements an io.Writer that outputs to both standard output and
@@ -55,6 +56,7 @@ var (
 	chartLog         = backendLog.Logger("CHRT")
 	propLog          = backendLog.Logger("PROP")
 	snapshotLog      = backendLog.Logger("NETS")
+	webLogger        = backendLog.Logger("WEBL")
 )
 
 // Initialize package-global logger variables.
@@ -68,6 +70,7 @@ func init() {
 	chart.UseLogger(chartLog)
 	propagation.UseLogger(propLog)
 	netsnapshot.UseLogger(snapshotLog)
+	web.UseLogger(webLogger)
 }
 
 // subsystemLoggers maps each subsystem identifier to its associated logger.
@@ -79,6 +82,7 @@ var subsystemLoggers = map[string]slog.Logger{
 	"HOME": homeLog,
 	"PROP": propLog,
 	"NETS": snapshotLog,
+	"WEBL": webLogger,
 }
 
 // initLogRotator initializes the logging rotater to write logs to logFile and

@@ -40,7 +40,7 @@ func NewCollector(ctx context.Context, client *dcrd.Dcrd, interval float64,
 
 	webServer.AddRoute("/mempool", web.GET, c.mempoolPage)
 	webServer.AddRoute("/getmempool", web.GET, c.getMempool)
-	webServer.AddRoute("/api/charts/mempool/{chartDataType}", web.GET, c.chart, chartDataTypeCtx)
+	webServer.AddRoute("/api/charts/mempool/{chartDataType}", web.GET, c.chart, web.ChartDataTypeCtx)
 
 	return c, nil
 }

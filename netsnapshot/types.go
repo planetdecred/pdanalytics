@@ -109,6 +109,11 @@ type DataStore interface {
 	AllNodeContries(ctx context.Context) ([]string, error)
 	FetchNodeLocations(ctx context.Context, offset, limit int) ([]CountryInfo, int64, error)
 	FetchNodeVersion(ctx context.Context, offset, limit int) ([]UserAgentInfo, int64, error)
+	FetchEncodeSnapshotChart(ctx context.Context, dataType, axis, binString string, extras ...string) ([]byte, error)
+	SnapshotsByTime(ctx context.Context, startDate int64, pageSize int) ([]SnapShot, error)
+	SnapshotsByBin(ctx context.Context, bin string) ([]SnapShot, error)
+	NodeVersionsByBin(ctx context.Context, userAgent, bin string) ([]UserAgentInfo, error) 
+	NodeLocationsByBin(ctx context.Context, userAgent, bin string) ([]CountryInfo, error)
 }
 
 type Node struct {

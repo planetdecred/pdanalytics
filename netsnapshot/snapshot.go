@@ -39,7 +39,7 @@ func NewTaker(ctx context.Context, store DataStore, cfg NetworkSnapshotOptions, 
 	}
 
 	if cfg.EnableNetworkSnapshotHTTP {
-		if err := t.setupWebServer(); err != nil {
+		if err := t.configHTTPHandlers(); err != nil {
 			return nil, err
 		}
 	}
@@ -242,7 +242,7 @@ func (t *taker) geolocation(ctx context.Context, ip net.IP) (*IPInfo, error) {
 	return &geo, err
 }
 
-func (t *taker) setupWebServer() error {
+func (t *taker) configHTTPHandlers() error {
 	if err := t.server.Templates.AddTemplate("nodes"); err != nil {
 		log.Errorf("Unable to create new html template: %v", err)
 		return err
@@ -258,6 +258,14 @@ func (t *taker) setupWebServer() error {
 	})
 
 	t.server.AddRoute("/nodes", web.GET, t.nodesPage)
+	t.server.AddRoute("/api/charts/snapshot/{dataType}", web.GET, t.chart)
+	t.server.AddRoute("/api/snapshots/user-agents", web.GET, t.nodesCountUserAgents)
+	t.server.AddRoute("/api/snapshots/user-agents/chart", web.GET, t.nodesCountUserAgentsChart)
+	t.server.AddRoute("/api/snapshots/countries", web.GET, t.nodesCountByCountries)
+	t.server.AddRoute("/api/snapshots/countries/chart", web.GET, t.nodesCountByCountriesChart)
+	t.server.AddRoute("/api/snapshot/nodes/count-by-timestamp", web.GET, t.nodeCountByTimestamp)
+	t.server.AddRoute("/api/snapshot/node-versions", web.GET, t.nodeVersions)
+	t.server.AddRoute("/api/snapshot/node-countries", web.GET, t.nodeCountries)
 
 	return nil
 }

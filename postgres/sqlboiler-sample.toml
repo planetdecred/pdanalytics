@@ -1,0 +1,14 @@
+[psql]
+    dbname = "dcrextdata"
+    host = "localhost"
+    user = "user"
+    pass = "pass"
+    sslmode = "disable"
+    whitelist=[
+        "node",
+        "network_snapshot",
+        "network_snapshot_bin",
+        "node_version",
+        "node_location",
+        "heartbeat"
+    ]

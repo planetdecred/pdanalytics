@@ -231,7 +231,7 @@ func (m *Manager) Good(p *peer.Peer) {
 	// addresses added from the database may not be present in the node list
 	if _, exists := m.nodes[p.NA().IP.String()]; !exists {
 		m.mtx.Unlock()
-		m.AddAddresses([]peerAddress{peerAddress{p.NA().IP, 0}})
+		m.AddAddresses([]peerAddress{{p.NA().IP, 0}})
 		m.mtx.Lock()
 	}
 
