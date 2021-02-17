@@ -124,7 +124,7 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 		propDb := propagation.NewPgDb(dbConn, cfg.DebugLevel == "Debug")
 		if err := propDb.CreateTables(ctx); err != nil {
 			return fmt.Errorf("Failed to create new propagation component, error in creating tables, %s",
-			 err.Error())
+				err.Error())
 		}
 		_, err = propagation.New(ctx, client, propDb, syncDbs, server)
 		if err != nil {
