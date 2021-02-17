@@ -200,17 +200,17 @@ func connectNodeRPC(cfg *config, ntfnHandlers *rpcclient.NotificationHandlers) (
 		}
 		log.Debugf("Attempting to connect to dcrd RPC %s as user %s "+
 			"using certificate located in %s",
-			cfg.DcrdRpcServer, cfg.DcrdRpcUser, cfg.DcrdCert)
+			cfg.DcrdRPCServer, cfg.DcrdRPCUser, cfg.DcrdCert)
 	} else {
 		log.Debugf("Attempting to connect to dcrd RPC %s as user %s (no TLS)",
-			cfg.DcrdRpcServer, cfg.DcrdRpcUser)
+			cfg.DcrdRPCServer, cfg.DcrdRPCUser)
 	}
 
 	connCfg := &rpcclient.ConnConfig{
-		Host:         cfg.DcrdRpcServer,
+		Host:         cfg.DcrdRPCServer,
 		Endpoint:     "ws",
-		User:         cfg.DcrdRpcUser,
-		Pass:         cfg.DcrdRpcPassword,
+		User:         cfg.DcrdRPCUser,
+		Pass:         cfg.DcrdRPCPassword,
 		Certificates: dcrdCerts,
 		DisableTLS:   cfg.DisableDaemonTLS,
 	}

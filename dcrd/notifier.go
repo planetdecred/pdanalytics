@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/decred/dcrd/chaincfg/chainhash"
+	chainjson "github.com/decred/dcrd/rpc/jsonrpc/types/v2"
 	"github.com/decred/dcrd/rpcclient/v5"
 	"github.com/decred/dcrd/wire"
 )
@@ -19,12 +20,17 @@ const SyncHandlerDeadline = time.Minute * 5
 // BlockHandler is a function that will be called when dcrd reports a new block.
 type BlockHandler func(*wire.BlockHeader) error
 
+// TxHandler is a function that will be called when dcrd reports new mempool
+// transactions.
+type TxHandler func(*chainjson.TxRawResult) error
+
 type Notifier struct {
 	ctx  context.Context
 	node *rpcclient.Client
 	// The anyQ sequences all dcrd notification in the order they are received.
 	anyQ     chan interface{}
 	block    [][]BlockHandler
+	tx       [][]TxHandler
 	previous struct {
 		hash   chainhash.Hash
 		height uint32
@@ -40,6 +46,7 @@ func NewNotifier(ctx context.Context) *Notifier {
 		// inevitable explosive growth of the network.
 		anyQ:  make(chan interface{}, 1024),
 		block: make([][]BlockHandler, 0),
+		tx:    make([][]TxHandler, 0),
 	}
 }
 
@@ -74,6 +81,9 @@ func (notifier *Notifier) DcrdHandlers() *rpcclient.NotificationHandlers {
 	return &rpcclient.NotificationHandlers{
 		OnBlockConnected:    notifier.onBlockConnected,
 		OnBlockDisconnected: notifier.onBlockDisconnected,
+		// for the mempool monitors to avoid an extra call to dcrd for
+		// the tx details
+		OnTxAcceptedVerbose: notifier.onTxAcceptedVerbose,
 	}
 }
 
@@ -84,6 +94,13 @@ func (notifier *Notifier) DcrdHandlers() *rpcclient.NotificationHandlers {
 // RegisterBlockHandlerLiteGroup.
 func (notifier *Notifier) RegisterBlockHandlerGroup(handlers ...BlockHandler) {
 	notifier.block = append(notifier.block, handlers)
+}
+
+// RegisterTxHandlerGroup adds a group of tx handlers. Groups are run
+// sequentially in the order they are registered, but the handlers within the
+// group are run asynchronously.
+func (notifier *Notifier) RegisterTxHandlerGroup(handlers ...TxHandler) {
+	notifier.tx = append(notifier.tx, handlers)
 }
 
 // SetPreviousBlock modifies the height and hash of the best block. This data is
@@ -116,6 +133,8 @@ out:
 				// Process the new block.
 				log.Infof("superQueue: Processing new block %v (height %d).", msg.BlockHash(), msg.Height)
 				notifier.processBlock(msg)
+			case *chainjson.TxRawResult:
+				notifier.processTx(msg)
 			default:
 				log.Warn("unknown/unhandled message type in superQueue: %T", rawMsg)
 			}
@@ -175,6 +194,38 @@ func (notifier *Notifier) processBlock(bh *wire.BlockHeader) {
 	notifier.SetPreviousBlock(hash, height)
 }
 
+// processTx calls the TxHandler groups one at a time in the order that they
+// were registered.
+func (notifier *Notifier) processTx(tx *chainjson.TxRawResult) {
+	start := time.Now()
+	for i, handlers := range notifier.tx {
+		wg := new(sync.WaitGroup)
+		for j, h := range handlers {
+			wg.Add(1)
+			go func(h TxHandler, i, j int) {
+				defer wg.Done()
+				defer log.Tracef("Notifier: TxHandler %d.%d completed", i, j)
+				if err := h(tx); err != nil {
+					log.Errorf("tx handler failed: %v", err)
+					return
+				}
+			}(h, i, j)
+		}
+		done := make(chan struct{})
+		go func() {
+			wg.Wait()
+			close(done)
+		}()
+		select {
+		case <-done:
+		case <-time.NewTimer(SyncHandlerDeadline).C:
+			log.Errorf("at least 1 tx handler has not completed before the deadline")
+			return
+		}
+	}
+	log.Tracef("handlers of Notifier.onTxAcceptedVerbose() completed in %v", time.Since(start))
+}
+
 // rpcclient.NotificationHandlers.OnBlockConnected
 func (notifier *Notifier) onBlockConnected(blockHeaderSerialized []byte, _ [][]byte) {
 	blockHeader := new(wire.BlockHeader)
@@ -206,4 +257,11 @@ func (notifier *Notifier) onBlockDisconnected(blockHeaderSerialized []byte) {
 	hash := blockHeader.BlockHash()
 
 	log.Debugf("OnBlockDisconnected: %d / %v", height, hash)
+}
+
+// rpcclient.NotificationHandlers.OnTxAcceptedVerbose
+func (notifier *Notifier) onTxAcceptedVerbose(tx *chainjson.TxRawResult) {
+	// Current UNIX time to assign the new transaction.
+	tx.Time = time.Now().Unix()
+	notifier.anyQ <- tx
 }

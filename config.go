@@ -68,9 +68,9 @@ var (
 
 type config struct {
 	// RPC client options
-	DcrdRpcUser      string `long:"dcrduser" description:"Daemon RPC user name" env:"PDANALYTICS_DCRD_USER"`
-	DcrdRpcPassword  string `long:"dcrdpass" description:"Daemon RPC password" env:"PDANALYTICS_DCRD_PASS"`
-	DcrdRpcServer    string `long:"dcrdserv" description:"Hostname/IP and port of dcrd RPC server to connect to (default localhost:9109, testnet: localhost:19109, simnet: localhost:19556)" env:"PDANALYTICS_DCRD_URL"`
+	DcrdRPCUser      string `long:"dcrduser" description:"Daemon RPC user name" env:"PDANALYTICS_DCRD_USER"`
+	DcrdRPCPassword  string `long:"dcrdpass" description:"Daemon RPC password" env:"PDANALYTICS_DCRD_PASS"`
+	DcrdRPCServer    string `long:"dcrdserv" description:"Hostname/IP and port of dcrd RPC server to connect to (default localhost:9109, testnet: localhost:19109, simnet: localhost:19556)" env:"PDANALYTICS_DCRD_URL"`
 	DcrdCert         string `long:"dcrdcert" description:"File containing the dcrd certificate file" env:"PDANALYTICS_DCRD_CERT"`
 	DisableDaemonTLS bool   `long:"nodaemontls" description:"Disable TLS for the daemon RPC client -- NOTE: This is only allowed if the RPC client is connecting to localhost" env:"PDANALYTICS_DCRD_DISABLE_TLS"`
 
@@ -122,9 +122,13 @@ type config struct {
 	EnableAttackCost              bool `long:"attackcost" description:"Enable/Disables the attack cost calculator component."`
 	EnableStakingRewardCalculator bool `long:"stakingreward" description:"Enable/Disables the staking reward calculator component."`
 	EnableMempool                 bool `long:"mempool" description:"Enable/Disables the mempool component from running."`
+	EnablePropagation             bool `long:"propagation" description:"Enable/Disable the propagation module from running"`
 
 	// Mempool
 	MempoolInterval float64 `long:"mempoolinterval" description:"The duration of time between mempool collection"`
+
+	// sync
+	SyncDatabases []string `long:"syncdatabase" description:"Database with external block propagation entry for comparison. Must comatain block and vote tables"`
 }
 
 var (
@@ -155,6 +159,7 @@ var (
 		EnableChainParameters:         true,
 		EnableAttackCost:              true,
 		EnableMempool:                 true,
+		EnablePropagation:             true,
 
 		MempoolInterval: defaultMempoolInterval,
 	}
@@ -526,7 +531,7 @@ func loadConfig() (*config, error) {
 
 	// Set the host names and ports to the default if the user does not specify
 	// them.
-	cfg.DcrdRpcServer, err = normalizeNetworkAddress(cfg.DcrdRpcServer, defaultHost, activeNet.JSONRPCClientPort)
+	cfg.DcrdRPCServer, err = normalizeNetworkAddress(cfg.DcrdRPCServer, defaultHost, activeNet.JSONRPCClientPort)
 	if err != nil {
 		return loadConfigError(err)
 	}
