@@ -252,14 +252,12 @@ func (calc *Calculator) stakingReward(w http.ResponseWriter, r *http.Request) {
 
 	str, err := calc.webServer.Templates.ExecTemplateToString("stakingreward", struct {
 		*web.CommonPageData
-		Height       uint32
 		TicketPrice  float64
 		RewardPeriod float64
 		TicketReward float64
 		DCRPrice     float64
 	}{
 		CommonPageData: calc.webServer.CommonData(r),
-		Height:         calc.Height,
 		TicketPrice:    calc.TicketPrice,
 		RewardPeriod:   calc.RewardPeriod,
 		TicketReward:   calc.TicketReward,

@@ -7,7 +7,6 @@
    <div
       class="container py-1 mb-5"
       data-controller="stakingreward"
-      data-stakingreward-height="{{.Height}}"
       data-stakingreward-ticket-price="{{.TicketPrice}}"
       data-stakingreward-ticket-reward="{{.TicketReward}}"
       data-stakingreward-reward-period="{{.RewardPeriod}}"
@@ -17,83 +16,6 @@
       <div class="d-inline-block position-relative p-2 mt-3 mb-2">
         <span class="card-icon dcricon-two blocks h1 mr-2"></span>
         <span class="h4 my-3">Staking Reward Calculator</span>
-      </div>
-
-      <div class="row mx-0 my-2 bg-white">
-        {{- /* NETWORK PARAMETERS */ -}}
-        <div class="col-24 col-sm-12 col-md-24 col-lg-14 px-3 position-relative pt-3 pb-3">
-          <div class="pl-1">
-            <span class="h6 d-inline-block pl-2 font-weight-bold">Current Mainnet Parameters</span>
-          </div>
-          <div class="row">
-            <div class="col-24 col-md-12 col-lg-24 col-xl-14 row pb-2 pb-sm-3 pt-2 pt-md-0 pt-lg-2 pt-xl-0">
-              <div class="col-11">
-                <div class="d-inline-block text-center text-md-left text-lg-center text-xl-left">
-                  <span class="text-secondary fs13">Best Block</span>
-                  <br>
-                  <span class="h4" data-target="stakingreward.blockHeight">0</span>
-                </div>
-              </div>
-
-              <div class="col-13">
-                <div class="d-inline-block text-center text-md-left text-lg-center text-xl-left">
-                  <span class="text-secondary fs13">Ticket Price</span>
-                  <br>
-                  <span class="h4" data-target="stakingreward.ticketPrice">0</span> <span class="text-secondary">DCR</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-24 col-md-12 col-lg-24 col-xl-11 row pb-3 pt-2 pt-md-0 pt-lg-2 pt-xl-0">
-              <div class="col-10 text-center">
-                <div class="d-inline-block text-center text-md-left text-lg-center text-xl-left">
-                  <span class="text-secondary fs13">Ticket Reward</span>
-                  <br>
-                  <span class="h4" data-target="stakingreward.ticketReward">0</span><span class="text-secondary">%</span>
-                </div>
-              </div>
-
-              <div class="col-12 text-center">
-                <div class="d-inline-block text-center text-md-left text-lg-center text-xl-left">
-                  <span class="text-secondary fs13">Reward Period</span>
-                  <br>
-                  <span class="h4" data-target="stakingreward.rewardPeriod">0</span>
-                  <span class="text-secondary">Days</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {{- /* ADJUSTABLE PARAMETERS */ -}}
-        <div class="col-24 col-sm-12 col-md-24 col-lg-10 secondary-card pt-3 pb-3 px-3">
-          <div class="pl-1">
-            <span class="h6 d-inline-block pl-2 font-weight-bold">Adjustable Parameter</span>
-          </div>
-
-          <div class="row mt-1">
-            <div class="col-24 col-md-12 col-lg-24 col-xl-10 row pb-3">
-              <div class="col-12 text-center">
-                <div class="d-inline-block text-center text-md-left text-lg-center text-xl-left">
-                  <span class="text-secondary fs13">USD-DCR Rate</span>
-                  <br>
-                  <span class="h4">
-                    <input
-                      type="number"
-                      data-target="stakingreward.priceDCR"
-                      data-action="change->stakingreward#updatePrice"
-                      step="0.1"
-                      min="0.01"
-                      value="20"
-                      max="1000"
-                    >
-                  </span> <span class="text-secondary">USD/DCR</span>
-                </div>
-              </div>
-              
-            </div>
-          </div>
-        </div>
       </div>
 
       <div class="bg-white mb-1 py-2 px-3 my-0">
@@ -133,9 +55,7 @@
           <div class="col-md-10">
             <p class="mt-5" style="font-size: 24px;">
               Staking <span class="font-weight-bold" data-target="stakingreward.amountText">0</span>
-              <span class="text-secondary">DCR</span>
-              ($<span class="font-weight-bold" data-target="stakingreward.amountUsd">0</span>
-              <span class="fs11">USD</span>) <br>
+              <span class="text-secondary">DCR</span><br>
               by buying
               <span class="font-weight-bold" data-target="stakingreward.tickets">0</span> tickets
               will generate <br> 
@@ -144,8 +64,6 @@
               in <span class="font-weight-bold" data-target="stakingreward.daysText">0</span> days which is
               <span class="font-weight-bold" data-target="stakingreward.amountRoi">0</span>
               <span class="text-secondary">DCR</span>
-              ($<span class="font-weight-bold" data-target="stakingreward.amountRoiUsd">0</span>
-              <span class="fs11">USD</span>)
             </p>
           </div>
         </div>

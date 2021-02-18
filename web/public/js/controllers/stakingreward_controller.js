@@ -5,30 +5,15 @@ import moment from 'moment'
 export default class extends Controller {
   static get targets () {
     return [
-      'blockHeight', 'ticketPrice', 'ticketReward', 'rewardPeriod',
+      'blockHeight', 'ticketPrice',
       'startDate', 'endDate',
       'priceDCR', 'dayText', 'amount', 'amountText', 'days', 'daysText',
-      'amountRoi', 'percentageRoi', 'tickets', 'amountUsd', 'amountRoiUsd'
+      'amountRoi', 'percentageRoi', 'tickets'
     ]
   }
 
   async connect () {
-    this.height = parseInt(this.data.get('height'))
     this.ticketPrice = parseFloat(this.data.get('ticketPrice'))
-    this.dcrPrice = parseFloat(this.data.get('dcrprice'))
-    this.ticketReward = parseFloat(this.data.get('ticketReward'))
-    this.rewardPeriod = parseFloat(this.data.get('rewardPeriod'))
-
-    this.blockHeightTarget.textContent = this.height
-    this.ticketPriceTarget.textContent = this.ticketPrice.toFixed(2)
-    this.ticketRewardTarget.textContent = this.ticketReward.toFixed(2)
-    this.rewardPeriodTarget.textContent = this.rewardPeriod.toFixed(2)
-
-    this.priceDCRTarget.value = this.dcrPrice.toFixed(2)
-  }
-
-  updatePrice () {
-    this.dcrPrice = parseInt(this.dcrPriceTarget.value)
   }
 
   calculate () {
@@ -55,7 +40,6 @@ export default class extends Controller {
 
       _this.ticketsTarget.textContent = parseInt(amount / result.ticketPrice)
       _this.amountTextTarget.textContent = amount
-      _this.amountUsdTarget.textContent = (amount * _this.dcrPrice).toFixed(2)
       _this.daysTextTarget.textContent = days
 
       // number of periods
@@ -63,7 +47,6 @@ export default class extends Controller {
       const totalAmount = totalPercentage * amount * 1 / 100
       _this.percentageRoiTarget.textContent = totalPercentage.toFixed(2)
       _this.amountRoiTarget.textContent = totalAmount.toFixed(2)
-      _this.amountRoiUsdTarget.textContent = (totalAmount * _this.dcrPrice).toFixed(2)
     })
   }
 }
