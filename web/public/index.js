@@ -2,11 +2,8 @@ import 'regenerator-runtime/runtime'
 /* global require */
 import { Application } from 'stimulus'
 import { definitionsFromContext } from 'stimulus/webpack-helpers'
-import { darkEnabled } from './js/services/theme_service'
 
 require('./scss/application.scss')
-
-window.darkEnabled = darkEnabled
 
 const application = Application.start()
 const context = require.context('./js/controllers', true, /\.js$/)

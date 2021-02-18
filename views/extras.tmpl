@@ -54,69 +54,31 @@
 
 {{define "navbar"}}
 <body class="{{ theme }}{{if .Cookies.DarkMode}} darkBG{{end}}">
-<header class="top-nav d-flex align-items-center" id="navBar" data-blocktime="{{.BlockTimeUnix}}">
-	<div class="container d-flex justify-content-between align-items-center">
-		<a class="no-underline d-block home-link dcrdata-logo" href="/"></a>
-		{{/* <form
-			class="search-form"
-			role="search"
-			id="search-form"
-			action="/search"
-			data-controller="search"
-			data-action="submit->search#execute"
-		>
-			<input
-				tabindex="0"
-				type="text"
-				name="search"
-				id="search"
-				class="top-search mousetrap"
-				placeholder="Search for blocks, addresses, transactions or proposal tokens"
-				spellcheck="false"
-				autocomplete="off"
-			/>
-			<button class="search-bttn" type="submit"><span class="dcricon-search"></span></button>
-		</form> */}}
-		<nav id="hamburger-menu" data-controller="menu" data-turbolinks-permanent>
-			<div id="menuToggle">
-				<input type="checkbox" data-target="menu.toggle" data-action="change->menu#toggle"/>
-				<span class="patty"></span>
-				<span class="patty"></span>
-				<span class="patty short"></span>
-				<div id="menu">
-					<a class="menu-item" data-keynav-skip href="/" title="Home">Home</a>
 
-					<!--TODO:Dynamically render menu items as provided by each module-->
-					
-					{{ range $menuItem := .MenuItems }}
-					<a data-keynav-skip href="{{$menuItem.Href}}" 
-					{{ range $key, $value := $menuItem.Attributes }}
-						{{$key}}="{{$value}}"
-					{{end}}>{{$menuItem.HyperText}}</a>
-					
-					{{ end }}
-					
-				{{- if eq .NetName "Mainnet"}}
-					<a class="menu-item" data-keynav-skip href="{{.Links.Testnet}}" title="Home">Switch To Testnet</a>
-				{{- else}}
-					<a class="menu-item" data-keynav-skip href="{{.Links.Mainnet}}" title="Home">Switch To Mainnet</a>
-				{{- end}}
-					<form action="/set" method="post" data-target="menu.form" class="menu-form">
-						<input type="hidden" name="darkmode" value="darkmode">
-						<input type="hidden" name="requestURI" value="{{.RequestURI}}">
-						<button type="submit" data-action="click->menu#onSunClick"
-								class="menu-submit text-left w-100 p-0"
-								data-keynav-skip>
-								<div class="menu-item">
-								  <span id="sun-icon" class="dcricon-sun-fill no-underline pr-2"></span>
-								  Night Mode
-								</div>
-						</button>
-					</form>
-					<a class="menu-item jsonly" data-keynav-skip data-turbolinks="false" href="#" id="keynav-toggle">
-						<span class="text">Enable Hot Keys</span><span class="keys-hint">(&nbsp;&nbsp;<span class="arrows"> &#8592;<br>&#8594;</span>&nbsp;&nbsp;enter&nbsp;&nbsp;\&nbsp;&nbsp;=&nbsp;&nbsp;)</span>
-					</a>
-					<a class="menu-item" data-keynav-skip href="{{.Links.APIDocs}}" title="API Endpoints" target="_blank" rel="noopener noreferrer">JSON API Docs</a>
+<header class="top-nav d-flex align-items-center" id="navBar" data-blocktime="{{.BlockTimeUnix}}">
+	<div class="container d-flex justify-content-between align-items-center" data-controller="layout">
+		<a class="no-underline d-block home-link text-center page-title" href="/">
+			<img src="/images/logo.png" class="logo" />
+		</a>
+		
+		<nav class="navbar navbar-expand-sm navbar-light bg-light">
+			<div class="container-fluid">
+				<button data-action="click->layout#toggleNavbar" class="navbar-toggler" type="button" data-toggles="collapse" data-target="#nav">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="nav" data-target="layout.navbar">
+					<ul class="navbar-nav mx-auto">
+						{{ range $menuItem := .MenuItems }}
+						<li class="nav-item">
+							<a class="nav-link" id="nav-{{$menuItem.Href}}" href="{{$menuItem.Href}}"
+							{{ range $key, $value := $menuItem.Attributes }}
+								{{$key}}="{{$value}}"
+							{{end}}>
+								<span class="text">{{$menuItem.HyperText}}</span>
+							</a>
+						</li>
+						{{ end }}
+					</ul>
 				</div>
 			</div>
 		</nav>
