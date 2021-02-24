@@ -302,15 +302,18 @@ func (calc *Calculator) targetTicketReward(w http.ResponseWriter, r *http.Reques
 
 	startDate := time.Unix(startDateUnix/1000, 0).UTC().Truncate(24 * time.Hour)
 	endDate := time.Unix(endDateUnix/1000, 0).UTC().Truncate(24 * time.Hour)
-	today := time.Now().Truncate(24 * time.Hour)
+	today := time.Now().UTC().Truncate(24 * time.Hour)
 
 	// starting startingHeight
 	var startingHeight = calc.Height
 
 	if startDate != today {
-		duration := time.Until(startDate)
-		blockDiff := duration.Minutes() / float64(calc.client.Params.TargetTimePerBlock)
-		if time.Now().Before(today) {
+		duration := startDate.Sub(today)
+		minutes := duration.Minutes() + duration.Hours()*60
+		minutesPerBlock := calc.client.Params.TargetTimePerBlock.Minutes() + calc.client.Params.TargetTimePerBlock.Hours()*60
+		blockDiff := minutes / minutesPerBlock
+		blockDiff = math.Abs(blockDiff)
+		if startDate.Before(today) {
 			startingHeight = calc.Height - uint32(blockDiff)
 		} else {
 			startingHeight = calc.Height + uint32(blockDiff)
