@@ -15,10 +15,10 @@ export default class extends Controller {
 
   async connect () {
     this.ticketPrice = parseFloat(this.data.get('ticketPrice'))
-    this.startDateTarget.value = moment().subtract(1, 'year').format('YYYY-MM-DD');
-    this.endDateTarget.value = moment().format('YYYY-MM-DD');
-    this.amountTarget.value = 1000;
-    this.calculate();
+    this.startDateTarget.value = moment().subtract(1, 'year').format('YYYY-MM-DD')
+    this.endDateTarget.value = moment().format('YYYY-MM-DD')
+    this.amountTarget.value = 1000
+    this.calculate()
   }
 
   calculate () {

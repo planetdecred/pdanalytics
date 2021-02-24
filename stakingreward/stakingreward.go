@@ -179,7 +179,7 @@ func (calc *Calculator) simulateStakingReward(numberOfDays float64, startingDCRB
 
 		return ProjectedCoinsCirculating / TicketPoolSize
 	}
-	ticketPrice = TheoreticalTicketPrice((startingBlockHeight))
+	ticketPrice = TheoreticalTicketPrice(startingBlockHeight)
 	TicketAdjustmentFactor := actualTicketPrice / TheoreticalTicketPrice(startingBlockHeight)
 
 	// Prepare for simulation

@@ -85,51 +85,6 @@
 {{end}}
 
 {{define "footer"}}
-<footer class="navbar-fixed-bottom">
-	<div class="container d-flex justify-content-between align-items-center">
-		{{/* <span>
-			{{ if not $.Tip }}
-			<span>Unknown </span>
-			{{ else }}
-			<span data-controller="time" data-target="time.blocktime" data-stamp="{{$.Tip.Time}}"></span> 
-			{{ end }}
-			<span class="d-none d-sm-inline">since last block</span>
-		</span> */}}
-		<span>
-			<a
-				class="text-nowrap d-none d-md-inline-block pr-3"
-				href="{{.Links.Github}}"
-				title="pdanalytics on GitHub"
-				target="_blank"
-				rel="noopener noreferrer"
-			>pdanalytics v{{.Version}}</a>
-			{{- if ne .Links.OnionURL "" }}
-			<a
-				class="text-nowrap d-none d-md-inline-block pr-3"
-				href="{{.Links.OnionURL}}"
-				title="Access dcrdata over Tor"
-				target="_blank"
-				rel="noopener noreferrer"
-			>Tor site</a>
-			{{ end }}
-			<a
-				class="text-nowrap"
-				href="{{.Links.License}}"
-				target="_blank"
-				rel="noopener noreferrer"
-			>© 2020 Planet Decred (ISC)</a>
-		</span>
-		{{/* <span
-			id="connection"
-			class="text-nowrap align-items-center clickable d-inline-block"
-			data-turbolinks-permanent
-			data-controller="connection"
-			data-target="connection.indicator"
-			data-action="click->connection#requestNotifyPermission"
-			title="While connected, you will receive live page updates and, if enabled, desktop notifications (click to enable)."
-			><span class="d-none d-sm-inline" data-target="connection.status">Connecting <span class="d-none d-md-inline-block">to WebSocket...</span></span><div></div>
-		</span> */}}
-	</div>
 	<script
 		src="/dist/js/vendors~app.bundle.js?x=65tv3"
 		data-turbolinks-eval="false"
@@ -140,7 +95,6 @@
 		data-turbolinks-eval="false"
 		data-turbolinks-suppress-warning
 	></script>
-</footer>
 {{end}}
 
 {{define "decimalParts" -}}
