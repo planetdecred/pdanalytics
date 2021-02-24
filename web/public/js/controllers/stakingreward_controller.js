@@ -6,9 +6,9 @@ export default class extends Controller {
   static get targets () {
     return [
       'blockHeight', 'ticketPrice',
-      'startDate', 'endDate',
+      'startDate', 'endDate', 'startDateText', 'endDateText',
       'priceDCR', 'dayText', 'amount', 'amountText', 'days', 'daysText',
-      'amountRoi', 'percentageRoi', 'tickets',
+      'amountRoi', 'percentageRoi',
       'tableBody', 'rowTemplate'
     ]
   }
@@ -43,7 +43,6 @@ export default class extends Controller {
     axios.get(url).then(function (response) {
       let result = response.data
 
-      _this.ticketsTarget.textContent = parseInt(amount / result.ticketPrice)
       _this.amountTextTarget.textContent = amount
       _this.daysTextTarget.textContent = parseInt(days)
 
@@ -52,6 +51,8 @@ export default class extends Controller {
       const totalAmount = totalPercentage * amount * 1 / 100
       _this.percentageRoiTarget.textContent = totalPercentage.toFixed(2)
       _this.amountRoiTarget.textContent = totalAmount.toFixed(2)
+      _this.startDateTextTarget.textContent = _this.startDateTarget.value
+      _this.endDateTextTarget.textContent = _this.endDateTarget.value
 
       _this.tableBodyTarget.innerHTML = ''
       result.simulation_table.forEach(item => {
@@ -62,8 +63,9 @@ export default class extends Controller {
         fields[1].innerText = item.returned_fund.toFixed(2)
         fields[2].innerText = item.reward.toFixed(2)
         fields[3].innerText = item.dcr_balance.toFixed(2)
-        fields[4].innerText = item.ticket_price.toFixed(4)
-        fields[5].innerText = item.tickets_purchased
+        fields[4].innerText = (100 * (item.dcr_balance - amount)/amount).toFixed(2)
+        fields[5].innerText = item.ticket_price.toFixed(4)
+        fields[6].innerText = item.tickets_purchased
         _this.tableBodyTarget.appendChild(exRow)
       })
     })
