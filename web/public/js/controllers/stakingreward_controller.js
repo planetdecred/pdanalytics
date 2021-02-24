@@ -59,13 +59,15 @@ export default class extends Controller {
         const exRow = document.importNode(_this.rowTemplateTarget.content, true)
         const fields = exRow.querySelectorAll('td')
 
-        fields[0].innerText = item.height
-        fields[1].innerText = item.returned_fund.toFixed(2)
-        fields[2].innerText = item.reward.toFixed(2)
-        fields[3].innerText = item.dcr_balance.toFixed(2)
-        fields[4].innerText = (100 * (item.dcr_balance - amount)/amount).toFixed(2)
-        fields[5].innerText = item.ticket_price.toFixed(4)
-        fields[6].innerText = item.tickets_purchased
+        let date = moment(startDateUnix).add(item.day, 'days')
+        fields[0].innerText = date.format('YYYY-MM-DD')
+        fields[1].innerText = item.height
+        fields[2].innerText = item.returned_fund.toFixed(2)
+        fields[3].innerText = item.reward.toFixed(2)
+        fields[4].innerText = item.dcr_balance.toFixed(2)
+        fields[5].innerText = (100 * (item.dcr_balance - amount) / amount).toFixed(2)
+        fields[6].innerText = item.ticket_price.toFixed(4)
+        fields[7].innerText = item.tickets_purchased
         _this.tableBodyTarget.appendChild(exRow)
       })
     })

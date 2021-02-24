@@ -27,6 +27,7 @@ type Calculator struct {
 
 type simulationRow struct {
 	SimBlock         float64 `json:"height"`
+	SimDay           int     `json:"day"`
 	TicketPrice      float64 `json:"ticket_price"`
 	MatrueTickets    float64 `json:"matured_tickets"`
 	DCRBalance       float64 `json:"dcr_balance"`

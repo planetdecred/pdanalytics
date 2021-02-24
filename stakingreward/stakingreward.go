@@ -189,6 +189,7 @@ func (calc *Calculator) simulateStakingReward(numberOfDays float64, startingDCRB
 
 	simulationTable = append(simulationTable, simulationRow{
 		SimBlock:    simblock,
+		SimDay:      0,
 		DCRBalance:  DCRBalance,
 		TicketPrice: ticketPrice,
 	})
@@ -219,8 +220,12 @@ func (calc *Calculator) simulateStakingReward(numberOfDays float64, startingDCRB
 		// Simulate reward
 		DCRBalance += (StakeRewardAtBlock(simblock) * ticketsPurchased)
 
+		blocksPassed := simblock - simulationTable[len(simulationTable)-1].SimBlock
+		daysPassed := blocksPassed / blocksPerDay
+		day := simulationTable[len(simulationTable)-1].SimDay + int(daysPassed)
 		simulationTable = append(simulationTable, simulationRow{
 			SimBlock:     simblock,
+			SimDay:       day,
 			DCRBalance:   DCRBalance,
 			Reward:       (StakeRewardAtBlock(simblock) * ticketsPurchased),
 			ReturnedFund: (TicketPrice * ticketsPurchased),
@@ -236,10 +241,12 @@ func (calc *Calculator) simulateStakingReward(numberOfDays float64, startingDCRB
 
 	// Scale down to exactly numberOfDays days
 	SimulationReward := ((DCRBalance - startingDCRBalance) / startingDCRBalance) * 100
-	stakingReward = (numberOfBlocks / (simblock - startingBlockHeight)) * SimulationReward
+	excessBlocks := (simblock - startingBlockHeight)
+	stakingReward = (numberOfBlocks / excessBlocks) * SimulationReward
 	overflow := startingDCRBalance * (SimulationReward - stakingReward) / 100
 	simulationTable[len(simulationTable)-1].Reward -= overflow
 	simulationTable[len(simulationTable)-1].DCRBalance -= overflow
+	simulationTable[len(simulationTable)-1].SimDay -= int(excessBlocks / blocksPerDay)
 	return
 }
 
