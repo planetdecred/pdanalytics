@@ -237,6 +237,9 @@ func (calc *Calculator) simulateStakingReward(numberOfDays float64, startingDCRB
 	// Scale down to exactly numberOfDays days
 	SimulationReward := ((DCRBalance - startingDCRBalance) / startingDCRBalance) * 100
 	stakingReward = (numberOfBlocks / (simblock - startingBlockHeight)) * SimulationReward
+	overflow := startingDCRBalance * (SimulationReward - stakingReward) / 100
+	simulationTable[len(simulationTable)-1].Reward -= overflow
+	simulationTable[len(simulationTable)-1].DCRBalance -= overflow
 	return
 }
 
