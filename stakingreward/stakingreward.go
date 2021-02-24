@@ -5,7 +5,6 @@ import (
 	"math"
 	"net/http"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/decred/dcrd/chaincfg/v2"
@@ -16,23 +15,7 @@ import (
 	"github.com/planetdecred/pdanalytics/web"
 )
 
-type Calculator struct {
-	webServer *web.Server
-	xcBot     *exchanges.ExchangeBot
-	client    *dcrd.Dcrd
-
-	Height       uint32
-	stakePerc    float64
-	coinSupply   float64
-	TicketPrice  float64
-	TicketReward float64
-	RewardPeriod float64
-
-	MeanVotingBlocks int64
-
-	reorgLock sync.Mutex
-}
-
+// New creates a new Calculator module
 func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot) (*Calculator, error) {
 	calc := &Calculator{
 		webServer: webServer,
@@ -78,51 +61,52 @@ func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot)
 	return calc, nil
 }
 
-func (exp *Calculator) ConnectBlock(w *wire.BlockHeader) error {
-	exp.reorgLock.Lock()
-	defer exp.reorgLock.Unlock()
+// ConnectBlock satisfies block notifier interface
+func (calc *Calculator) ConnectBlock(w *wire.BlockHeader) error {
+	calc.reorgLock.Lock()
+	defer calc.reorgLock.Unlock()
 
-	exp.Height = w.Height
+	calc.Height = w.Height
 
 	// Stake difficulty (ticket price)
-	stakeDiff, err := exp.client.Rpc.GetStakeDifficulty()
+	stakeDiff, err := calc.client.Rpc.GetStakeDifficulty()
 	if err != nil {
 		return err
 	}
-	exp.TicketPrice = stakeDiff.CurrentStakeDifficulty
+	calc.TicketPrice = stakeDiff.CurrentStakeDifficulty
 
-	nbSubsidy, err := exp.client.Rpc.GetBlockSubsidy(int64(w.Height)+1, 5)
+	nbSubsidy, err := calc.client.Rpc.GetBlockSubsidy(int64(w.Height)+1, 5)
 	if err != nil {
 		log.Errorf("GetBlockSubsidy for %d failed: %v", w.Height, err)
 	}
 
 	posSubsPerVote := dcrutil.Amount(nbSubsidy.PoS).ToCoin() /
-		float64(exp.client.Params.TicketsPerBlock)
-	exp.TicketReward = 100 * posSubsPerVote / stakeDiff.CurrentStakeDifficulty
+		float64(calc.client.Params.TicketsPerBlock)
+	calc.TicketReward = 100 * posSubsPerVote / stakeDiff.CurrentStakeDifficulty
 
 	// The actual reward of a ticket needs to also take into consideration the
 	// ticket maturity (time from ticket purchase until its eligible to vote)
 	// and coinbase maturity (time after vote until funds distributed to ticket
 	// holder are available to use).
-	avgSSTxToSSGenMaturity := exp.MeanVotingBlocks +
-		int64(exp.client.Params.TicketMaturity) +
-		int64(exp.client.Params.CoinbaseMaturity)
-	exp.RewardPeriod = float64(avgSSTxToSSGenMaturity) *
-		exp.client.Params.TargetTimePerBlock.Hours() / 24
+	avgSSTxToSSGenMaturity := calc.MeanVotingBlocks +
+		int64(calc.client.Params.TicketMaturity) +
+		int64(calc.client.Params.CoinbaseMaturity)
+	calc.RewardPeriod = float64(avgSSTxToSSGenMaturity) *
+		calc.client.Params.TargetTimePerBlock.Hours() / 24
 
 	// Coin supply
-	coinSupply, err := exp.client.Rpc.GetCoinSupply()
+	coinSupply, err := calc.client.Rpc.GetCoinSupply()
 	if err != nil {
 		return err
 	}
-	exp.coinSupply = coinSupply.ToCoin()
+	calc.coinSupply = coinSupply.ToCoin()
 
 	// Ticket pool info
-	poolValue, err := exp.client.Rpc.GetTicketPoolValue()
+	poolValue, err := calc.client.Rpc.GetTicketPoolValue()
 	if err != nil {
 		return err
 	}
-	exp.stakePerc = poolValue.ToCoin() / coinSupply.ToCoin()
+	calc.stakePerc = poolValue.ToCoin() / coinSupply.ToCoin()
 
 	return nil
 }
@@ -148,24 +132,24 @@ func CalcMeanVotingBlocks(params *chaincfg.Params) int64 {
 // starting amount of DCR and calculation parameters.  Generate a TEXT table of
 // the simulation results that can optionally be used for future expansion of
 // dcrdata functionality.
-func (exp *Calculator) simulateStakingReward(numberOfDays float64, startingDCRBalance float64, integerTicketQty bool,
-	currentStakePercent float64, actualCoinbase float64, currentBlockNum float64,
-	actualTicketPrice float64) (stakingReward, ticketPrice float64) {
+func (calc *Calculator) simulateStakingReward(numberOfDays float64, startingDCRBalance float64, integerTicketQty bool,
+	currentStakePercent float64, actualCoinbase float64, startingBlockHeight float64,
+	actualTicketPrice float64) (stakingReward, ticketPrice float64, simulationTable []simulationRow) {
 
 	// Calculations are only useful on mainnet.  Short circuit calculations if
 	// on any other version of chain params.
-	if exp.client.Params.Name != "mainnet" {
-		return 0, 0
+	if calc.client.Params.Name != "mainnet" {
+		return 0, 0, nil
 	}
 
-	blocksPerDay := 86400 / exp.client.Params.TargetTimePerBlock.Seconds()
+	blocksPerDay := 86400 / calc.client.Params.TargetTimePerBlock.Seconds()
 	numberOfBlocks := numberOfDays * blocksPerDay
 	ticketsPurchased := float64(0)
 
 	StakeRewardAtBlock := func(blocknum float64) float64 {
 		// Option 1:  RPC Call
 
-		Subsidy, _ := exp.client.Rpc.GetBlockSubsidy(int64(blocknum), 1)
+		Subsidy, _ := calc.client.Rpc.GetBlockSubsidy(int64(blocknum), 1)
 		return dcrutil.Amount(Subsidy.PoS).ToCoin()
 
 		// Option 2:  Calculation
@@ -186,24 +170,30 @@ func (exp *Calculator) simulateStakingReward(numberOfDays float64, startingDCRBa
 			1680000) // Premine 1.68M
 	}
 
-	CoinAdjustmentFactor := actualCoinbase / MaxCoinSupplyAtBlock(currentBlockNum)
+	CoinAdjustmentFactor := actualCoinbase / MaxCoinSupplyAtBlock(startingBlockHeight)
 
 	TheoreticalTicketPrice := func(blocknum float64) float64 {
 		ProjectedCoinsCirculating := MaxCoinSupplyAtBlock(blocknum) * CoinAdjustmentFactor * currentStakePercent
-		TicketPoolSize := (float64(exp.MeanVotingBlocks) + float64(exp.client.Params.TicketMaturity) +
-			float64(exp.client.Params.CoinbaseMaturity)) * float64(exp.client.Params.TicketsPerBlock)
+		TicketPoolSize := (float64(calc.MeanVotingBlocks) + float64(calc.client.Params.TicketMaturity) +
+			float64(calc.client.Params.CoinbaseMaturity)) * float64(calc.client.Params.TicketsPerBlock)
 
 		return ProjectedCoinsCirculating / TicketPoolSize
 	}
-	ticketPrice = TheoreticalTicketPrice((currentBlockNum))
-	TicketAdjustmentFactor := actualTicketPrice / TheoreticalTicketPrice(currentBlockNum)
+	ticketPrice = TheoreticalTicketPrice((startingBlockHeight))
+	TicketAdjustmentFactor := actualTicketPrice / TheoreticalTicketPrice(startingBlockHeight)
 
 	// Prepare for simulation
-	simblock := currentBlockNum
+	simblock := startingBlockHeight
 	var TicketPrice float64
 	DCRBalance := startingDCRBalance
 
-	for simblock < (numberOfBlocks + currentBlockNum) {
+	simulationTable = append(simulationTable, simulationRow{
+		SimBlock:    simblock,
+		DCRBalance:  DCRBalance,
+		TicketPrice: ticketPrice,
+	})
+
+	for simblock < (numberOfBlocks + startingBlockHeight) {
 		// Simulate a Purchase on simblock
 		TicketPrice = TheoreticalTicketPrice(simblock) * TicketAdjustmentFactor
 		if integerTicketQty {
@@ -215,10 +205,13 @@ func (exp *Calculator) simulateStakingReward(numberOfDays float64, startingDCRBa
 			ticketsPurchased = (DCRBalance / TicketPrice)
 		}
 
+		simulationTable[len(simulationTable)-1].TicketPrice = TicketPrice
+		simulationTable[len(simulationTable)-1].TicketsPurchased = ticketsPurchased
+
 		DCRBalance -= (TicketPrice * ticketsPurchased)
 
 		// Move forward to average vote
-		simblock += (float64(exp.client.Params.TicketMaturity) + float64(exp.MeanVotingBlocks))
+		simblock += (float64(calc.client.Params.TicketMaturity) + float64(calc.MeanVotingBlocks))
 
 		// Simulate return of funds
 		DCRBalance += (TicketPrice * ticketsPurchased)
@@ -226,8 +219,16 @@ func (exp *Calculator) simulateStakingReward(numberOfDays float64, startingDCRBa
 		// Simulate reward
 		DCRBalance += (StakeRewardAtBlock(simblock) * ticketsPurchased)
 
+		simulationTable = append(simulationTable, simulationRow{
+			SimBlock:     simblock,
+			DCRBalance:   DCRBalance,
+			Reward:       (StakeRewardAtBlock(simblock) * ticketsPurchased),
+			ReturnedFund: (TicketPrice * ticketsPurchased),
+			TicketPrice:  TheoreticalTicketPrice(simblock) * TicketAdjustmentFactor,
+		})
+
 		// Move forward to coinbase maturity
-		simblock += float64(exp.client.Params.CoinbaseMaturity)
+		simblock += float64(calc.client.Params.CoinbaseMaturity)
 
 		// Need to receive funds before we can use them again so add 1 block
 		simblock++
@@ -235,7 +236,7 @@ func (exp *Calculator) simulateStakingReward(numberOfDays float64, startingDCRBa
 
 	// Scale down to exactly numberOfDays days
 	SimulationReward := ((DCRBalance - startingDCRBalance) / startingDCRBalance) * 100
-	stakingReward = (numberOfBlocks / (simblock - currentBlockNum)) * SimulationReward
+	stakingReward = (numberOfBlocks / (simblock - startingBlockHeight)) * SimulationReward
 	return
 }
 
@@ -278,7 +279,7 @@ func (calc *Calculator) stakingReward(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (exp *Calculator) targetTicketReward(w http.ResponseWriter, r *http.Request) {
+func (calc *Calculator) targetTicketReward(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	startingBalance, err := strconv.ParseFloat(r.FormValue("startingBalance"), 64)
 	if err != nil {
@@ -299,30 +300,36 @@ func (exp *Calculator) targetTicketReward(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	startDate := time.Unix(startDateUnix/1000, 0)
-	endDate := time.Unix(endDateUnix/1000, 0)
+	startDate := time.Unix(startDateUnix/1000, 0).UTC().Truncate(24 * time.Hour)
+	endDate := time.Unix(endDateUnix/1000, 0).UTC().Truncate(24 * time.Hour)
+	today := time.Now().Truncate(24 * time.Hour)
 
-	// starting height
-	var height uint32
-	duration := time.Until(startDate)
-	blockDiff := duration.Minutes() / float64(exp.client.Params.TargetTimePerBlock)
-	if time.Now().Before(startDate) {
-		height = exp.Height + uint32(blockDiff)
-	} else {
-		height = exp.Height - uint32(blockDiff)
+	// starting startingHeight
+	var startingHeight = calc.Height
+
+	if startDate != today {
+		duration := time.Until(startDate)
+		blockDiff := duration.Minutes() / float64(calc.client.Params.TargetTimePerBlock)
+		if time.Now().Before(today) {
+			startingHeight = calc.Height - uint32(blockDiff)
+		} else {
+			startingHeight = calc.Height + uint32(blockDiff)
+		}
 	}
 
 	// accumulated staking reward
-	asr, ticketPrice := exp.simulateStakingReward((endDate.Sub(startDate)).Hours()/24, startingBalance, true,
-		exp.stakePerc, exp.coinSupply, float64(height), exp.TicketPrice)
+	asr, ticketPrice, simulationTable := calc.simulateStakingReward((endDate.Sub(startDate)).Hours()/24, startingBalance, true,
+		calc.stakePerc, calc.coinSupply, float64(startingHeight), calc.TicketPrice)
 
 	web.RenderJSON(w, struct {
-		Height      uint32  `json:"height"`
-		Reward      float64 `json:"reward"`
-		TicketPrice float64 `json:"ticketPrice"`
+		Height          uint32          `json:"height"`
+		Reward          float64         `json:"reward"`
+		TicketPrice     float64         `json:"ticketPrice"`
+		SimulationTable []simulationRow `json:"simulation_table"`
 	}{
-		Height:      height,
-		Reward:      asr,
-		TicketPrice: ticketPrice,
+		Height:          startingHeight,
+		Reward:          asr,
+		TicketPrice:     ticketPrice,
+		SimulationTable: simulationTable,
 	})
 }

@@ -8,7 +8,8 @@ export default class extends Controller {
       'blockHeight', 'ticketPrice',
       'startDate', 'endDate',
       'priceDCR', 'dayText', 'amount', 'amountText', 'days', 'daysText',
-      'amountRoi', 'percentageRoi', 'tickets'
+      'amountRoi', 'percentageRoi', 'tickets',
+      'tableBody', 'rowTemplate'
     ]
   }
 
@@ -51,6 +52,20 @@ export default class extends Controller {
       const totalAmount = totalPercentage * amount * 1 / 100
       _this.percentageRoiTarget.textContent = totalPercentage.toFixed(2)
       _this.amountRoiTarget.textContent = totalAmount.toFixed(2)
+
+      _this.tableBodyTarget.innerHTML = ''
+      result.simulation_table.forEach(item => {
+        const exRow = document.importNode(_this.rowTemplateTarget.content, true)
+        const fields = exRow.querySelectorAll('td')
+
+        fields[0].innerText = item.height
+        fields[1].innerText = item.returned_fund.toFixed(2)
+        fields[2].innerText = item.reward.toFixed(2)
+        fields[3].innerText = item.dcr_balance.toFixed(2)
+        fields[4].innerText = item.ticket_price.toFixed(4)
+        fields[5].innerText = item.tickets_purchased
+        _this.tableBodyTarget.appendChild(exRow)
+      })
     })
   }
 }
