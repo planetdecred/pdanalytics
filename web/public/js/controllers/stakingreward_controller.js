@@ -6,8 +6,8 @@ export default class extends Controller {
   static get targets () {
     return [
       'blockHeight', 'ticketPrice',
-      'startDate', 'endDate', 'startDateText', 'endDateText',
-      'priceDCR', 'dayText', 'amount', 'amountText', 'days', 'daysText',
+      'startDate', 'endDate',
+      'priceDCR', 'dayText', 'amount', 'days', 'daysText',
       'amountRoi', 'percentageRoi',
       'tableBody', 'rowTemplate'
     ]
@@ -15,6 +15,7 @@ export default class extends Controller {
 
   async connect () {
     this.ticketPrice = parseFloat(this.data.get('ticketPrice'))
+    this.rewardPeriod = parseInt(this.data.get('rewardPeriod'))
     this.startDateTarget.value = moment().subtract(1, 'year').format('YYYY-MM-DD')
     this.endDateTarget.value = moment().format('YYYY-MM-DD')
     this.amountTarget.value = 1000
@@ -33,7 +34,7 @@ export default class extends Controller {
 
     const days = moment.duration(endDate.diff(startDate)).asDays()
     if (days < this.rewardPeriod) {
-      window.alert(`You must stake for ${this.rewardPeriod.toFixed(2)} days and above`)
+      window.alert(`You must stake for more than ${this.rewardPeriod} days`)
       return
     }
 
@@ -43,7 +44,6 @@ export default class extends Controller {
     axios.get(url).then(function (response) {
       let result = response.data
 
-      _this.amountTextTarget.textContent = amount
       _this.daysTextTarget.textContent = parseInt(days)
 
       // number of periods
@@ -51,8 +51,6 @@ export default class extends Controller {
       const totalAmount = totalPercentage * amount * 1 / 100
       _this.percentageRoiTarget.textContent = totalPercentage.toFixed(2)
       _this.amountRoiTarget.textContent = totalAmount.toFixed(2)
-      _this.startDateTextTarget.textContent = _this.startDateTarget.value
-      _this.endDateTextTarget.textContent = _this.endDateTarget.value
 
       _this.tableBodyTarget.innerHTML = ''
       result.simulation_table.forEach(item => {
@@ -62,11 +60,11 @@ export default class extends Controller {
         let date = moment(startDateUnix).add(item.day, 'days')
         fields[0].innerText = date.format('YYYY-MM-DD')
         fields[1].innerText = item.height
-        fields[2].innerText = item.returned_fund.toFixed(2)
-        fields[3].innerText = item.reward.toFixed(2)
-        fields[4].innerText = item.dcr_balance.toFixed(2)
-        fields[5].innerText = (100 * (item.dcr_balance - amount) / amount).toFixed(2)
-        fields[6].innerText = item.ticket_price.toFixed(4)
+        fields[2].innerText = item.ticket_price.toFixed(2)
+        fields[3].innerText = item.returned_fund.toFixed(2)
+        fields[4].innerText = item.reward.toFixed(2)
+        fields[5].innerText = item.dcr_balance.toFixed(2)
+        fields[6].innerText = (100 * (item.dcr_balance - amount) / amount).toFixed(2)
         fields[7].innerText = item.tickets_purchased
         _this.tableBodyTarget.appendChild(exRow)
       })

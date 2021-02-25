@@ -12,90 +12,66 @@
       data-stakingreward-reward-period="{{.RewardPeriod}}"
       data-stakingreward-dcrprice="{{.DCRPrice}}"
     >
-    <div class="col-md-24 p-0">
-      <div class="d-inline-block position-relative p-2 mt-3 mb-2">
-        <span class="card-icon dcricon-two blocks h1 mr-2"></span>
-        <span class="h4 my-3">Staking Reward Calculator</span>
-      </div>
-
-      <div class="bg-white mb-1 py-2 px-3 my-0">
-        <div class="row">
-          <div class="col-md-7">
-            <p>This Calculator gives an estimate of your potential earning while staking your DCR on the network</p>
-
-            <div class="form-group">
-              <label>Amount of DCR</label>
-              <input 
-                data-target="stakingreward.amount"
-                type="number" class="form-control" placeholder="Enter the amount of DCR to stake">
-            </div>
-
-            <div class="form-group">
-              <label>Date</label>
-              <div class="row">
-                <div class="col">
-                  <input data-target="stakingreward.startDate"
-                    type="date" 
-                    class="form-control" placeholder="Start Date">
-                </div>
-                <div class="col">
-                  <input data-target="stakingreward.endDate"
-                    type="date" 
-                    class="form-control" placeholder="End Date">
-                </div>
-              </div>
-             
-            </div>
-
-            
-            <button data-action="click->stakingreward#calculate" type="submit" class="btn btn-primary">Calculate</button>
-              
-            <p class="mt-5" style="font-size: 24px;">
-              Staking <span class="font-weight-bold" data-target="stakingreward.amountText">0</span>
-              <span class="text-secondary">DCR</span> from<br>
-              <span class="font-weight-bold" data-target="stakingreward.startDateText">0</span> to 
-              <span class="font-weight-bold" data-target="stakingreward.endDateText">0</span>
-              will generate 
-              <span class="font-weight-bold" data-target="stakingreward.percentageRoi">0</span>% return on your 
-              investment 
-              in <span class="font-weight-bold" data-target="stakingreward.daysText">0</span> days which is
-              <span class="font-weight-bold" data-target="stakingreward.amountRoi">0</span>
-              <span class="text-secondary">DCR</span>
-            </p>
-          </div>
-
-          <div class="col-md-17">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Height</th>
-                  <th>Returned Fund</th>
-                  <th>Reward</th>
-                  <th>Total Balance</th>
-                  <th>% Gained</th>
-                  <th>Tickets Price</th>
-                  <th>Tickets Purchased</th>
-                </tr>
-              </thead>
-              <tbody data-target="stakingreward.tableBody"></tbody>
-            </table>
-
-            <template data-target="stakingreward.rowTemplate">
-              <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-          </template>
-          </div>
+    <div class="inner-content p-0">
+      <div class="col-md-16 table-detail">
+        <div class="d-inline-block position-relative p-2 mt-3 mb-2">
+          <span class="card-icon dcricon-two blocks h1 mr-2"></span>
+          <span class="h4 my-3">Staking Reward Calculator</span>
         </div>
-       
+        
+        <div class="mb-3 bg-white p-3">
+          <p>This Calculator gives an estimate of your potential earning while staking your DCR on the network.</p>
+          <p style="line-height: 30px;">
+            Staking
+            <input data-action="change->stakingreward#calculate"
+              data-target="stakingreward.amount" style="display: inline-block !important; width: 70px; height: 25px;"
+              type="number" class="form-control" placeholder="Enter the amount of DCR to stake">
+            <span class="text-secondary">DCR</span> from
+            <input data-action="change->stakingreward#calculate"
+              data-target="stakingreward.startDate" style="display: inline-block !important; width: 130px; height: 25px;"
+              type="date" class="form-control" placeholder="Start Date"> to 
+            <input
+              data-action="change->stakingreward#calculate"
+              data-target="stakingreward.endDate"
+                  type="date" style="display: inline-block !important; width: 130px; height: 25px;"
+                   class="form-control" placeholder="End Date"> <br>
+            will generate 
+            <span class="font-weight-bold" data-target="stakingreward.percentageRoi">0</span>% return on your 
+            investment 
+            in <span class="font-weight-bold" data-target="stakingreward.daysText">0</span> days which is
+            <span class="font-weight-bold" data-target="stakingreward.amountRoi">0</span>
+            <span class="text-secondary">DCR</span>.
+          </p>
+        </div>
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="padding: 10px 8px;">Date</th>
+              <th style="padding: 10px 8px;">Height</th>
+              <th style="padding: 10px 8px; max-width: 67px;">Tickets Price  <small>(<span class="text-secondary">DCR</span>)</small></th>
+              <th style="padding: 10px 8px; max-width: 66px;">Returned Fund <small>(<span class="text-secondary">DCR</span>)</small></th>
+              <th style="padding: 10px 8px; max-width: 64px;">Reward  <small>(<span class="text-secondary">DCR</span>)</small></th>
+              <th style="padding: 10px 8px; max-width: 77px;">Total Balance  <small>(<span class="text-secondary">DCR</span>)</small></th>
+              <th style="padding: 10px 8px; max-width: 51px;">% Gained</th>
+              <th style="padding: 10px 8px; max-width: 67px;">Tickets Purchased</th>
+            </tr>
+          </thead>
+          <tbody data-target="stakingreward.tableBody"></tbody>
+        </table>
+
+        <template data-target="stakingreward.rowTemplate">
+          <tr>
+            <td style="width: 100px; padding: 10px 5px;"></td>
+            <td style="padding: 10px 5px;"></td>
+            <td style="padding: 10px 5px;"></td>
+            <td style="padding: 10px 5px;"></td>
+            <td style="padding: 10px 5px;"></td>
+            <td style="padding: 10px 5px;"></td>
+            <td style="padding: 10px 5px;"></td>
+            <td style="padding: 10px 5px;"></td>
+          </tr>
+      </template>
       </div>
       
     </div>
