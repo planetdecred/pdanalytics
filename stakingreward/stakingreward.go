@@ -244,9 +244,17 @@ func (calc *Calculator) simulateStakingReward(numberOfDays float64, startingDCRB
 	excessBlocks := (simblock - startingBlockHeight)
 	stakingReward = (numberOfBlocks / excessBlocks) * SimulationReward
 	overflow := startingDCRBalance * (SimulationReward - stakingReward) / 100
-	simulationTable[len(simulationTable)-1].Reward -= overflow
 	simulationTable[len(simulationTable)-1].DCRBalance -= overflow
 	simulationTable[len(simulationTable)-1].SimDay -= int(excessBlocks / blocksPerDay)
+	simulationTable[len(simulationTable)-1].Reward -= overflow
+	// remove nagative rewards from the table
+	for i := len(simulationTable) - 1; i > 0; i-- {
+		if simulationTable[i].Reward >= 0 {
+			break
+		}
+		simulationTable[i-1].Reward += simulationTable[i].Reward
+		simulationTable[i].Reward = 0
+	}
 	return
 }
 
