@@ -97,8 +97,6 @@ export default class extends Controller {
       const totalAmount = totalPercentage * amount * 1 / 100
       _this.percentageRoiTarget.textContent = totalPercentage.toFixed(2)
       _this.amountRoiTarget.textContent = totalAmount.toFixed(2)
-      _this.startDateTextTarget.textContent = _this.startDateTarget.value
-      _this.endDateTextTarget.textContent = _this.endDateTarget.value
 
       _this.tableBodyTarget.innerHTML = ''
       result.simulation_table.forEach(item => {
