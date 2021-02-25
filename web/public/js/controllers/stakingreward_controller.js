@@ -1,6 +1,8 @@
 import { Controller } from 'stimulus'
 import axios from 'axios'
 import moment from 'moment'
+import TurboQuery from '../helpers/turbolinks_helper'
+import { insertOrUpdateQueryParam } from '../utils'
 
 export default class extends Controller {
   static get targets () {
@@ -13,12 +15,56 @@ export default class extends Controller {
     ]
   }
 
-  async connect () {
+  async initialize () {
     this.ticketPrice = parseFloat(this.data.get('ticketPrice'))
     this.rewardPeriod = parseInt(this.data.get('rewardPeriod'))
-    this.startDateTarget.value = moment().subtract(1, 'year').format('YYYY-MM-DD')
-    this.endDateTarget.value = moment().format('YYYY-MM-DD')
+
+    this.lastYear = moment().subtract(1, 'year')
+    this.startDateTarget.value = this.lastYear.format('YYYY-MM-DD')
+    this.now = moment()
+    this.endDateTarget.value = this.now.format('YYYY-MM-DD')
     this.amountTarget.value = 1000
+
+    this.query = new TurboQuery()
+    this.settings = TurboQuery.nullTemplate([
+      'amount', 'start', 'end'
+    ])
+    this.query.update(this.settings)
+    if (this.settings.amount) {
+      this.amountTarget.value = this.settings.amount
+    }
+    if (this.settings.start) {
+      this.startDateTarget.value = moment(this.settings.start).format('YYYY-MM-DD')
+    }
+    if (this.settings.end) {
+      this.endDateTarget.value = moment(this.settings.end).format('YYYY-MM-DD')
+    }
+
+    this.calculate()
+  }
+
+  amountKeypress (e) {
+    console.log(e.keyCode)
+    console.log(e)
+    if (e.keyCode === 13) {
+      this.amountChanged()
+    }
+  }
+
+  amountChanged () {
+    insertOrUpdateQueryParam('amount', parseInt(this.amountTarget.value), 1000)
+    this.calculate()
+  }
+
+  startDateChanged () {
+    let startDateUnix = new Date(this.startDateTarget.value).getTime()
+    insertOrUpdateQueryParam('start', startDateUnix, parseInt(this.lastYear.format('X')))
+    this.calculate()
+  }
+
+  endDateChanged () {
+    let endDateUnix = new Date(this.endDateTarget.value).getTime()
+    insertOrUpdateQueryParam('end', endDateUnix, parseInt(this.now.format('X')))
     this.calculate()
   }
 
