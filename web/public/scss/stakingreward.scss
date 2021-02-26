@@ -15,11 +15,15 @@
 @media (max-width: 480px) {
   .reward-calc {
     .amount {
+      display: inline-block !important;
+      height: 25px;
       width: 60px;
     }
 
     .date {
       width: 70px;
+      display: inline-block !important;
+      height: 25px;
     }
   }
 }
