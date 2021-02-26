@@ -12,7 +12,7 @@
       data-stakingreward-reward-period="{{.RewardPeriod}}"
       data-stakingreward-dcrprice="{{.DCRPrice}}"
     >
-    <div class="inner-content p-0">
+    <div class="inner-content p-0 reward-calc">
       <div class="col-md-16 table-detail">
         <div class="d-inline-block position-relative p-2 mt-3 mb-2">
           <span class="card-icon dcricon-two blocks h1 mr-2"></span>
@@ -24,17 +24,17 @@
             Staking
             <input data-action="change->stakingreward#amountChanged"
               data-action="keyup->staking#amountKeypress"
-              data-target="stakingreward.amount" style="display: inline-block !important; width: 70px; height: 25px;"
-              type="number" class="form-control" placeholder="Enter the amount of DCR to stake">
+              data-target="stakingreward.amount"
+              type="number" class="form-control amount" placeholder="Enter the amount of DCR to stake">
             <span class="text-secondary">DCR</span> from
             <input data-action="change->stakingreward#startDateChanged"
-              data-target="stakingreward.startDate" style="display: inline-block !important; width: 130px; height: 25px;"
-              type="date" class="form-control" placeholder="Start Date"> to 
+              data-target="stakingreward.startDate"
+              type="date" class="form-control date" placeholder="Start Date"> to 
             <input
               data-action="change->stakingreward#endDateChanged"
               data-target="stakingreward.endDate"
-                  type="date" style="display: inline-block !important; width: 130px; height: 25px;"
-                   class="form-control" placeholder="End Date"> <br>
+                  type="date"
+                   class="form-control date" placeholder="End Date"> <br>
             will generate 
             <span class="font-weight-bold" data-target="stakingreward.percentageRoi">0</span>% return on your 
             investment 
