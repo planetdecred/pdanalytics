@@ -10,6 +10,10 @@
     width: 130px;
     height: 25px;
   }
+
+  p.desc {
+    line-height: 22px;
+  }
 }
 
 @media (max-width: 320px) {
@@ -24,6 +28,10 @@
       width: 70px;
       display: inline-block !important;
       height: 25px;
+    }
+
+    p.desc {
+      line-height: 30px;
     }
   }
 }
