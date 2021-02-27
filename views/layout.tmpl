@@ -35,7 +35,9 @@
 		<div class="collapse navbar-collapse float-right" id="navbarNav">
 		  <ul class="navbar-nav ml-auto">
 			{{ range $menuItem := .MenuItems }}
-            <li id="nav-{{ removeStartingSlash $menuItem.Href}}" class="nav-item">
+            <li id="nav-{{ removeStartingSlash $menuItem.Href}}" class="nav-item"
+				style="font-size: 18px;"
+			>
                 <a href="{{$menuItem.Href}}" class="nav-link">{{$menuItem.HyperText}}</a>
             </li>
 			{{ end }}
