@@ -2,15 +2,21 @@
 <!DOCTYPE html>
 <html lang="en">
     {{ template "html-head" printf "PdAnalytics"}}
+
         {{template "navbar" . }}
-        {{if .NoModEnabled}}
-            No module enabled
-        {{else}}
-            Modules Enabled: <br/>
-            Staking Reward Calculator: {{.StakingRewardEnabled}}<br/>
-		    Chain Paramaetes:    {{.ParametersEnabled}}<br/>
-		    Attack Cost Calculator:    {{.AttackCostEnabled}}<br/>
-        {{end}}
+        <div class="content" style="padding-top: 70px;">
+           <div class="container-fluid">
+            {{if .NoModEnabled}}
+                No module enabled
+            {{else}}
+                Modules Enabled: <br/>
+                Staking Reward Calculator: {{.StakingRewardEnabled}}<br/>
+                Chain Paramaetes:    {{.ParametersEnabled}}<br/>
+                Attack Cost Calculator:    {{.AttackCostEnabled}}<br/>
+            {{end}}
+           </div>
+        </div>
+        
         {{ template "footer" . }}
     </body>
 </html>

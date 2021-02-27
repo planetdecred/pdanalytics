@@ -53,3 +53,5 @@ pgsql_*.sql
 sqlite_*.sql
 db/dcrpg/chkdcrpg/chkdcrpg
 /**/sqlboiler.toml
+pdanalytics.exe~
+pdanalytics.exe

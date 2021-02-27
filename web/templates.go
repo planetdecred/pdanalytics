@@ -240,6 +240,12 @@ func MakeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 		"timestamp": func () int64 {
 			return time.Now().Unix()
 		},
+		"removeStartingSlash": func (url string) string {
+			if strings.HasPrefix(url, "/") {
+				url = url[1:]
+			}
+			return url
+		},
 	}
 }
 

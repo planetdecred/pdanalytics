@@ -4,6 +4,8 @@
 {{ template "html-head" "Majority Attack Cost Calculator"}}
 {{template "navbar" . }}
 
+<div class="content">
+  
    <div
       class="container py-1 mb-5"
       data-controller="attackcost"
@@ -175,7 +177,7 @@
                   <span class="text-secondary fs13">Attack Type</span>
                   <br>
                   <select
-                    class="form-control chart-form-control mr-5"
+                    class="chart-form-control mr-5"
                     data-action="attackcost#chooseAttackType"
                     data-target="attackcost.attackType">
                     <option data-target="attackcost.attackTypeDesc" value="external">External</option>
