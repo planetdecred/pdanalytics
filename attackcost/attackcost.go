@@ -1,12 +1,14 @@
 package attackcost
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"sync"
 
 	"github.com/decred/dcrd/wire"
 	"github.com/decred/dcrdata/exchanges/v2"
+	"github.com/go-chi/chi"
 	"github.com/planetdecred/pdanalytics/dcrd"
 	"github.com/planetdecred/pdanalytics/web"
 )
@@ -61,7 +63,8 @@ func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot)
 
 	ac.client.Notif.RegisterBlockHandlerGroup(ac.ConnectBlock)
 
-	ac.server.AddRoute("/attack-cost", web.GET, ac.AttackCost)
+	ac.server.AddRoute("/attack-cost", web.GET, ac.attackCost)
+	ac.server.AddRoute("/api/market/{token}/depth", web.GET, ac.getMarketDepthChart, exchangeTokenContext)
 
 	return ac, nil
 }
@@ -109,8 +112,8 @@ func (ac *Attackcost) ConnectBlock(w *wire.BlockHeader) error {
 	return nil
 }
 
-// AttackCost is the page handler for the "/attack-cost" path.
-func (ac *Attackcost) AttackCost(w http.ResponseWriter, r *http.Request) {
+// attackCost is the page handler for the "/attack-cost" path.
+func (ac *Attackcost) attackCost(w http.ResponseWriter, r *http.Request) {
 	price := 24.42
 	if ac.xcBot != nil {
 		if rate := ac.xcBot.Conversion(1.0); rate != nil {
@@ -152,4 +155,45 @@ func (ac *Attackcost) AttackCost(w http.ResponseWriter, r *http.Request) {
 	if _, err = io.WriteString(w, str); err != nil {
 		log.Error(err)
 	}
+}
+
+// route: /market/{token}/depth
+func (ac *Attackcost) getMarketDepthChart(w http.ResponseWriter, r *http.Request) {
+	if ac.xcBot == nil {
+		http.Error(w, http.StatusText(http.StatusServiceUnavailable), http.StatusServiceUnavailable)
+		return
+	}
+	token := retrieveExchangeTokenCtx(r)
+	if token == "" {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	chart, err := ac.xcBot.QuickDepth(token)
+	if err != nil {
+		log.Infof("QuickDepth error: %v", err)
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	web.RenderJSONBytes(w, chart)
+}
+
+// exchangeTokenContext pulls the exchange token from the URL.
+func exchangeTokenContext(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		token := chi.URLParam(r, "token")
+		ctx := context.WithValue(r.Context(), web.CtxXcToken, token)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// retrieveExchangeTokenCtx tries to fetch the exchange token from the request
+// context.
+func retrieveExchangeTokenCtx(r *http.Request) string {
+	token, ok := r.Context().Value(web.CtxXcToken).(string)
+	if !ok {
+		log.Error("non-string encountered in exchange token context")
+		return ""
+	}
+	return token
 }
