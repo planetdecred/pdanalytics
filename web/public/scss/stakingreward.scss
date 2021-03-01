@@ -1,0 +1,37 @@
+.reward-calc {
+  .amount {
+    display: inline-block !important;
+    width: 70px;
+    height: 25px;
+  }
+
+  .date {
+    display: inline-block !important;
+    width: 130px;
+    height: 25px;
+  }
+
+  p.desc {
+    line-height: 22px;
+  }
+}
+
+@media (max-width: 320px) {
+  .reward-calc {
+    .amount {
+      display: inline-block !important;
+      height: 25px;
+      width: 60px;
+    }
+
+    .date {
+      width: 70px;
+      display: inline-block !important;
+      height: 25px;
+    }
+
+    p.desc {
+      line-height: 30px;
+    }
+  }
+}

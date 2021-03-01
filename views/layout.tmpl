@@ -1,102 +1,71 @@
-{{define "html-head"}}
-<head data-turbolinks-eval="false">
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-	<meta name="description" content="dcrdata, an original Decred block explorer powered by Go">
-	<meta name="author" content="The Decred developers">
-	<meta name="application-name"           content="Decred - Autonomous Digital Currency">
-	<meta name="apple-mobile-web-app-title" content="Decred - Autonomous Digital Currency">
-	<!--  Custom favicon  -->
-		<!-- Apple PWA -->
-		<link rel="apple-touch-icon" sizes="57x57"   href="/images/favicon/apple-touch-icon-57x57.png?v=yHh3NA">
-		<link rel="apple-touch-icon" sizes="60x60"   href="/images/favicon/apple-touch-icon-60x60.png?v=yHh3NA">
-		<link rel="apple-touch-icon" sizes="72x72"   href="/images/favicon/apple-touch-icon-72x72.png?v=yHh3NA">
-		<link rel="apple-touch-icon" sizes="76x76"   href="/images/favicon/apple-touch-icon-76x76.png?v=yHh3NA">
-		<link rel="apple-touch-icon" sizes="114x114" href="/images/favicon/apple-touch-icon-114x114.png?v=yHh3NA">
-		<link rel="apple-touch-icon" sizes="120x120" href="/images/favicon/apple-touch-icon-120x120.png?v=yHh3NA">
-		<link rel="apple-touch-icon" sizes="144x144" href="/images/favicon/apple-touch-icon-144x144.png?v=yHh3NA">
-		<link rel="apple-touch-icon" sizes="152x152" href="/images/favicon/apple-touch-icon-152x152.png?v=yHh3NA">
-		<link rel="apple-touch-icon" sizes="180x180" href="/images/favicon/apple-touch-icon-180x180.png?v=yHh3NA">
+{{ define "html-head" }}
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-		<!-- Browser -->
-		<link rel="icon" href="/images/logo.png">
+    <meta name="description" content="Dcrextdata">
+    <meta name="author" content="The Decred developers">
+    <title>{{ . }}</title>
 
-		<!-- Android PWA -->
-		<link rel="manifest" href="/images/favicon/site.webmanifest?v=yHh3NA">
+    <link rel="shortcut icon" href="/images/logo.png" type="image/x-icon">
+    <link rel="stylesheet" href="/css/toastr.min.css" />
+    <link rel="stylesheet" href="/css/toastr.min.css" />
+	<link href="/dist/css/style.css?x={{ timestamp }}" rel="stylesheet">
 
-		<!-- Safari -->
-		<link rel="mask-icon" href="/images/favicon/safari-pinned-tab.svg?v=yHh3NA" color="#091440">
+    <script src="/js/vendor/jquery.min.js"></script>
+    <script src="/js/vendor/toastr.min.js"></script>
+    <script src="/js/vendor/bootstrap.bundle.min.js"></script>
+    <script src="/dist/js/vendors~app.bundle.js?v={{ timestamp }}"></script>
+    <script src="/dist/js/app.bundle.js?v={{ timestamp }}"></script>
 
-		<!-- Windows PWA -->
-		<meta name="msapplication-TileColor" content="#091440">
-		<meta name="msapplication-TileImage" content="/images/favicon/mstile-144x144.png?v=65tv3">
-		<meta name="msapplication-config" content="/images/favicon/browserconfig.xml?v=65tv3">
-	<!-- End custom favicon -->
-
-	<meta name="turbolinks-cache-control" content="no-cache">
-	<title>{{.}}</title>
-	<link rel="preload" href="/fonts/icomoon.ttf?g003m6" as="font" type="font/ttf" crossorigin="anonymous" />
-	<link rel="preload" href="/fonts/inconsolata-v15-latin-regular.woff?x=65tv3" as="font" type="font/woff" crossorigin="anonymous" />
-	<link rel="preload" href="/fonts/source-sans-pro-v9-latin-regular.woff?x=65tv3" as="font" type="font/woff" crossorigin="anonymous" />
-	<link rel="preload" href="/fonts/source-sans-pro-semibold.woff?x=65tv3" as="font" type="font/woff" crossorigin="anonymous" />
-	<link rel="preload" href="/images/connecting.svg?x=65tv3" as="image" type="image/svg+xml" />
-	<link rel="preload" href="/images/themes/light/logo.svg?x=65tv3" as="image" type="image/svg+xml" />
-	<link rel="preload" href="/images/connected.svg?x=65tv3" as="image" type="image/svg+xml" />
-	<link rel="preload" href="/images/disconnected.svg?x=65tv3" as="image" type="image/svg+xml" />
-	<link href="/dist/css/style.css?x=nfyu4m" rel="stylesheet">
-
-	<script src="/js/vendor/turbolinks.min.js?x=65tv3"></script>
+    <script src="/js/vendor/turbolinks.min.js"></script>
 </head>
-{{end}}
+{{ end }}
 
-{{define "navbar"}}
-<body class="{{ theme }}{{if .Cookies.DarkMode}} darkBG{{end}}">
-
-<header class="top-nav d-flex align-items-center" id="navBar" data-blocktime="{{.BlockTimeUnix}}">
-	<div class="container d-flex justify-content-between align-items-center" data-controller="layout">
-		<a class="no-underline d-block home-link text-center page-title" href="/">
-			<img src="/images/logo.png" class="logo" />
-		</a>
-		
-		<nav class="navbar-expand-sm navbar-light">
-			<div class="container-fluid">
-				<button data-action="click->layout#toggleNavbar" class="navbar-toggler" type="button" data-toggles="collapse" data-target="#nav">
-					<span class="navbar-toggler-icon"></span>
-				</button>
-				<div class="collapse navbar-collapse" id="nav" data-target="layout.navbar">
-					<ul class="navbar-nav mx-auto">
-						{{ range $menuItem := .MenuItems }}
-						<li class="nav-item">
-							<a class="nav-link" id="nav-{{$menuItem.Href}}" href="{{$menuItem.Href}}"
-							{{ range $key, $value := $menuItem.Attributes }}
-								{{$key}}="{{$value}}"
-							{{end}}>
-								<span class="text">{{$menuItem.HyperText}}</span>
-							</a>
-						</li>
-						{{ end }}
-					</ul>
-				</div>
-			</div>
-		</nav>
-	</div>
+{{ define "navbar" }}
+<header data-controller="layout">
+   
+	<nav class="navbar navbar-expand-lg navbar-light bg-light  mobile-show">
+		<a class="navbar-brand" href="/">
+			<img src="/images/logo.png" class="logo" /></a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+		  <span class="navbar-toggler-icon"></span>
+		</button>
+		<div class="collapse navbar-collapse float-right" id="navbarNav">
+		  <ul class="navbar-nav ml-auto">
+			{{ range $menuItem := .MenuItems }}
+            <li id="nav-{{ removeStartingSlash $menuItem.Href}}" class="nav-item"
+				style="font-size: 18px;"
+			>
+                <a href="{{$menuItem.Href}}" class="nav-link">{{$menuItem.HyperText}}</a>
+            </li>
+			{{ end }}
+		  </ul>
+		</div>
+	  </nav>
 </header>
-{{end}}
+{{ end }}
 
-{{define "footer"}}
-<script src="/dist/js/jquery.min.js"></script>
-	<script
-		src="/dist/js/vendors~app.bundle.js?x=65tv3"
-		data-turbolinks-eval="false"
-		data-turbolinks-suppress-warning
-	></script>
-	<script
-		src="/dist/js/app.bundle.js?x={{timestamp}}"
-		data-turbolinks-eval="false"
-		data-turbolinks-suppress-warning
-	></script>
-{{end}}
+{{ define "footer" }}
+<script>
+    $(function () {
+        var pathname = window.location.pathname;
+        var paths = pathname.split("/")
+        var currentNavItem = "#nav-home";
+        if (pathname != "/" && paths.length > 1) {
+            currentNavItem = "#nav-" + paths[1];
+        }
+        $(currentNavItem).addClass("active");
+    });
+    $(function () {
+        $(".nav-control").click(function() {
+            $("#header-nav").toggleClass("mobile-show");
+        });
+    });
+</script>
+{{ end }}
+
 
 {{define "decimalParts" -}}
 <div class="decimal-parts d-inline-block">

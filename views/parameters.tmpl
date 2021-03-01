@@ -3,6 +3,7 @@
 <html lang="en">
     {{ template "html-head" printf "Decred Chain Parameters"}}
         {{template "navbar" . }}
+        <div class="content">
         <div class="container main">
             <div class="row justify-content-between">
                 <div class="col-lg-14 col-sm-12 d-flex">
@@ -16,7 +17,6 @@
 
             <div class="row">
                 <div class="col">
-                    <h4><span>Chain parameters</span></h4>
                     <table class="table table-mono-cells table-sm">
                         <thead>
                           <tr>
@@ -328,6 +328,7 @@
                     </table>
                 </div>
             </div>
+        </div>
         </div>
         {{ template "footer" . }}
     </body>

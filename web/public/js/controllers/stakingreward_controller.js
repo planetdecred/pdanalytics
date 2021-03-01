@@ -1,34 +1,71 @@
 import { Controller } from 'stimulus'
 import axios from 'axios'
 import moment from 'moment'
+import TurboQuery from '../helpers/turbolinks_helper'
+import { insertOrUpdateQueryParam } from '../utils'
 
 export default class extends Controller {
   static get targets () {
     return [
-      'blockHeight', 'ticketPrice', 'ticketReward', 'rewardPeriod',
+      'blockHeight', 'ticketPrice',
       'startDate', 'endDate',
-      'priceDCR', 'dayText', 'amount', 'amountText', 'days', 'daysText',
-      'amountRoi', 'percentageRoi', 'tickets', 'amountUsd', 'amountRoiUsd'
+      'priceDCR', 'dayText', 'amount', 'days', 'daysText',
+      'amountRoi', 'percentageRoi',
+      'tableBody', 'rowTemplate'
     ]
   }
 
-  async connect () {
-    this.height = parseInt(this.data.get('height'))
+  async initialize () {
     this.ticketPrice = parseFloat(this.data.get('ticketPrice'))
-    this.dcrPrice = parseFloat(this.data.get('dcrprice'))
-    this.ticketReward = parseFloat(this.data.get('ticketReward'))
-    this.rewardPeriod = parseFloat(this.data.get('rewardPeriod'))
+    this.rewardPeriod = parseInt(this.data.get('rewardPeriod'))
 
-    this.blockHeightTarget.textContent = this.height
-    this.ticketPriceTarget.textContent = this.ticketPrice.toFixed(2)
-    this.ticketRewardTarget.textContent = this.ticketReward.toFixed(2)
-    this.rewardPeriodTarget.textContent = this.rewardPeriod.toFixed(2)
+    this.lastYear = moment().subtract(1, 'year')
+    this.startDateTarget.value = this.lastYear.format('YYYY-MM-DD')
+    this.now = moment()
+    this.endDateTarget.value = this.now.format('YYYY-MM-DD')
+    this.amountTarget.value = 1000
 
-    this.priceDCRTarget.value = this.dcrPrice.toFixed(2)
+    this.query = new TurboQuery()
+    this.settings = TurboQuery.nullTemplate([
+      'amount', 'start', 'end'
+    ])
+    this.query.update(this.settings)
+    if (this.settings.amount) {
+      this.amountTarget.value = this.settings.amount
+    }
+    if (this.settings.start) {
+      this.startDateTarget.value = moment(this.settings.start).format('YYYY-MM-DD')
+    }
+    if (this.settings.end) {
+      this.endDateTarget.value = moment(this.settings.end).format('YYYY-MM-DD')
+    }
+
+    this.calculate()
   }
 
-  updatePrice () {
-    this.dcrPrice = parseInt(this.dcrPriceTarget.value)
+  amountKeypress (e) {
+    console.log(e.keyCode)
+    console.log(e)
+    if (e.keyCode === 13) {
+      this.amountChanged()
+    }
+  }
+
+  amountChanged () {
+    insertOrUpdateQueryParam('amount', parseInt(this.amountTarget.value), 1000)
+    this.calculate()
+  }
+
+  startDateChanged () {
+    let startDateUnix = new Date(this.startDateTarget.value).getTime()
+    insertOrUpdateQueryParam('start', startDateUnix, parseInt(this.lastYear.format('X')))
+    this.calculate()
+  }
+
+  endDateChanged () {
+    let endDateUnix = new Date(this.endDateTarget.value).getTime()
+    insertOrUpdateQueryParam('end', endDateUnix, parseInt(this.now.format('X')))
+    this.calculate()
   }
 
   calculate () {
@@ -43,7 +80,7 @@ export default class extends Controller {
 
     const days = moment.duration(endDate.diff(startDate)).asDays()
     if (days < this.rewardPeriod) {
-      window.alert(`You must stake for ${this.rewardPeriod.toFixed(2)} days and above`)
+      window.alert(`You must stake for more than ${this.rewardPeriod} days`)
       return
     }
 
@@ -53,17 +90,30 @@ export default class extends Controller {
     axios.get(url).then(function (response) {
       let result = response.data
 
-      _this.ticketsTarget.textContent = parseInt(amount / result.ticketPrice)
-      _this.amountTextTarget.textContent = amount
-      _this.amountUsdTarget.textContent = (amount * _this.dcrPrice).toFixed(2)
-      _this.daysTextTarget.textContent = days
+      _this.daysTextTarget.textContent = parseInt(days)
 
       // number of periods
       const totalPercentage = result.reward
       const totalAmount = totalPercentage * amount * 1 / 100
       _this.percentageRoiTarget.textContent = totalPercentage.toFixed(2)
       _this.amountRoiTarget.textContent = totalAmount.toFixed(2)
-      _this.amountRoiUsdTarget.textContent = (totalAmount * _this.dcrPrice).toFixed(2)
+
+      _this.tableBodyTarget.innerHTML = ''
+      result.simulation_table.forEach(item => {
+        const exRow = document.importNode(_this.rowTemplateTarget.content, true)
+        const fields = exRow.querySelectorAll('td')
+
+        let date = moment(startDateUnix).add(item.day, 'days')
+        fields[0].innerText = date.format('YYYY-MM-DD')
+        fields[1].innerText = item.height
+        fields[2].innerText = item.ticket_price.toFixed(2)
+        fields[3].innerText = item.returned_fund.toFixed(2)
+        fields[4].innerText = item.reward.toFixed(2)
+        fields[5].innerText = item.dcr_balance.toFixed(2)
+        fields[6].innerText = (100 * (item.dcr_balance - amount) / amount).toFixed(2)
+        fields[7].innerText = item.tickets_purchased
+        _this.tableBodyTarget.appendChild(exRow)
+      })
     })
   }
 }
