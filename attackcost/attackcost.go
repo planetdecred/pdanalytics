@@ -64,7 +64,7 @@ func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot)
 	ac.client.Notif.RegisterBlockHandlerGroup(ac.ConnectBlock)
 
 	ac.server.AddRoute("/attack-cost", web.GET, ac.attackCost)
-	ac.server.AddRoute("/api/market/{token}/depth", web.GET, ac.getMarketDepthChart, exchangeTokenContext)
+	ac.server.AddRoute("/api/chart/market/{token}/depth", web.GET, ac.getMarketDepthChart, exchangeTokenContext)
 
 	return ac, nil
 }
@@ -115,10 +115,12 @@ func (ac *Attackcost) ConnectBlock(w *wire.BlockHeader) error {
 // attackCost is the page handler for the "/attack-cost" path.
 func (ac *Attackcost) attackCost(w http.ResponseWriter, r *http.Request) {
 	price := 24.42
+	btcPrice := 10000.0
 	if ac.xcBot != nil {
 		if rate := ac.xcBot.Conversion(1.0); rate != nil {
 			price = rate.Value
 		}
+		btcPrice = ac.xcBot.State().BtcPrice
 	}
 
 	ac.reorgLock.Lock()
@@ -128,6 +130,7 @@ func (ac *Attackcost) attackCost(w http.ResponseWriter, r *http.Request) {
 		HashRate        float64
 		Height          int64
 		DCRPrice        float64
+		BTCPrice        float64
 		TicketPrice     float64
 		TicketPoolSize  int64
 		TicketPoolValue float64
@@ -137,6 +140,7 @@ func (ac *Attackcost) attackCost(w http.ResponseWriter, r *http.Request) {
 		HashRate:        ac.hashrate,
 		Height:          ac.height,
 		DCRPrice:        price,
+		BTCPrice:        btcPrice,
 		TicketPrice:     ac.ticketPrice,
 		TicketPoolSize:  ac.ticketPoolSize,
 		TicketPoolValue: ac.ticketPoolValue,
