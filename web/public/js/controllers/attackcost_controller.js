@@ -570,7 +570,7 @@ export default class extends Controller {
     this.setAllValues(this.projectedDcrPriceTargets, digitformat(projectedDcrPrice, 0))
     this.setAllValues(this.marketVolumeTargets, digitformat(totalObUnits, 2))
     this.setAllValues(this.dcrPriceIncreaseTargets, digitformat(increaseRate, 10))
-    this.setAllValues(this.marketAvgDcrPriceTargets, digitformat(marketAvgDcrPrice * btcPrice - currentDcrPrice))
+    this.setAllValues(this.marketAvgDcrPriceTargets, digitformat(marketAvgDcrPrice * btcPrice))
     this.setAllValues(this.marketValueTargets, digitformat(totalObCost * btcPrice, 0))
     this.setAllValues(this.acquiredDcrCostTargets, digitformat(acquiredDcrCost, 0))
     this.setAllValues(this.acquiredDcrValueTargets, digitformat(totalDCRPos * projectedDcrPrice, 0))
