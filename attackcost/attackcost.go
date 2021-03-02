@@ -2,6 +2,7 @@ package attackcost
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"sync"
@@ -35,6 +36,10 @@ func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot)
 		server: webServer,
 		xcBot:  xcBot,
 		client: client,
+	}
+
+	if xcBot == nil {
+		return nil, errors.New("Attack cost requires exchange bot")
 	}
 
 	hash, err := client.Rpc.GetBestBlockHash()
