@@ -198,7 +198,7 @@ export default class extends Controller {
       fields[0].innerText = item.time
       fields[1].innerText = item.number_of_transactions
       fields[2].innerText = item.size
-      fields[3].innerHTML = item.total_fee.toFixed(8)
+      fields[3].innerHTML = item.total_fee.toFixed(6)
 
       _this.tableBodyTarget.appendChild(exRow)
     })
