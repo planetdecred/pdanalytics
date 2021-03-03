@@ -304,7 +304,7 @@ export default class extends Controller {
         }
       })
 
-      const chartData = zipXYZData(data)
+      const chartData = zipXYZData(data, false, this.selectedInterval() === 'day', (x) => { return parseFloat(x.toFixed(6)) })
       let xLabel = 'Time'
       _this.chartsView = new Dygraph(_this.chartsViewTarget, chartData,
         {
