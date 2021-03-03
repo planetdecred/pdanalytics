@@ -97,7 +97,7 @@ export function legendFormatter (data) {
     }, '')
 
     let xHTML = data.xHTML
-    if (data.dygraph.getLabels()[0] === 'Date') {
+    if (data.dygraph.getLabels()[0] === 'Date' || data.dygraph.getLabels()[0] === 'Time') {
       xHTML = humanize.date(data.x, false, false)
     }
 
