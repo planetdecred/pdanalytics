@@ -140,10 +140,11 @@
                 </div>
             </div>
 
-            <div class="inner-content d-hide" data-target="mempool.tableWrapper" style="max-width: fit-content; margin: 0 auto;">
+            <div class="d-hide" data-target="mempool.tableWrapper" 
+            style="max-width: fit-content; margin: 0 auto; padding: 15px">
                 <div class="table-details">
-                    <h3 class="mr-5">Mempool</h3>
-                    <div class="pagination ml-5">
+                    <h3 class="mr-5-md">Mempool</h3>
+                    <div class="pagination ml-5-md">
                         <div data-target="mempool.numPageWrapper"
                             class="control-div p-0 {{ if .Mempool.chartView }}d-none{{ end }}">
                             <div class="control-label">Page Size:</div>
@@ -176,10 +177,10 @@
                 <table class="table mx-auto">
                     <thead>
                     <tr>
-                        <th>Date (UTC)</th>
-                        <th># of Txs</th>
-                        <th>Size (B)</th>
-                        <th>Total Fees</th>
+                        <th style="min-width: 160px;">Date (UTC)</th>
+                        <th style="min-width: 85px;"># of Txs</th>
+                        <th style="min-width: 85px;">Size (B)</th>
+                        <th style="min-width: 105px;">Total Fees</th>
                     </tr>
                     </thead>
                     <tbody data-target="mempool.tableBody">

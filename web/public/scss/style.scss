@@ -1292,6 +1292,12 @@ table.collapsible tbody.clickable:hover {
   }
 }
 
+@media (max-width: 400px) {
+  .table-details {
+    display: block;
+  }
+}
+
 .h-loader,
 .h-loader::before,
 .h-loader::after {
