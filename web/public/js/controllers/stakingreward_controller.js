@@ -2,7 +2,7 @@ import { Controller } from 'stimulus'
 import axios from 'axios'
 import moment from 'moment'
 import TurboQuery from '../helpers/turbolinks_helper'
-import { insertOrUpdateQueryParam } from '../utils'
+import { hide, insertOrUpdateQueryParam, show } from '../utils'
 
 export default class extends Controller {
   static get targets () {
@@ -11,7 +11,7 @@ export default class extends Controller {
       'startDate', 'endDate',
       'priceDCR', 'dayText', 'amount', 'days', 'daysText',
       'amountRoi', 'percentageRoi',
-      'tableBody', 'rowTemplate'
+      'table', 'tableBody', 'rowTemplate'
     ]
   }
 
@@ -97,6 +97,12 @@ export default class extends Controller {
       const totalAmount = totalPercentage * amount * 1 / 100
       _this.percentageRoiTarget.textContent = totalPercentage.toFixed(2)
       _this.amountRoiTarget.textContent = totalAmount.toFixed(2)
+
+      if (result.simulation_table.length === 0) {
+        hide(_this.tableTarget)
+      } else {
+        show(_this.tableTarget)
+      }
 
       _this.tableBodyTarget.innerHTML = ''
       result.simulation_table.forEach(item => {
