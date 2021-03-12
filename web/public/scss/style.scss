@@ -295,8 +295,7 @@ footer {
 }
 
 .inner-content {
-  padding: 80px;
-  padding-top: 15px;
+  padding: 15px;
   padding-bottom: 50px;
 
   .table-details {
@@ -1293,8 +1292,14 @@ table.collapsible tbody.clickable:hover {
 }
 
 @media (max-width: 400px) {
-  .table-details {
-    display: block;
+  .inner-content {
+    padding: 15px;
+    padding-bottom: 50px;
+  
+    .table-details {
+      display: block;
+      text-align: center;
+    }
   }
 }
 
