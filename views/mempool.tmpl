@@ -174,35 +174,39 @@
                         </div>
                     </div>
                 </div>
-                <table class="table mx-auto">
-                    <thead>
-                    <tr>
-                        <th style="min-width: 160px;">Date (UTC)</th>
-                        <th style="min-width: 76px;"># of Txs</th>
-                        <th style="min-width: 85px;">Size (B)</th>
-                        <th style="min-width: 105px;">Total Fees</th>
-                    </tr>
-                    </thead>
-                    <tbody data-target="mempool.tableBody">
-                    {{range $index, $mempool := .Mempool.mempoolData}}
+                <div style="overflow: auto;">
+                    <table class="table mx-auto">
+                        <thead>
                         <tr>
-                            <td>{{$mempool.Time}}</td>
-                            <td>{{$mempool.NumberOfTransactions}}</td>
-                            <td>{{$mempool.Size}}</td>
-                            <td>{{normalizeBalance $mempool.TotalFee}}</td>
+                            <th style="min-width: 160px;">Date (UTC)</th>
+                            <th style="min-width: 76px;"># of Txs</th>
+                            <th style="min-width: 85px;">Size (B)</th>
+                            <th style="min-width: 105px;">Total Fees</th>
                         </tr>
-                    {{end}}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody data-target="mempool.tableBody">
+                        {{range $index, $mempool := .Mempool.mempoolData}}
+                            <tr>
+                                <td>{{$mempool.Time}}</td>
+                                <td>{{$mempool.NumberOfTransactions}}</td>
+                                <td>{{$mempool.Size}}</td>
+                                <td>{{normalizeBalance $mempool.TotalFee}}</td>
+                            </tr>
+                        {{end}}
+                        </tbody>
+                    </table>
 
-                <template data-target="mempool.rowTemplate">
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                </template>
+                    <template data-target="mempool.rowTemplate">
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </template>
+                </div>
+
+               
             </div>
             <div data-target="mempool.chartWrapper" class="inner-content chart-wrapper pl-2 pr-2 mb-5">
                 <div id="chart" data-target="mempool.chartsView"
