@@ -19,8 +19,8 @@ export default class extends Controller {
     this.ticketPrice = parseFloat(this.data.get('ticketPrice'))
     this.rewardPeriod = parseInt(this.data.get('rewardPeriod'))
 
-    this.lastYear = moment().subtract(1, 'year')
-    this.startDateTarget.value = this.lastYear.format('YYYY-MM-DD')
+    this.last3Months = moment().subtract(3, 'month')
+    this.startDateTarget.value = this.last3Months.format('YYYY-MM-DD')
     this.now = moment()
     this.endDateTarget.value = this.now.format('YYYY-MM-DD')
     this.amountTarget.value = 1000
@@ -58,7 +58,7 @@ export default class extends Controller {
 
   startDateChanged () {
     let startDateUnix = new Date(this.startDateTarget.value).getTime()
-    insertOrUpdateQueryParam('start', startDateUnix, parseInt(this.lastYear.format('X')))
+    insertOrUpdateQueryParam('start', startDateUnix, parseInt(this.last3Months.format('X')))
     this.calculate()
   }
 
