@@ -98,7 +98,7 @@ export default class extends Controller {
       _this.percentageRoiTarget.textContent = totalPercentage.toFixed(2)
       _this.amountRoiTarget.textContent = totalAmount.toFixed(2)
 
-      if (result.simulation_table.length === 0) {
+      if (!result.simulation_table || result.simulation_table.length === 0) {
         hide(_this.tableTarget)
       } else {
         show(_this.tableTarget)

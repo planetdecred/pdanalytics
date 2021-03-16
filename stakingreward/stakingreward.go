@@ -139,6 +139,7 @@ func (calc *Calculator) simulateStakingReward(numberOfDays float64, startingDCRB
 	// Calculations are only useful on mainnet.  Short circuit calculations if
 	// on any other version of chain params.
 	if calc.client.Params.Name != "mainnet" {
+		log.Warn("Staking reward simulation is only available on the main net")
 		return 0, 0, nil
 	}
 
