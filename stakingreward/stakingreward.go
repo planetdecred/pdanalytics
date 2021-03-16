@@ -1,6 +1,7 @@
 package stakingreward
 
 import (
+	"errors"
 	"io"
 	"math"
 	"net/http"
@@ -21,6 +22,10 @@ func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot)
 		webServer: webServer,
 		xcBot:     xcBot,
 		client:    client,
+	}
+
+	if calc.client.Params.Name != "mainnet" {
+		return nil, errors.New("staking reward simulation is only available on the main net")
 	}
 
 	calc.MeanVotingBlocks = CalcMeanVotingBlocks(client.Params)
