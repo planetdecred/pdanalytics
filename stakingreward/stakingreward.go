@@ -1,7 +1,6 @@
 package stakingreward
 
 import (
-	"errors"
 	"io"
 	"math"
 	"net/http"
@@ -22,10 +21,6 @@ func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot)
 		webServer: webServer,
 		xcBot:     xcBot,
 		client:    client,
-	}
-
-	if calc.client.Params.Name != "mainnet" {
-		return nil, errors.New("staking reward simulation is only available on the main net")
 	}
 
 	calc.MeanVotingBlocks = CalcMeanVotingBlocks(client.Params)
@@ -140,13 +135,6 @@ func CalcMeanVotingBlocks(params *chaincfg.Params) int64 {
 func (calc *Calculator) simulateStakingReward(numberOfDays float64, startingDCRBalance float64, integerTicketQty bool,
 	currentStakePercent float64, actualCoinbase float64, startingBlockHeight float64,
 	actualTicketPrice float64) (stakingReward, ticketPrice float64, simulationTable []simulationRow) {
-
-	// Calculations are only useful on mainnet.  Short circuit calculations if
-	// on any other version of chain params.
-	if calc.client.Params.Name != "mainnet" {
-		log.Warn("Staking reward simulation is only available on the main net")
-		return 0, 0, nil
-	}
 
 	blocksPerDay := 86400 / calc.client.Params.TargetTimePerBlock.Seconds()
 	numberOfBlocks := numberOfDays * blocksPerDay
