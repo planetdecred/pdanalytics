@@ -86,7 +86,7 @@ export default class extends Controller {
 
     let startDateUnix = new Date(this.startDateTarget.value).getTime()
     let endDateUnix = new Date(this.endDateTarget.value).getTime()
-    let url = `/staking-reward/get-future-reward?startDate=${startDateUnix}&endDate=${endDateUnix}&startingBalance=${amount}`
+    let url = `/stakingcalc/get-future-reward?startDate=${startDateUnix}&endDate=${endDateUnix}&startingBalance=${amount}`
     axios.get(url).then(function (response) {
       let result = response.data
 

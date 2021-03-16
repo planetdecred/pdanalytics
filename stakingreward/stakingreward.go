@@ -42,7 +42,7 @@ func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot)
 	calc.client.Notif.RegisterBlockHandlerGroup(calc.ConnectBlock)
 
 	calc.webServer.AddMenuItem(web.MenuItem{
-		Href:      "/staking-reward",
+		Href:      "/stakingcalc",
 		HyperText: "Staking Calc",
 		Attributes: map[string]string{
 			"class": "menu-item",
@@ -55,8 +55,8 @@ func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot)
 		return nil, err
 	}
 
-	webServer.AddRoute("/staking-reward", web.GET, calc.stakingReward)
-	webServer.AddRoute("/staking-reward/get-future-reward", web.GET, calc.targetTicketReward)
+	webServer.AddRoute("/stakingcalc", web.GET, calc.stakingReward)
+	webServer.AddRoute("/stakingcalc/get-future-reward", web.GET, calc.targetTicketReward)
 
 	return calc, nil
 }
