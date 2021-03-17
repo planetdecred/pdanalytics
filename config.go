@@ -29,7 +29,7 @@ const (
 	defaultDbHost         = "localhost"
 	defaultDbPort         = "5432"
 	defaultDbUser         = "postgres"
-	defaultDbPass         = "dbpass"
+	defaultDbPass         = "postgres"
 	defaultDbName         = "pdanalytics"
 )
 
@@ -390,7 +390,18 @@ func loadConfig() (*config, error) {
 	parser := flags.NewParser(&cfg, flags.Default)
 
 	// if the config file is missing, create the default
-	if _, err := os.Stat(preCfg.ConfigFile); os.IsNotExist(err) {
+	pathNotExists := func(path string) bool {
+		_, err := os.Stat(path)
+		return os.IsNotExist(err)
+	}
+
+	if pathNotExists(preCfg.ConfigFile) {
+		if pathNotExists(defaultHomeDir) {
+			if err = os.MkdirAll(defaultHomeDir, os.ModePerm); err != nil {
+				return nil, fmt.Errorf("Missing config file and cannot create home dir - %s", err.Error())
+			}
+		}
+
 		if err = copyFile(sampleConfigFileName, preCfg.ConfigFile); err != nil {
 			return nil, fmt.Errorf("Missing config file and cannot copy the sample - %s", err.Error())
 		}

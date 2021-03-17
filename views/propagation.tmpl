@@ -182,7 +182,7 @@
 
 
             <div class="inner-content {{ if not .Propagation.nextPage }}d-none{{ end }}" data-target="propagation.tablesWrapper">
-                <div class="table-details">
+                <div class="table-details" >
                     <h3>Propagation</h3>
                     <div class="paginate">
                         <div class="ml-3 mr-auto control-div p-0 {{ if .Propagation.chartView }}d-none{{ end }}"
@@ -218,115 +218,119 @@
                         </div>
                     </div>
                 </div>
-                {{/*combine view*/}}
-                <table class="table collapsible mx-auto {{ if not .Propagation.both }}d-none{{ end }}"
-                       data-target="propagation.table">
-                    {{range $index, $block := .Propagation.records}}
-                        <tbody data-target="propagation.blocksTbody" data-block-hash="{{$block.BlockHash}}">
-                        <tr>
-                            <td colspan="100">
-                                <span class="d-inline-block"><b>Height</b>: {{$block.BlockHeight}}</span> &#8195;
-                                <span class="d-inline-block"><b>Timestamp</b>: {{$block.BlockInternalTime}}</span>
-                                &#8195;
-                                <span class="d-inline-block"><b>Received</b>: {{$block.BlockReceiveTime}}</span>
-                                &#8195;
-                                <span class="d-inline-block"><b>Hash</b>: <a target="_blank"
-                                                                             href="https://explorer.dcrdata.org/block/{{$block.BlockHeight}}">{{$block.BlockHash}}</a></span>
-                            </td>
-                        </tr>
-                        </tbody>
-                        <tbody data-target="propagation.votesTbody" data-block-hash="{{$block.BlockHash}}">
-                        <tr style="white-space: nowrap;">
-                            <td style="width: 120px;">Voting On</td>
-                            <td style="width: 120px;">Block Hash</td>
-                            <td style="width: 120px;">Validator ID</td>
-                            <td style="width: 120px;">Validity</td>
-                            <td style="width: 120px;">Block Receive</td>
-                            <td style="width: 120px;">Block Receive Time Diff</td>
-                            <td style="width: 120px;">Hash</td>
-                        </tr>
-                        {{range $index, $vote := $block.Votes}}
-                            <tr>
-                                <td><a target="_blank"
-                                       href="https://explorer.dcrdata.org/block/{{$vote.VotingOn}}">{{$vote.VotingOn}}</a>
-                                </td>
-                                <td><a target="_blank"
-                                       href="https://explorer.dcrdata.org/block/{{$vote.BlockHash}}">...{{$vote.ShortBlockHash}}</a>
-                                </td>
-                                <td>{{$vote.ValidatorId}}</td>
-                                <td>{{$vote.Validity}}</td>
-                                <td>{{$vote.ReceiveTime}}</td>
-                                <td>{{$vote.BlockReceiveTimeDiff}}s</td>
-                                <td><a target="_blank"
-                                       href="https://explorer.dcrdata.org/tx/{{$vote.Hash}}">{{$vote.Hash}}</a></td>
+                
+                    <div style="overflow: auto;">
+
+                        {{/*combine view*/}}
+                        <table class="table collapsible mx-auto {{ if not .Propagation.both }}d-none{{ end }}"
+                            data-target="propagation.table">
+                            {{range $index, $block := .Propagation.records}}
+                                <tbody data-target="propagation.blocksTbody" data-block-hash="{{$block.BlockHash}}">
+                                <tr>
+                                    <td colspan="100">
+                                        <span class="d-inline-block"><b>Height</b>: {{$block.BlockHeight}}</span> &#8195;
+                                        <span class="d-inline-block"><b>Timestamp</b>: {{$block.BlockInternalTime}}</span>
+                                        &#8195;
+                                        <span class="d-inline-block"><b>Received</b>: {{$block.BlockReceiveTime}}</span>
+                                        &#8195;
+                                        <span class="d-inline-block"><b>Hash</b>: <a target="_blank"
+                                                                                    href="https://explorer.dcrdata.org/block/{{$block.BlockHeight}}">{{$block.BlockHash}}</a></span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                                <tbody data-target="propagation.votesTbody" data-block-hash="{{$block.BlockHash}}">
+                                <tr style="white-space: nowrap;">
+                                    <td style="width: 120px;">Voting On</td>
+                                    <td style="width: 120px;">Block Hash</td>
+                                    <td style="width: 120px;">Validator ID</td>
+                                    <td style="width: 120px;">Validity</td>
+                                    <td style="width: 120px;">Block Receive</td>
+                                    <td style="width: 120px;">Block Receive Time Diff</td>
+                                    <td style="width: 120px;">Hash</td>
+                                </tr>
+                                {{range $index, $vote := $block.Votes}}
+                                    <tr>
+                                        <td><a target="_blank"
+                                            href="https://explorer.dcrdata.org/block/{{$vote.VotingOn}}">{{$vote.VotingOn}}</a>
+                                        </td>
+                                        <td><a target="_blank"
+                                            href="https://explorer.dcrdata.org/block/{{$vote.BlockHash}}">...{{$vote.ShortBlockHash}}</a>
+                                        </td>
+                                        <td>{{$vote.ValidatorId}}</td>
+                                        <td>{{$vote.Validity}}</td>
+                                        <td>{{$vote.ReceiveTime}}</td>
+                                        <td>{{$vote.BlockReceiveTimeDiff}}s</td>
+                                        <td><a target="_blank"
+                                            href="https://explorer.dcrdata.org/tx/{{$vote.Hash}}">{{$vote.Hash}}</a></td>
+                                    </tr>
+                                {{end}}
+                                </tbody>
+                                <tbody>
+                                <tr>
+                                    <td colspan="7" height="15" style="border: none !important;"></td>
+                                </tr>
+                                </tbody>
+                            {{end}}
+                        </table>
+
+                        {{/*blocks only*/}}
+                        <table class="table d-none mx-auto {{ if not .Propagation.blocks }}d-none{{ end }}"
+                            data-target="propagation.blocksTable">
+                            <thead>
+                            <tr style="white-space: nowrap;">
+                                <th>Height</th>
+                                <th>Timestamp</th>
+                                <th>Received</th>
+                                <th>Delay</th>
+                                <th>Hash</th>
                             </tr>
-                        {{end}}
-                        </tbody>
-                        <tbody>
-                        <tr>
-                            <td colspan="7" height="15" style="border: none !important;"></td>
-                        </tr>
-                        </tbody>
-                    {{end}}
-                </table>
+                            </thead>
+                            <tbody data-target="propagation.blocksTableBody">
+                            </tbody>
+                        </table>
 
-                {{/*blocks only*/}}
-                <table class="table d-none mx-auto {{ if not .Propagation.blocks }}d-none{{ end }}"
-                       data-target="propagation.blocksTable">
-                    <thead>
-                    <tr style="white-space: nowrap;">
-                        <th>Height</th>
-                        <th>Timestamp</th>
-                        <th>Received</th>
-                        <th>Delay</th>
-                        <th>Hash</th>
-                    </tr>
-                    </thead>
-                    <tbody data-target="propagation.blocksTableBody">
-                    </tbody>
-                </table>
+                        <template data-target="propagation.blocksRowTemplate">
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </template>
 
-                <template data-target="propagation.blocksRowTemplate">
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                </template>
+                        {{/*votes only*/}}
+                        <table data-target="propagation.votesTable"
+                            class="table d-none mx-auto {{ if not .Propagation.votes }}d-none{{ end }}">
+                            <thead>
+                            <tr style="white-space: nowrap;">
+                                <th>Voting On</th>
+                                <th>Block Hash</th>
+                                <th>Validator ID</th>
+                                <th>Validity</th>
+                                <th>Received</th>
+                                <th>Block Time Diff</th>
+                                <th>Block Receive Time Diff</th>
+                                <th>Hash</th>
+                            </tr>
+                            </thead>
+                            <tbody data-target="propagation.votesTableBody">
+                            </tbody>
+                        </table>
 
-                {{/*votes only*/}}
-                <table data-target="propagation.votesTable"
-                       class="table d-none mx-auto {{ if not .Propagation.votes }}d-none{{ end }}">
-                    <thead>
-                    <tr style="white-space: nowrap;">
-                        <th>Voting On</th>
-                        <th>Block Hash</th>
-                        <th>Validator ID</th>
-                        <th>Validity</th>
-                        <th>Received</th>
-                        <th>Block Time Diff</th>
-                        <th>Block Receive Time Diff</th>
-                        <th>Hash</th>
-                    </tr>
-                    </thead>
-                    <tbody data-target="propagation.votesTableBody">
-                    </tbody>
-                </table>
-
-                <template data-target="propagation.votesRowTemplate">
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                </template>
+                        <template data-target="propagation.votesRowTemplate">
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </template>
+                    </div>
             </div>
 
             <div data-target="propagation.chartWrapper" class="inner-content chart-wrapper pl-2 pr-2 mb-5" style="width:100%;">

@@ -2,7 +2,7 @@ import { Controller } from 'stimulus'
 import axios from 'axios'
 import moment from 'moment'
 import TurboQuery from '../helpers/turbolinks_helper'
-import { insertOrUpdateQueryParam } from '../utils'
+import { hide, insertOrUpdateQueryParam, show } from '../utils'
 
 export default class extends Controller {
   static get targets () {
@@ -11,7 +11,7 @@ export default class extends Controller {
       'startDate', 'endDate',
       'priceDCR', 'dayText', 'amount', 'days', 'daysText',
       'amountRoi', 'percentageRoi',
-      'tableBody', 'rowTemplate'
+      'table', 'tableBody', 'rowTemplate'
     ]
   }
 
@@ -19,8 +19,8 @@ export default class extends Controller {
     this.ticketPrice = parseFloat(this.data.get('ticketPrice'))
     this.rewardPeriod = parseInt(this.data.get('rewardPeriod'))
 
-    this.lastYear = moment().subtract(1, 'year')
-    this.startDateTarget.value = this.lastYear.format('YYYY-MM-DD')
+    this.last3Months = moment().subtract(3, 'month')
+    this.startDateTarget.value = this.last3Months.format('YYYY-MM-DD')
     this.now = moment()
     this.endDateTarget.value = this.now.format('YYYY-MM-DD')
     this.amountTarget.value = 1000
@@ -58,7 +58,7 @@ export default class extends Controller {
 
   startDateChanged () {
     let startDateUnix = new Date(this.startDateTarget.value).getTime()
-    insertOrUpdateQueryParam('start', startDateUnix, parseInt(this.lastYear.format('X')))
+    insertOrUpdateQueryParam('start', startDateUnix, parseInt(this.last3Months.format('X')))
     this.calculate()
   }
 
@@ -86,7 +86,7 @@ export default class extends Controller {
 
     let startDateUnix = new Date(this.startDateTarget.value).getTime()
     let endDateUnix = new Date(this.endDateTarget.value).getTime()
-    let url = `/staking-reward/get-future-reward?startDate=${startDateUnix}&endDate=${endDateUnix}&startingBalance=${amount}`
+    let url = `/stakingcalc/get-future-reward?startDate=${startDateUnix}&endDate=${endDateUnix}&startingBalance=${amount}`
     axios.get(url).then(function (response) {
       let result = response.data
 
@@ -97,6 +97,12 @@ export default class extends Controller {
       const totalAmount = totalPercentage * amount * 1 / 100
       _this.percentageRoiTarget.textContent = totalPercentage.toFixed(2)
       _this.amountRoiTarget.textContent = totalAmount.toFixed(2)
+
+      if (!result.simulation_table || result.simulation_table.length === 0) {
+        hide(_this.tableTarget)
+      } else {
+        show(_this.tableTarget)
+      }
 
       _this.tableBodyTarget.innerHTML = ''
       result.simulation_table.forEach(item => {

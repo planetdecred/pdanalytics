@@ -11,7 +11,7 @@
 
             <div class="control-wrapper">
 
-                <div class="d-flex flex-row bottom-ctl">
+                <div class="d-flex flex-row bottom-ctl" style="overflow: auto;">
 
                     <div class="chart-control-wrapper ml-auto mr-3 my-2">
                         <div class="chart-control-label">View</div>
@@ -140,10 +140,11 @@
                 </div>
             </div>
 
-            <div class="inner-content d-hide" data-target="mempool.tableWrapper">
+            <div class="inner-content d-hide" data-target="mempool.tableWrapper" 
+            style="max-width: fit-content; margin: 0 auto;">
                 <div class="table-details">
-                    <h3>Mempool</h3>
-                    <div class="pagination">
+                    <h3 class="mr-5-md">Mempool</h3>
+                    <div class="pagination ml-5-md">
                         <div data-target="mempool.numPageWrapper"
                             class="control-div p-0 {{ if .Mempool.chartView }}d-none{{ end }}">
                             <div class="control-label">Page Size:</div>
@@ -173,35 +174,39 @@
                         </div>
                     </div>
                 </div>
-                <table class="table mx-auto">
-                    <thead>
-                    <tr>
-                        <th>Date (UTC)</th>
-                        <th># of Txs</th>
-                        <th>Size (B)</th>
-                        <th>Total Fees</th>
-                    </tr>
-                    </thead>
-                    <tbody data-target="mempool.tableBody">
-                    {{range $index, $mempool := .Mempool.mempoolData}}
+                <div style="overflow: auto;">
+                    <table class="table mx-auto">
+                        <thead>
                         <tr>
-                            <td>{{$mempool.Time}}</td>
-                            <td>{{$mempool.NumberOfTransactions}}</td>
-                            <td>{{$mempool.Size}}</td>
-                            <td>{{normalizeBalance $mempool.TotalFee}}</td>
+                            <th style="min-width: 160px;">Date (UTC)</th>
+                            <th style="min-width: 76px;"># of Txs</th>
+                            <th style="min-width: 85px;">Size (B)</th>
+                            <th style="min-width: 105px;">Total Fees</th>
                         </tr>
-                    {{end}}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody data-target="mempool.tableBody">
+                        {{range $index, $mempool := .Mempool.mempoolData}}
+                            <tr>
+                                <td>{{$mempool.Time}}</td>
+                                <td>{{$mempool.NumberOfTransactions}}</td>
+                                <td>{{$mempool.Size}}</td>
+                                <td>{{normalizeBalance $mempool.TotalFee}}</td>
+                            </tr>
+                        {{end}}
+                        </tbody>
+                    </table>
 
-                <template data-target="mempool.rowTemplate">
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                </template>
+                    <template data-target="mempool.rowTemplate">
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </template>
+                </div>
+
+               
             </div>
             <div data-target="mempool.chartWrapper" class="inner-content chart-wrapper pl-2 pr-2 mb-5">
                 <div id="chart" data-target="mempool.chartsView"

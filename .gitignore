@@ -55,3 +55,4 @@ db/dcrpg/chkdcrpg/chkdcrpg
 /**/sqlboiler.toml
 pdanalytics.exe~
 pdanalytics.exe
+web/public/dist/css/style.css

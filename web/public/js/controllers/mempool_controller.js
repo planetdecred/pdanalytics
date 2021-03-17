@@ -198,7 +198,7 @@ export default class extends Controller {
       fields[0].innerText = item.time
       fields[1].innerText = item.number_of_transactions
       fields[2].innerText = item.size
-      fields[3].innerHTML = item.total_fee.toFixed(8)
+      fields[3].innerHTML = item.total_fee.toFixed(6)
 
       _this.tableBodyTarget.appendChild(exRow)
     })
@@ -304,7 +304,7 @@ export default class extends Controller {
         }
       })
 
-      const chartData = zipXYZData(data)
+      const chartData = zipXYZData(data, false, this.selectedInterval() === 'day', (x) => { return parseFloat(x.toFixed(6)) })
       let xLabel = 'Time'
       _this.chartsView = new Dygraph(_this.chartsViewTarget, chartData,
         {

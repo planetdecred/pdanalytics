@@ -20,6 +20,7 @@
     <script src="/dist/js/app.bundle.js?v={{ timestamp }}"></script>
 
     <script src="/js/vendor/turbolinks.min.js"></script>
+	<script src="https://kit.fontawesome.com/6c2838371a.js" crossorigin="anonymous"></script>
 </head>
 {{ end }}
 
@@ -62,6 +63,7 @@
         $(".nav-control").click(function() {
             $("#header-nav").toggleClass("mobile-show");
         });
+		$('[data-toggle="tooltip"]').tooltip()
     });
 </script>
 {{ end }}

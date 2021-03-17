@@ -97,7 +97,7 @@ export function legendFormatter (data) {
     }, '')
 
     let xHTML = data.xHTML
-    if (data.dygraph.getLabels()[0] === 'Date') {
+    if (data.dygraph.getLabels()[0] === 'Date' || data.dygraph.getLabels()[0] === 'Time') {
       xHTML = humanize.date(data.x, false, false)
     }
 
@@ -252,10 +252,10 @@ export function getParameterByName (name, url) {
   return urlParams.get(name)
 }
 
-export function zipXYZData (gData, isHeightAxis, isDayBinned, yCoefficient, zCoefficient, windowS) {
+export function zipXYZData (gData, isHeightAxis, isDayBinned, yFormatter, zFormatter, windowS) {
   windowS = windowS || 1
-  yCoefficient = yCoefficient || 1
-  zCoefficient = zCoefficient || 1
+  yFormatter = yFormatter || 1
+  zFormatter = zFormatter || 1
   return map(gData.x, (n, i) => {
     let xAxisVal
     if (isHeightAxis && isDayBinned) {
@@ -265,9 +265,9 @@ export function zipXYZData (gData, isHeightAxis, isDayBinned, yCoefficient, zCoe
     } else {
       xAxisVal = new Date(n * 1000)
     }
-    const data = [xAxisVal, gData.y[i] * yCoefficient]
+    const data = [xAxisVal, yFormatter(gData.y[i])]
     if (gData.z) {
-      data.push(gData.z[i] * zCoefficient)
+      data.push(zFormatter(gData.z[i]))
     }
 
     return data

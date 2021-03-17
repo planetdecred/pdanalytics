@@ -42,7 +42,7 @@ func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot)
 	calc.client.Notif.RegisterBlockHandlerGroup(calc.ConnectBlock)
 
 	calc.webServer.AddMenuItem(web.MenuItem{
-		Href:      "/staking-reward",
+		Href:      "/stakingcalc",
 		HyperText: "Staking Calc",
 		Attributes: map[string]string{
 			"class": "menu-item",
@@ -55,8 +55,8 @@ func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot)
 		return nil, err
 	}
 
-	webServer.AddRoute("/staking-reward", web.GET, calc.stakingReward)
-	webServer.AddRoute("/staking-reward/get-future-reward", web.GET, calc.targetTicketReward)
+	webServer.AddRoute("/stakingcalc", web.GET, calc.stakingReward)
+	webServer.AddRoute("/stakingcalc/get-future-reward", web.GET, calc.targetTicketReward)
 
 	return calc, nil
 }
@@ -135,12 +135,6 @@ func CalcMeanVotingBlocks(params *chaincfg.Params) int64 {
 func (calc *Calculator) simulateStakingReward(numberOfDays float64, startingDCRBalance float64, integerTicketQty bool,
 	currentStakePercent float64, actualCoinbase float64, startingBlockHeight float64,
 	actualTicketPrice float64) (stakingReward, ticketPrice float64, simulationTable []simulationRow) {
-
-	// Calculations are only useful on mainnet.  Short circuit calculations if
-	// on any other version of chain params.
-	if calc.client.Params.Name != "mainnet" {
-		return 0, 0, nil
-	}
 
 	blocksPerDay := 86400 / calc.client.Params.TargetTimePerBlock.Seconds()
 	numberOfBlocks := numberOfDays * blocksPerDay

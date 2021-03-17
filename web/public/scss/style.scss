@@ -295,8 +295,7 @@ footer {
 }
 
 .inner-content {
-  padding: 80px;
-  padding-top: 15px;
+  padding: 15px;
   padding-bottom: 50px;
 
   .table-details {
@@ -699,6 +698,7 @@ footer {
 .bottom-ctl {
   flex-wrap: nowrap;
   background-color: #fff;
+  overflow: auto;
 }
 
 .control-wrapper {
@@ -1289,6 +1289,23 @@ table.collapsible tbody.clickable:hover {
         cursor: pointer;
       }
     }
+  }
+}
+
+@media (max-width: 576px) {
+  .inner-content {
+    padding: 15px;
+    padding-bottom: 50px;
+
+    .table-details {
+      display: block;
+      text-align: center;
+    }
+  }
+
+  .pagination {
+    width: fit-content;
+    margin: 0 auto;
   }
 }
 
