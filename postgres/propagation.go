@@ -1,4 +1,4 @@
-package propagation
+package postgres
 
 import (
 	"context"
@@ -11,39 +11,12 @@ import (
 
 	"github.com/planetdecred/pdanalytics/chart"
 	"github.com/planetdecred/pdanalytics/dbhelper"
-	"github.com/planetdecred/pdanalytics/propagation/models"
-	"github.com/volatiletech/null"
-	"github.com/volatiletech/sqlboiler/boil"
-	"github.com/volatiletech/sqlboiler/queries/qm"
+	"github.com/planetdecred/pdanalytics/postgres/models"
+	"github.com/planetdecred/pdanalytics/propagation"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
-
-type PgDb struct {
-	db           *sql.DB
-	queryTimeout time.Duration
-}
-
-type logWriter struct{}
-
-func (l logWriter) Write(p []byte) (n int, err error) {
-	log.Debug(string(p))
-	return len(p), nil
-}
-
-func NewPgDb(db *sql.DB, debug bool) *PgDb {
-	if debug {
-		boil.DebugMode = true
-		boil.DebugWriter = logWriter{}
-	}
-	return &PgDb{
-		db:           db,
-		queryTimeout: time.Second * 30,
-	}
-}
-
-func (pg *PgDb) Close() error {
-	log.Trace("Closing postgresql connection")
-	return pg.db.Close()
-}
 
 func (pg *PgDb) BlockTableName() string {
 	return models.TableNames.Block
@@ -53,7 +26,7 @@ func (pg *PgDb) VoteTableName() string {
 	return models.TableNames.Vote
 }
 
-func (pg *PgDb) SaveBlock(ctx context.Context, block Block) error {
+func (pg *PgDb) SaveBlock(ctx context.Context, block propagation.Block) error {
 	blockModel := blockDtoToModel(block)
 	err := blockModel.Insert(ctx, pg.db, boil.Infer())
 	if err != nil {
@@ -82,7 +55,7 @@ func (pg *PgDb) SaveBlock(ctx context.Context, block Block) error {
 	return nil
 }
 
-func blockDtoToModel(block Block) models.Block {
+func blockDtoToModel(block propagation.Block) models.Block {
 	return models.Block{
 		Height:            int(block.BlockHeight),
 		Hash:              null.StringFrom(block.BlockHash),
@@ -95,7 +68,7 @@ func (pg *PgDb) BlockCount(ctx context.Context) (int64, error) {
 	return models.Blocks().Count(ctx, pg.db)
 }
 
-func (pg *PgDb) Blocks(ctx context.Context, offset int, limit int) ([]BlockDto, error) {
+func (pg *PgDb) Blocks(ctx context.Context, offset int, limit int) ([]propagation.BlockDto, error) {
 	blockSlice, err := models.Blocks(qm.OrderBy(fmt.Sprintf("%s DESC", models.BlockColumns.ReceiveTime)),
 		qm.Offset(offset), qm.Limit(limit)).All(ctx, pg.db)
 
@@ -103,7 +76,7 @@ func (pg *PgDb) Blocks(ctx context.Context, offset int, limit int) ([]BlockDto, 
 		return nil, err
 	}
 
-	var blocks []BlockDto
+	var blocks []propagation.BlockDto
 
 	for _, block := range blockSlice {
 		timeDiff := block.ReceiveTime.Time.Sub(block.InternalTimestamp.Time).Seconds()
@@ -113,7 +86,7 @@ func (pg *PgDb) Blocks(ctx context.Context, offset int, limit int) ([]BlockDto, 
 			return nil, err
 		}
 
-		blocks = append(blocks, BlockDto{
+		blocks = append(blocks, propagation.BlockDto{
 			BlockHash:         block.Hash.String,
 			BlockHeight:       uint32(block.Height),
 			BlockInternalTime: block.InternalTimestamp.Time.Format(dbhelper.DateTemplate),
@@ -126,18 +99,18 @@ func (pg *PgDb) Blocks(ctx context.Context, offset int, limit int) ([]BlockDto, 
 	return blocks, nil
 }
 
-func (pg *PgDb) BlocksWithoutVotes(ctx context.Context, offset int, limit int) ([]BlockDto, error) {
+func (pg *PgDb) BlocksWithoutVotes(ctx context.Context, offset int, limit int) ([]propagation.BlockDto, error) {
 	blockSlice, err := models.Blocks(qm.OrderBy(fmt.Sprintf("%s DESC", models.BlockColumns.ReceiveTime)), qm.Offset(offset), qm.Limit(limit)).All(ctx, pg.db)
 	if err != nil {
 		return nil, err
 	}
 
-	var blocks []BlockDto
+	var blocks []propagation.BlockDto
 
 	for _, block := range blockSlice {
 		timeDiff := block.ReceiveTime.Time.Sub(block.InternalTimestamp.Time).Seconds()
 
-		blocks = append(blocks, BlockDto{
+		blocks = append(blocks, propagation.BlockDto{
 			BlockHash:         block.Hash.String,
 			BlockHeight:       uint32(block.Height),
 			BlockInternalTime: block.InternalTimestamp.Time.Format(dbhelper.DateTemplate),
@@ -158,7 +131,7 @@ func (pg *PgDb) getBlock(ctx context.Context, height int) (*models.Block, error)
 	return block, nil
 }
 
-func (pg *PgDb) SaveVote(ctx context.Context, vote Vote) error {
+func (pg *PgDb) SaveVote(ctx context.Context, vote propagation.Vote) error {
 	voteModel := models.Vote{
 		Hash:              vote.Hash,
 		VotingOn:          null.Int64From(vote.VotingOn),
@@ -188,13 +161,13 @@ func (pg *PgDb) SaveVote(ctx context.Context, vote Vote) error {
 	return nil
 }
 
-func (pg *PgDb) Votes(ctx context.Context, offset int, limit int) ([]VoteDto, error) {
+func (pg *PgDb) Votes(ctx context.Context, offset int, limit int) ([]propagation.VoteDto, error) {
 	voteSlice, err := models.Votes(qm.OrderBy(fmt.Sprintf("%s DESC", models.BlockColumns.ReceiveTime)), qm.Offset(offset), qm.Limit(limit)).All(ctx, pg.db)
 	if err != nil {
 		return nil, err
 	}
 
-	var votes = make([]VoteDto, len(voteSlice))
+	var votes = make([]propagation.VoteDto, len(voteSlice))
 	for i, vote := range voteSlice {
 		votes[i] = pg.voteModelToDto(vote)
 	}
@@ -202,7 +175,7 @@ func (pg *PgDb) Votes(ctx context.Context, offset int, limit int) ([]VoteDto, er
 	return votes, nil
 }
 
-func (pg *PgDb) VotesByBlock(ctx context.Context, blockHash string) ([]VoteDto, error) {
+func (pg *PgDb) VotesByBlock(ctx context.Context, blockHash string) ([]propagation.VoteDto, error) {
 	voteSlice, err := models.Votes(
 		models.VoteWhere.BlockHash.EQ(null.StringFrom(blockHash)),
 		qm.OrderBy(fmt.Sprintf("%s DESC", models.BlockColumns.ReceiveTime)),
@@ -211,7 +184,7 @@ func (pg *PgDb) VotesByBlock(ctx context.Context, blockHash string) ([]VoteDto, 
 		return nil, err
 	}
 
-	var votes = make([]VoteDto, len(voteSlice))
+	var votes = make([]propagation.VoteDto, len(voteSlice))
 	for i, vote := range voteSlice {
 		votes[i] = pg.voteModelToDto(vote)
 	}
@@ -219,14 +192,14 @@ func (pg *PgDb) VotesByBlock(ctx context.Context, blockHash string) ([]VoteDto, 
 	return votes, nil
 }
 
-func (pg *PgDb) votesByBlock(ctx context.Context, blockHeight int64) ([]VoteDto, error) {
+func (pg *PgDb) votesByBlock(ctx context.Context, blockHeight int64) ([]propagation.VoteDto, error) {
 	voteSlice, err := models.Votes(models.VoteWhere.VotingOn.EQ(null.Int64From(blockHeight)),
 		qm.OrderBy(models.BlockColumns.ReceiveTime)).All(ctx, pg.db)
 	if err != nil {
 		return nil, err
 	}
 
-	var votes []VoteDto
+	var votes []propagation.VoteDto
 	for _, vote := range voteSlice {
 		votes = append(votes, pg.voteModelToDto(vote))
 	}
@@ -234,7 +207,7 @@ func (pg *PgDb) votesByBlock(ctx context.Context, blockHeight int64) ([]VoteDto,
 	return votes, nil
 }
 
-func (pg *PgDb) voteModelToDto(vote *models.Vote) VoteDto {
+func (pg *PgDb) voteModelToDto(vote *models.Vote) propagation.VoteDto {
 	timeDiff := vote.ReceiveTime.Time.Sub(vote.TargetedBlockTime.Time).Seconds()
 	blockReceiveTimeDiff := vote.ReceiveTime.Time.Sub(vote.BlockReceiveTime.Time).Seconds()
 	var shortBlockHash string
@@ -242,7 +215,7 @@ func (pg *PgDb) voteModelToDto(vote *models.Vote) VoteDto {
 		shortBlockHash = vote.BlockHash.String[len(vote.BlockHash.String)-8:]
 	}
 
-	return VoteDto{
+	return propagation.VoteDto{
 		Hash:                  vote.Hash,
 		ReceiveTime:           vote.ReceiveTime.Time.Format(dbhelper.DateTemplate),
 		TargetedBlockTimeDiff: fmt.Sprintf("%04.2f", timeDiff),
@@ -259,17 +232,17 @@ func (pg *PgDb) VotesCount(ctx context.Context) (int64, error) {
 	return models.Votes().Count(ctx, pg.db)
 }
 
-func (pg *PgDb) VotesBlockReceiveTimeDiffs(ctx context.Context) ([]PropagationChartData, error) {
+func (pg *PgDb) VotesBlockReceiveTimeDiffs(ctx context.Context) ([]propagation.PropagationChartData, error) {
 	voteSlice, err := models.Votes(
 		qm.OrderBy(models.VoteColumns.VotingOn)).All(ctx, pg.db)
 	if err != nil {
 		return nil, err
 	}
 
-	var chartData = make([]PropagationChartData, len(voteSlice))
+	var chartData = make([]propagation.PropagationChartData, len(voteSlice))
 	for i, vote := range voteSlice {
 		blockReceiveTimeDiff := vote.ReceiveTime.Time.Sub(vote.BlockReceiveTime.Time).Seconds()
-		chartData[i] = PropagationChartData{
+		chartData[i] = propagation.PropagationChartData{
 			BlockHeight: vote.VotingOn.Int64, TimeDifference: blockReceiveTimeDiff,
 		}
 	}
@@ -277,7 +250,7 @@ func (pg *PgDb) VotesBlockReceiveTimeDiffs(ctx context.Context) ([]PropagationCh
 	return chartData, nil
 }
 
-func (pg *PgDb) BlockDelays(ctx context.Context, height int) ([]PropagationChartData, error) {
+func (pg *PgDb) BlockDelays(ctx context.Context, height int) ([]propagation.PropagationChartData, error) {
 	blockSlice, err := models.Blocks(
 		models.BlockWhere.Height.GT(height),
 		qm.OrderBy(models.BlockColumns.Height)).All(ctx, pg.db)
@@ -285,10 +258,10 @@ func (pg *PgDb) BlockDelays(ctx context.Context, height int) ([]PropagationChart
 		return nil, err
 	}
 
-	var chartData = make([]PropagationChartData, len(blockSlice))
+	var chartData = make([]propagation.PropagationChartData, len(blockSlice))
 	for i, block := range blockSlice {
 		blockReceiveTimeDiff := block.ReceiveTime.Time.Sub(block.InternalTimestamp.Time).Seconds()
-		chartData[i] = PropagationChartData{
+		chartData[i] = propagation.PropagationChartData{
 			BlockHeight:    int64(block.Height),
 			TimeDifference: blockReceiveTimeDiff,
 			BlockTime:      block.InternalTimestamp.Time,
@@ -298,7 +271,7 @@ func (pg *PgDb) BlockDelays(ctx context.Context, height int) ([]PropagationChart
 	return chartData, nil
 }
 
-func (pg *PgDb) fetchBlockReceiveTimeByHeight(ctx context.Context, height int32) ([]BlockReceiveTime, error) {
+func (pg *PgDb) fetchBlockReceiveTimeByHeight(ctx context.Context, height int32) ([]propagation.BlockReceiveTime, error) {
 	blockSlice, err := models.Blocks(
 		models.BlockWhere.Height.GT(int(height)),
 		qm.Select(models.BlockColumns.Height, models.BlockColumns.ReceiveTime),
@@ -309,9 +282,9 @@ func (pg *PgDb) fetchBlockReceiveTimeByHeight(ctx context.Context, height int32)
 		return nil, err
 	}
 
-	var chartData []BlockReceiveTime
+	var chartData []propagation.BlockReceiveTime
 	for _, block := range blockSlice {
-		chartData = append(chartData, BlockReceiveTime{
+		chartData = append(chartData, propagation.BlockReceiveTime{
 			BlockHeight: int64(block.Height),
 			ReceiveTime: block.ReceiveTime.Time,
 		})
@@ -323,7 +296,7 @@ func (pg *PgDb) fetchBlockReceiveTimeByHeight(ctx context.Context, height int32)
 // UpdatePropagationDataForSource computes and store the difference
 // in block receive time of this instance and provided source
 // for all the blocks received since the last update of the source
-func (pg *PgDb) UpdatePropagationDataForSource(ctx context.Context, source string, sourceDB Store) error {
+func (pg *PgDb) UpdatePropagationDataForSource(ctx context.Context, source string, sourceDB propagation.Store) error {
 
 	tx, err := pg.db.Begin()
 	if err != nil {
@@ -1006,7 +979,7 @@ func (pg *PgDb) updateVoteTimeDeviationDailyAvgData(ctx context.Context) error {
 	return nil
 }
 
-func (pg *PgDb) SourceDeviations(ctx context.Context, source, bin string) (records []SourceDeviation, err error) {
+func (pg *PgDb) SourceDeviations(ctx context.Context, source, bin string) (records []propagation.SourceDeviation, err error) {
 	data, err := models.Propagations(
 		qm.Select(models.PropagationColumns.Height, models.PropagationColumns.Time, models.PropagationColumns.Deviation),
 		models.PropagationWhere.Source.EQ(source),
@@ -1016,7 +989,7 @@ func (pg *PgDb) SourceDeviations(ctx context.Context, source, bin string) (recor
 		return nil, err
 	}
 	for _, d := range data {
-		records = append(records, SourceDeviation{
+		records = append(records, propagation.SourceDeviation{
 			Height:    d.Height,
 			Time:      d.Time,
 			Deviation: d.Deviation,
@@ -1025,7 +998,7 @@ func (pg *PgDb) SourceDeviations(ctx context.Context, source, bin string) (recor
 	return
 }
 
-func (pg *PgDb) BlockBinData(ctx context.Context, bin string) (records []BlockBinDto, err error) {
+func (pg *PgDb) BlockBinData(ctx context.Context, bin string) (records []propagation.BlockBinDto, err error) {
 	blocks, err := models.BlockBins(
 		models.BlockBinWhere.Bin.EQ(bin),
 		qm.OrderBy(models.BlockBinColumns.InternalTimestamp),
@@ -1034,7 +1007,7 @@ func (pg *PgDb) BlockBinData(ctx context.Context, bin string) (records []BlockBi
 		return nil, err
 	}
 	for _, b := range blocks {
-		records = append(records, BlockBinDto{
+		records = append(records, propagation.BlockBinDto{
 			Height:            b.Height,
 			ReceiveTimeDiff:   b.ReceiveTimeDiff,
 			InternalTimestamp: b.InternalTimestamp,
@@ -1043,7 +1016,7 @@ func (pg *PgDb) BlockBinData(ctx context.Context, bin string) (records []BlockBi
 	return
 }
 
-func (pg *PgDb) VoteReceiveTimeDeviations(ctx context.Context, bin string) (result []VoteReceiveTimeDeviation, err error) {
+func (pg *PgDb) VoteReceiveTimeDeviations(ctx context.Context, bin string) (result []propagation.VoteReceiveTimeDeviation, err error) {
 	records, err := models.VoteReceiveTimeDeviations(
 		models.VoteReceiveTimeDeviationWhere.Bin.EQ(bin),
 		qm.OrderBy(models.VoteReceiveTimeDeviationColumns.BlockTime),
@@ -1053,7 +1026,7 @@ func (pg *PgDb) VoteReceiveTimeDeviations(ctx context.Context, bin string) (resu
 	}
 
 	for _, r := range records {
-		result = append(result, VoteReceiveTimeDeviation{
+		result = append(result, propagation.VoteReceiveTimeDeviation{
 			BlockHeight:           r.BlockHeight,
 			BlockTime:             r.BlockTime,
 			ReceiveTimeDifference: r.ReceiveTimeDifference,

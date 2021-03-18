@@ -11,9 +11,9 @@ import (
 	"github.com/planetdecred/pdanalytics/dbhelper"
 	"github.com/planetdecred/pdanalytics/mempool"
 	"github.com/planetdecred/pdanalytics/postgres/models"
-	"github.com/volatiletech/null"
-	"github.com/volatiletech/sqlboiler/boil"
-	"github.com/volatiletech/sqlboiler/queries/qm"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 const (

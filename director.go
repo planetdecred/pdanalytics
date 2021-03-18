@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/decred/dcrdata/exchanges/v2"
@@ -12,7 +13,7 @@ import (
 	"github.com/planetdecred/pdanalytics/netsnapshot"
 	"github.com/planetdecred/pdanalytics/parameters"
 	"github.com/planetdecred/pdanalytics/postgres"
-	_ "github.com/planetdecred/pdanalytics/propagation"
+	"github.com/planetdecred/pdanalytics/propagation"
 	"github.com/planetdecred/pdanalytics/stakingreward"
 	"github.com/planetdecred/pdanalytics/web"
 )
@@ -57,6 +58,9 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 	var dbInstance = func() (*postgres.PgDb, error) {
 		if pgDb == nil {
 			pgDb, err = postgres.NewPgDb(cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DebugLevel == "debug")
+			if err != nil {
+				return nil, err
+			}
 			if err = pgDb.CreateTables(ctx); err != nil {
 				log.Error("Error creating mempool tables: ", err)
 				return nil, err
@@ -92,6 +96,42 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 		if err != nil {
 			log.Error(err)
 			return fmt.Errorf("Failed to activate network snapshot component, %s", err.Error())
+		}
+	}
+
+	if cfg.EnablePropagation {
+		var syncDbs = map[string]propagation.Store{}
+		//register instances
+		for i := 0; i < len(cfg.SyncDatabases); i++ {
+			databaseName := cfg.SyncDatabases[i]
+			syncDb, err := postgres.NewPgDb(cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPass,
+				 databaseName, cfg.DebugLevel == "debug")
+			if err != nil {
+				return err
+			}
+
+			if !syncDb.BlockTableExits() {
+				msg := fmt.Sprintf("the database, %s is missing the block table", databaseName)
+				log.Error(msg)
+				return errors.New(msg)
+			}
+
+			if !syncDb.VoteTableExits() {
+				msg := fmt.Sprintf("the database, %s is missing the vote table", databaseName)
+				log.Error(msg)
+				return errors.New(msg)
+			}
+			syncDbs[databaseName] = syncDb
+		}
+
+		propDb, err := dbInstance()
+		if err != nil {
+			return err
+		}
+		_, err = propagation.New(ctx, client, propDb, syncDbs, server)
+		if err != nil {
+			log.Error(err)
+			return fmt.Errorf("Failed to create new propagation component, %s", err.Error())
 		}
 	}
 
