@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 
 	"github.com/decred/dcrdata/exchanges/v2"
@@ -13,8 +11,8 @@ import (
 	"github.com/planetdecred/pdanalytics/mempool"
 	"github.com/planetdecred/pdanalytics/netsnapshot"
 	"github.com/planetdecred/pdanalytics/parameters"
-	"github.com/planetdecred/pdanalytics/propagation"
 	"github.com/planetdecred/pdanalytics/postgres"
+	_ "github.com/planetdecred/pdanalytics/propagation"
 	"github.com/planetdecred/pdanalytics/stakingreward"
 	"github.com/planetdecred/pdanalytics/web"
 )
