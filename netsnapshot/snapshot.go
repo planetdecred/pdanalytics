@@ -258,7 +258,7 @@ func (t *taker) configHTTPHandlers() error {
 	})
 
 	t.server.AddRoute("/nodes", web.GET, t.nodesPage)
-	t.server.AddRoute("/api/charts/snapshot/{dataType}", web.GET, t.chart)
+	t.server.AddRoute("/api/charts/snapshot/{chartDataType}", web.GET, t.chart, web.ChartDataTypeCtx)
 	t.server.AddRoute("/api/snapshots", web.GET, t.snapshots)
 	t.server.AddRoute("/api/snapshots/user-agents", web.GET, t.nodesCountUserAgents)
 	t.server.AddRoute("/api/snapshots/user-agents/chart", web.GET, t.nodesCountUserAgentsChart)

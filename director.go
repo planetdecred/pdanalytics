@@ -86,19 +86,6 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 		log.Info("Attack Cost Calculator Enabled")
 	}
 
-	if cfg.EnableNetworkSnapshot || cfg.EnableNetworkSnapshotHTTP {
-		db, err := dbInstance()
-		if err != nil {
-			return err
-		}
-
-		err = netsnapshot.Activate(ctx, db, cfg.NetworkSnapshotOptions, server)
-		if err != nil {
-			log.Error(err)
-			return fmt.Errorf("Failed to activate network snapshot component, %s", err.Error())
-		}
-	}
-
 	if cfg.EnablePropagation {
 		var syncDbs = map[string]propagation.Store{}
 		//register instances
@@ -134,6 +121,20 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 			return fmt.Errorf("Failed to create new propagation component, %s", err.Error())
 		}
 	}
+
+	if cfg.EnableNetworkSnapshot || cfg.EnableNetworkSnapshotHTTP {
+		db, err := dbInstance()
+		if err != nil {
+			return err
+		}
+
+		err = netsnapshot.Activate(ctx, db, cfg.NetworkSnapshotOptions, server)
+		if err != nil {
+			log.Error(err)
+			return fmt.Errorf("Failed to activate network snapshot component, %s", err.Error())
+		}
+	}
+
 
 	_, err = homepage.New(server, homepage.Mods{
 		Stk: stk,

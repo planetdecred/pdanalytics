@@ -45,7 +45,7 @@ export default class extends Controller {
       'numPageWrapper', 'pageSize', 'messageView', 'chartWrapper', 'chartsView', 'labels',
       'btnWrapper', 'nextPageButton', 'previousPageButton', 'tableTitle', 'tableWrapper', 'tableHeader', 'tableBody',
       'snapshotRowTemplate', 'userAgentRowTemplate', 'countriesRowTemplate', 'totalPageCount', 'currentPage', 'loadingData',
-      'dataTypeSelector', 'dataType', 'chartWrapper', 'chartSourceWrapper', 'chartSource', 'chartsViewWrapper', 'chartSourceList',
+      'dataTypeSelector', 'dataType', 'chartSourceWrapper', 'chartSource', 'chartsViewWrapper', 'chartSourceList',
       'allChartSource', 'graphIntervalWrapper', 'interval', 'zoomSelector', 'zoomOption'
     ]
   }
@@ -180,8 +180,10 @@ export default class extends Controller {
       let messageHTML = `<div class="alert alert-primary"><strong>${result.error}</strong></div>`
       _this.messageViewTarget.innerHTML = messageHTML
       show(_this.messageViewTarget)
+      hide(_this.chartWrapperTarget)
       return
     }
+    show(_this.chartWrapperTarget)
     let html = ''
     _this.allChartSourceTarget.checked = true
     result.forEach((item, i) => {
@@ -460,9 +462,11 @@ export default class extends Controller {
     if (result.error) {
       this.messageViewTarget.innerHTML = `<div class="alert alert-primary"><strong>${result.error}</strong></div>`
       show(this.messageViewTarget)
+      hide(this.chartWrapperTarget)
       hideLoading(this.loadingDataTarget)
       return
     }
+    show(this.chartWrapperTarget)
     hide(this.messageViewTarget)
     drawChartFn = drawChartFn.bind(this)
     this.updateChartUI()
@@ -470,6 +474,14 @@ export default class extends Controller {
   }
 
   drawSnapshotChart (result) {
+    if(!result.x) {
+      this.messageViewTarget.innerHTML = `<div class="alert alert-primary"><strong>No record for the selected chart</strong></div>`
+      show(this.messageViewTarget)
+      hide(this.chartWrapperTarget)
+      hideLoading(this.loadingDataTarget)
+      return
+    }
+
     this.chartsView = new Dygraph(
       this.chartsViewTarget,
       csv(result, 2),
