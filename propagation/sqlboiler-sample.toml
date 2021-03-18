@@ -1,10 +1,18 @@
 [psql]
     dbname = "pdanalytics"
     host = "localhost"
-    user = "user"
-    pass = "pass"
+    user = "postgres"
+    pass = "postgres"
     sslmode = "disable"
     whitelist=[
+        "mempool",
+        "mempool_bin",
+        "node",
+        "network_snapshot",
+        "network_snapshot_bin",
+        "node_version",
+        "node_location",
+        "heartbeat",
         "propagation",
         "block",
         "block_bin",

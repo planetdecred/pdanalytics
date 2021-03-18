@@ -97,6 +97,51 @@ const (
 		current_height INT8 NOT NULL,
 		PRIMARY KEY (timestamp, node_id)
 	);`
+
+	createPropagationTableScript = `CREATE TABLE IF NOT EXISTS propagation (
+		height INT8 NOT NULL,
+		time INT8 NOT NULL,
+		bin VARCHAR(25) NOT NULL,
+		source VARCHAR(255) NOT NULL,
+		deviation FLOAT8 NOT NULL,
+		PRIMARY KEY (height, source, bin)
+	);`
+
+	createBlockTableScript = `CREATE TABLE IF NOT EXISTS block (
+		height INT,
+		receive_time timestamp,
+		internal_timestamp timestamp,
+		hash VARCHAR(512),
+		PRIMARY KEY (height)
+	);`
+
+	createBlockBinTableScript = `CREATE TABLE IF NOT EXISTS block_bin (
+		height INT8 NOT NULL,
+		receive_time_diff FLOAT8 NOT NULL,
+		internal_timestamp INT8 NOT NULL,
+		bin VARCHAR(25) NOT NULL,
+		PRIMARY KEY (height,bin)
+	);`
+
+	createVoteTableScript = `CREATE TABLE IF NOT EXISTS vote (
+		hash VARCHAR(128),
+		voting_on INT8,
+		block_hash VARCHAR(128),
+		receive_time timestamp,
+		block_receive_time timestamp,
+		targeted_block_time timestamp,
+		validator_id INT,
+		validity VARCHAR(128),
+		PRIMARY KEY (hash)
+	);`
+
+	createVoteReceiveTimeDeviationTableScript = `CREATE TABLE IF NOT EXISTS vote_receive_time_deviation (
+		bin VARCHAR(25) NOT NULL,
+		block_height INT8 NOT NULL,
+		block_time INT8 NOT NULL,
+		receive_time_difference FLOAT8 NOT NULL,
+		PRIMARY KEY (block_time,bin)
+	);`
 )
 
 func (db *PgDb) CreateTables(ctx context.Context) error {
@@ -137,6 +182,31 @@ func (db *PgDb) CreateTables(ctx context.Context) error {
 	}
 	if !db.HeartbeatTableExists() {
 		if err := db.CreateHeartbeatTable(); err != nil {
+			return err
+		}
+	}
+	if !db.propagationTableExists() {
+		if err := db.createPropagationTable(); err != nil {
+			return err
+		}
+	}
+	if !db.BlockTableExits() {
+		if err := db.CreateBlockTable(); err != nil {
+			return err
+		}
+	}
+	if !db.blockBinTableExits() {
+		if err := db.createBlockBinTable(); err != nil {
+			return err
+		}
+	}
+	if !db.VoteTableExits() {
+		if err := db.CreateVoteTable(); err != nil {
+			return err
+		}
+	}
+	if !db.voteReceiveTimeDeviationTableExits() {
+		if err := db.createVoteReceiveTimeDeviationTable(); err != nil {
 			return err
 		}
 	}
@@ -230,6 +300,61 @@ func (pg *PgDb) HeartbeatTableExists() bool {
 	return exists
 }
 
+
+func (pg *PgDb) createPropagationTable() error {
+	_, err := pg.db.Exec(createPropagationTableScript)
+	return err
+}
+
+func (pg *PgDb) propagationTableExists() bool {
+	exists, _ := pg.tableExists("propagation")
+	return exists
+}
+
+// block table
+func (pg *PgDb) CreateBlockTable() error {
+	_, err := pg.db.Exec(createBlockTableScript)
+	return err
+}
+
+func (pg *PgDb) BlockTableExits() bool {
+	exists, _ := pg.tableExists("block")
+	return exists
+}
+
+// createBlockBinTable
+func (pg *PgDb) createBlockBinTable() error {
+	_, err := pg.db.Exec(createBlockBinTableScript)
+	return err
+}
+
+func (pg *PgDb) blockBinTableExits() bool {
+	exists, _ := pg.tableExists("block_bin")
+	return exists
+}
+
+// vote table
+func (pg *PgDb) CreateVoteTable() error {
+	_, err := pg.db.Exec(createVoteTableScript)
+	return err
+}
+
+func (pg *PgDb) VoteTableExits() bool {
+	exists, _ := pg.tableExists("vote")
+	return exists
+}
+
+// vote_receive_time_deviation table
+func (pg *PgDb) createVoteReceiveTimeDeviationTable() error {
+	_, err := pg.db.Exec(createVoteReceiveTimeDeviationTableScript)
+	return err
+}
+
+func (pg *PgDb) voteReceiveTimeDeviationTableExits() bool {
+	exists, _ := pg.tableExists("vote_receive_time_deviation")
+	return exists
+}
+
 func (pg *PgDb) tableExists(name string) (bool, error) {
 	rows, err := pg.db.Query(`SELECT relname FROM pg_class WHERE relname = $1`, name)
 	if err == nil {
@@ -269,6 +394,30 @@ func (pg *PgDb) DropTables() error {
 		return err
 	}
 
+	// propagation
+	if err := pg.dropTable("propagation"); err != nil {
+		return err
+	}
+
+	// block
+	if err := pg.dropTable("block"); err != nil {
+		return err
+	}
+
+	// block_bin
+	if err := pg.dropTable("block_bin"); err != nil {
+		return err
+	}
+
+	// vote
+	if err := pg.dropTable("vote"); err != nil {
+		return err
+	}
+
+	// vote_receive_time_deviation
+	if err := pg.dropTable("vote_receive_time_deviation"); err != nil {
+		return err
+	}
 	return nil
 }
 
