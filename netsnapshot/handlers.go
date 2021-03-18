@@ -370,7 +370,7 @@ func (t *taker) nodeCountByTimestamp(w http.ResponseWriter, r *http.Request) {
 }
 
 func getTitmestampCtx(r *http.Request) int64 {
-	timestampStr, ok := r.Context().Value("ctxTimestamp").(string)
+	timestampStr, ok := r.Context().Value(web.CtxTimestamp).(string)
 	if !ok {
 		return 0
 	}
@@ -380,7 +380,7 @@ func getTitmestampCtx(r *http.Request) int64 {
 
 func addTimestampToCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), "ctxTimestamp",
+		ctx := context.WithValue(r.Context(), web.CtxTimestamp,
 			chi.URLParam(r, "timestamp"))
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

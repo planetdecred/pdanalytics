@@ -92,7 +92,7 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 		for i := 0; i < len(cfg.SyncDatabases); i++ {
 			databaseName := cfg.SyncDatabases[i]
 			syncDb, err := postgres.NewPgDb(cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPass,
-				 databaseName, cfg.DebugLevel == "debug")
+				databaseName, cfg.DebugLevel == "debug")
 			if err != nil {
 				return err
 			}
@@ -134,7 +134,6 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 			return fmt.Errorf("Failed to activate network snapshot component, %s", err.Error())
 		}
 	}
-
 
 	_, err = homepage.New(server, homepage.Mods{
 		Stk: stk,

@@ -23,7 +23,7 @@ func CacheControl(maxAge int64) func(http.Handler) http.Handler {
 // part {chartAxisType} into the request context.
 func ChartDataTypeCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), "ctxChartDataType",
+		ctx := context.WithValue(r.Context(), CtxChartDataType,
 			chi.URLParam(r, "chartDataType"))
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -32,7 +32,7 @@ func ChartDataTypeCtx(next http.Handler) http.Handler {
 // getChartDataTypeCtx retrieves the ctxChartAxisType data from the request context.
 // If not set, the return value is an empty string.
 func GetChartDataTypeCtx(r *http.Request) string {
-	chartAxisType, ok := r.Context().Value("ctxChartDataType").(string)
+	chartAxisType, ok := r.Context().Value(CtxChartDataType).(string)
 	if !ok {
 		log.Trace("chart axis type not set")
 		return ""

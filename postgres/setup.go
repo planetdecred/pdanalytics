@@ -300,7 +300,6 @@ func (pg *PgDb) HeartbeatTableExists() bool {
 	return exists
 }
 
-
 func (pg *PgDb) createPropagationTable() error {
 	_, err := pg.db.Exec(createPropagationTableScript)
 	return err

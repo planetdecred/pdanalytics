@@ -123,6 +123,7 @@ func (t *taker) Start(ctx context.Context) {
 				t.dataStore.DeleteSnapshot(ctx, timestamp)
 				log.Errorf("Error in saving network snapshot, %s", err.Error())
 			}
+			log.Info("UpdateSnapshotNodesBin")
 			if err = t.dataStore.UpdateSnapshotNodesBin(ctx); err != nil {
 				log.Errorf("Error in initial network snapshot bin update, %s", err.Error())
 			}
