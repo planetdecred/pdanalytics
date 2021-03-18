@@ -160,6 +160,11 @@ func (db *PgDb) CreateTables(ctx context.Context) error {
 			return err
 		}
 	}
+	if !db.NetworkSnapshotTableExists() {
+		if err := db.CreateNetworkSnapshotTable(); err != nil {
+			return err
+		}
+	}
 	if !db.NetworkSnapshotBinTableExists() {
 		if err := db.CreateNetworkSnapshotBinTable(); err != nil {
 			return err
