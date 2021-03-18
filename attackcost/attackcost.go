@@ -39,7 +39,7 @@ func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot)
 	}
 
 	if xcBot == nil {
-		return nil, errors.New("Attack cost requires exchange bot")
+		return nil, errors.New("Attack cost requires exchange bot, set 'exchange-monitor=1' to enable it.")
 	}
 
 	hash, err := client.Rpc.GetBestBlockHash()
