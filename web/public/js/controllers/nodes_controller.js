@@ -147,23 +147,23 @@ export default class extends Controller {
     switch (this.dataType) {
       case dataTypeNodes:
         hide(this.chartSourceWrapperTarget)
+        this.chartsViewWrapperTarget.classList.remove('col-md-21')
         this.chartsViewWrapperTarget.classList.remove('col-md-10')
-        this.chartsViewWrapperTarget.classList.remove('col-md-11')
-        this.chartsViewWrapperTarget.classList.add('col-md-12')
+        this.chartsViewWrapperTarget.classList.add('col-md-24')
         return
       case dataTypeLocation:
-        this.chartsViewWrapperTarget.classList.remove('col-md-10')
-        this.chartsViewWrapperTarget.classList.add('col-md-11')
-        this.chartsViewWrapperTarget.classList.remove('col-md-12')
-        this.chartSourceWrapperTarget.classList.add('col-md-1')
-        this.chartSourceWrapperTarget.classList.remove('col-md-2')
+        this.chartsViewWrapperTarget.classList.remove('col-md-20')
+        this.chartsViewWrapperTarget.classList.add('col-md-21')
+        this.chartsViewWrapperTarget.classList.remove('col-md-24')
+        this.chartSourceWrapperTarget.classList.add('col-md-3')
+        this.chartSourceWrapperTarget.classList.remove('col-md-4')
         break
       case dataTypeVersion:
-        this.chartsViewWrapperTarget.classList.add('col-md-10')
-        this.chartsViewWrapperTarget.classList.remove('col-md-11')
-        this.chartsViewWrapperTarget.classList.remove('col-md-12')
-        this.chartSourceWrapperTarget.classList.add('col-md-2')
-        this.chartSourceWrapperTarget.classList.remove('col-md-1')
+        this.chartsViewWrapperTarget.classList.add('col-md-20')
+        this.chartsViewWrapperTarget.classList.remove('col-md-21')
+        this.chartsViewWrapperTarget.classList.remove('col-md-24')
+        this.chartSourceWrapperTarget.classList.add('col-md-4')
+        this.chartSourceWrapperTarget.classList.remove('col-md-3')
         break
     }
     show(this.chartSourceWrapperTarget)
@@ -466,6 +466,13 @@ export default class extends Controller {
       hideLoading(this.loadingDataTarget)
       return
     }
+    if(!result.x || result.x.length === 0) {
+      this.messageViewTarget.innerHTML = `<div class="alert alert-primary"><strong>No record for the selected chart</strong></div>`
+      show(this.messageViewTarget)
+      hide(this.chartWrapperTarget)
+      hideLoading(this.loadingDataTarget)
+      return
+    }
     show(this.chartWrapperTarget)
     hide(this.messageViewTarget)
     drawChartFn = drawChartFn.bind(this)
@@ -474,14 +481,6 @@ export default class extends Controller {
   }
 
   drawSnapshotChart (result) {
-    if(!result.x) {
-      this.messageViewTarget.innerHTML = `<div class="alert alert-primary"><strong>No record for the selected chart</strong></div>`
-      show(this.messageViewTarget)
-      hide(this.chartWrapperTarget)
-      hideLoading(this.loadingDataTarget)
-      return
-    }
-
     this.chartsView = new Dygraph(
       this.chartsViewTarget,
       csv(result, 2),
