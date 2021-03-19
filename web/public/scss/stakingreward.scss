@@ -1,4 +1,6 @@
 .reward-calc {
+  font-size: 15px;
+
   .form-label {
     line-height: 25px;
     margin-right: 3px;
@@ -23,6 +25,8 @@
 
 @media (max-width: 320px) {
   .reward-calc {
+    font-size: 15px;
+
     .amount {
       display: inline-block !important;
       height: 25px;
