@@ -44,8 +44,6 @@ export default class extends Controller {
   }
 
   amountKeypress (e) {
-    console.log(e.keyCode)
-    console.log(e)
     if (e.keyCode === 13) {
       this.amountChanged()
     }
@@ -56,16 +54,56 @@ export default class extends Controller {
     this.calculate()
   }
 
+  startDateKeypress (e) {
+    if (e.keyCode !== 13) {
+      return
+    }
+    if(!this.validateDate(true)) {
+      return
+    }
+    this.startDateChanged()
+  }
+
   startDateChanged () {
+    if(!this.validateDate()) {
+      return
+    }
     let startDateUnix = new Date(this.startDateTarget.value).getTime()
     insertOrUpdateQueryParam('start', startDateUnix, parseInt(this.last3Months.format('X')))
     this.calculate()
   }
 
+  endDateKeypress (e) {
+    if (e.keyCode !== 13) {
+      return
+    }
+    if(!this.validateDate(true)) {
+      return
+    }
+    this.endDateChanged()
+  }
+
   endDateChanged () {
+    if(!this.validateDate()) {
+      return
+    }
     let endDateUnix = new Date(this.endDateTarget.value).getTime()
     insertOrUpdateQueryParam('end', endDateUnix, parseInt(this.now.format('X')))
     this.calculate()
+  }
+
+  validateDate (showAlert) {
+    let startDate = moment(this.startDateTarget.value)
+    let endDate = moment(this.endDateTarget.value)
+
+    const days = moment.duration(endDate.diff(startDate)).asDays()
+    if (days < this.rewardPeriod) {
+      if(showAlert) {
+        window.alert(`You must stake for more than ${this.rewardPeriod} days`)
+      }
+      return false
+    }
+    return true
   }
 
   calculate () {

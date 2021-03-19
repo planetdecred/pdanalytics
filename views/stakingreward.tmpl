@@ -33,6 +33,7 @@
             <div class="col-md-5 col-sm-12 d-flex mt-2">
               <span class="form-label">Start</span>
               <input data-action="change->stakingreward#startDateChanged"
+                data-action="keyup->staking#startDateKeypress"
                 data-target="stakingreward.startDate"
                 type="date" class="form-control date mr-1" placeholder="Start Date"> 
             </div>
@@ -41,6 +42,7 @@
               <span class="form-label">End</span>
               <input
                 data-action="change->stakingreward#endDateChanged"
+                data-action="keyup->staking#endDateKeypress"
                 data-target="stakingreward.endDate"
                     type="date"
                     class="form-control date" placeholder="End Date"> 
