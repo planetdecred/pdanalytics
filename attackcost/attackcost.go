@@ -56,7 +56,7 @@ func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot)
 	}
 
 	ac.server.AddMenuItem(web.MenuItem{
-		Href:      "/attack-cost",
+		Href:      "/attackcost",
 		HyperText: "Attack Cost",
 		Attributes: map[string]string{
 			"class": "menu-item",
@@ -68,7 +68,7 @@ func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot)
 
 	ac.client.Notif.RegisterBlockHandlerGroup(ac.ConnectBlock)
 
-	ac.server.AddRoute("/attack-cost", web.GET, ac.attackCost)
+	ac.server.AddRoute("/attackcost", web.GET, ac.attackCost)
 	ac.server.AddRoute("/api/chart/market/{token}/depth", web.GET, ac.getMarketDepthChart, exchangeTokenContext)
 
 	return ac, nil
