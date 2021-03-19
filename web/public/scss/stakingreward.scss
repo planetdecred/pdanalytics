@@ -1,7 +1,12 @@
 .reward-calc {
+  .form-label {
+    line-height: 25px;
+    margin-right: 3px;
+  }
+
   .amount {
     display: inline-block !important;
-    width: 70px;
+    width: 90px;
     height: 25px;
   }
 
@@ -13,7 +18,6 @@
 
   p.desc {
     line-height: 22px;
-    font-size: 15px;
   }
 }
 
@@ -33,7 +37,6 @@
 
     p.desc {
       line-height: 30px;
-      font-size: 15px;
     }
   }
 }

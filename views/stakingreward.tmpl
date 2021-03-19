@@ -20,32 +20,33 @@
         </div>
         
         <div class="mb-3 bg-white p-3 pb-0">
-          <p class="m-0 desc" style="line-height: 30px;">
-            <span class="mr-2 d-sm-block">
+          <div class="row">
+            <div class="col-md-6 col-sm-15 d-flex mt-2">
               <span class="form-label">Amount (<span class="text-secondary">DCR</span>)</span>
               <input data-action="change->stakingreward#amountChanged"
                 data-action="keyup->staking#amountKeypress"
                 data-target="stakingreward.amount"
-                type="number" class="form-control amount mr-1" placeholder="Enter the amount of DCR to stake">
-            </span>
+                type="number" class="form-control amount mr-1" 
+                placeholder="Enter the amount of DCR to stake">
+            </div>
 
-            <span class="mr-2 d-sm-block">
+            <div class="col-md-5 col-sm-12 d-flex mt-2">
               <span class="form-label">Start</span>
               <input data-action="change->stakingreward#startDateChanged"
                 data-target="stakingreward.startDate"
                 type="date" class="form-control date mr-1" placeholder="Start Date"> 
-            </span>
-            
-            <span class="d-sm-block">
+            </div>
+
+            <div class="col-md-5 col-sm-12 d-flex mt-2">
               <span class="form-label">End</span>
               <input
                 data-action="change->stakingreward#endDateChanged"
                 data-target="stakingreward.endDate"
                     type="date"
                     class="form-control date" placeholder="End Date"> 
-            </span>
-            <br>
-
+            </div>
+          </div>
+          <p class="m-0 desc" style="line-height: 30px;">
             <span class="mr-3">
               <span class="form-label">Days</span>
               <span class="font-weight-bold" data-target="stakingreward.daysText">0</span>
@@ -56,7 +57,7 @@
               <span class="font-weight-bold" data-target="stakingreward.percentageRoi">0</span>
             </span>
 
-            <span>
+            <span class="d-block d-sm-inline">
               <span class="form-label">Reward</span>
               <span class="font-weight-bold" data-target="stakingreward.amountRoi">0</span>
               <span class="text-secondary">DCR</span>
