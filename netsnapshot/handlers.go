@@ -471,9 +471,9 @@ func (t *taker) chart(w http.ResponseWriter, r *http.Request) {
 	dataType := web.GetChartDataTypeCtx(r)
 	bin := r.URL.Query().Get("bin")
 	axis := r.URL.Query().Get("axis")
-	extras := r.URL.Query().Get("extras")
+	extras := strings.Split(r.URL.Query().Get("extras"), "|")
 
-	chartData, err := t.fetchEncodeSnapshotChart(r.Context(), dataType, axis, bin, extras)
+	chartData, err := t.fetchEncodeSnapshotChart(r.Context(), dataType, axis, bin, extras...)
 	if err != nil {
 		web.RenderErrorfJSON(w, err.Error())
 		log.Warnf(`Error fetching mempool %s chart: %v`, dataType, err)
