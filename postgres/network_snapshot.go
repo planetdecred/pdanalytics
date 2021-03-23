@@ -316,6 +316,27 @@ func (pg PgDb) NodeExists(ctx context.Context, address string) (bool, error) {
 	return models.NodeExists(ctx, pg.db, address)
 }
 
+func (pd PgDb) FindNode(ctx context.Context, address string) (*netsnapshot.NetworkPeer, error) {
+	n, err := models.FindNode(ctx, pd.db, address)
+	if err != nil {
+		return nil, err
+	}
+	return &netsnapshot.NetworkPeer{
+		Address:         address,
+		UserAgent:       n.UserAgent,
+		StartingHeight:  n.StartingHeight,
+		CurrentHeight:   n.CurrentHeight,
+		ConnectionTime:  n.ConnectionTime,
+		ProtocolVersion: uint32(n.ProtocolVersion),
+		LastSeen:        n.LastSeen,
+		LastSuccess:     n.LastSuccess,
+		IsDead:          n.IsDead,
+		IPVersion:       n.IPVersion,
+		Services:        n.Services,
+		LastAttempt:     n.LastAttempt,
+	}, nil
+}
+
 // SaveNode inserts the new node information. The node is marked as alive by default
 func (pg PgDb) SaveNode(ctx context.Context, peer netsnapshot.NetworkPeer) error {
 	newNode := models.Node{
@@ -360,6 +381,10 @@ func (pg PgDb) UpdateNode(ctx context.Context, peer netsnapshot.NetworkPeer) err
 		models.NodeColumns.IsDead:         false,
 		models.NodeColumns.FailureCount:   0,
 	}
+	if existingNode.Country == "" {
+		cols[models.NodeColumns.Country] = peer.CountryName
+		cols[models.NodeColumns.IPVersion] = peer.IPVersion
+	}
 	if existingNode.ConnectionTime == 0 {
 		cols[models.NodeColumns.ConnectionTime] = peer.ConnectionTime
 	}
@@ -367,7 +392,8 @@ func (pg PgDb) UpdateNode(ctx context.Context, peer netsnapshot.NetworkPeer) err
 	return err
 }
 
-func (pg PgDb) NetworkPeers(ctx context.Context, timestamp int64, q string, offset int, limit int) ([]netsnapshot.NetworkPeer, int64, error) {
+func (pg PgDb) NetworkPeers(ctx context.Context, timestamp int64, q string, offset int,
+	limit int) ([]netsnapshot.NetworkPeer, int64, error) {
 	where := fmt.Sprintf("heartbeat.timestamp = %d", timestamp)
 	if q != "" {
 		where += fmt.Sprintf(" AND (node.address = '%s' OR node.user_agent = '%s' OR node.country = '%s')", q, q, q)

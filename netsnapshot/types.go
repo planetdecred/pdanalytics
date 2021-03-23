@@ -90,6 +90,7 @@ type DataStore interface {
 	GetAvailableNodes(ctx context.Context) ([]net.IP, error)
 	LastSnapshot(ctx context.Context) (*SnapShot, error)
 	GetIPLocation(ctx context.Context, ip string) (string, int, error)
+	FindNode(ctx context.Context, address string) (*NetworkPeer, error)
 	NodeExists(ctx context.Context, address string) (bool, error)
 
 	Snapshots(ctx context.Context, offset, limit int, forChart bool) ([]SnapShot, int64, error)

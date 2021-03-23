@@ -162,7 +162,21 @@ func (t *taker) Start(ctx context.Context) {
 				Latency:         int(node.Latency),
 			}
 
-			if exists, _ := t.dataStore.NodeExists(ctx, networkPeer.Address); exists {
+			if oldRec, _ := t.dataStore.FindNode(ctx, networkPeer.Address); oldRec != nil {
+				if oldRec.CountryName == "" {
+					geoLoc, err := t.geolocation(ctx, node.IP)
+					if err == nil {
+						networkPeer.IPInfo = *geoLoc
+						networkPeer.CountryName = geoLoc.CountryName
+						if geoLoc.Type == "ipv4" {
+							networkPeer.IPVersion = 4
+						} else if geoLoc.Type == "ipv6" {
+							networkPeer.IPVersion = 6
+						}
+					} else {
+						log.Error(err)
+					}
+				}
 				err = t.dataStore.UpdateNode(ctx, networkPeer)
 				if err != nil {
 					log.Errorf("Error in saving node info, %s.", err.Error())
@@ -171,7 +185,7 @@ func (t *taker) Start(ctx context.Context) {
 				geoLoc, err := t.geolocation(ctx, node.IP)
 				if err == nil {
 					networkPeer.IPInfo = *geoLoc
-					// networkPeer.Country = geoLoc.CountryName
+					networkPeer.CountryName = geoLoc.CountryName
 					if geoLoc.Type == "ipv4" {
 						networkPeer.IPVersion = 4
 					} else if geoLoc.Type == "ipv6" {
