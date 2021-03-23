@@ -44,6 +44,12 @@ func Activate(ctx context.Context, store DataStore, cfg NetworkSnapshotOptions, 
 		}
 	}
 
+	go func() {
+		if err := store.UpdateSnapshotNodesBin(ctx); err != nil {
+			log.Error(err)
+		}
+	}()
+
 	return nil
 }
 

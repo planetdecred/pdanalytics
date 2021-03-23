@@ -1174,7 +1174,7 @@ func (pg *PgDb) updateSnapshotVersionBinData(ctx context.Context) error {
 		}
 		days, dayHeights, dayIntervals := cache.GenerateDayBin(dates, heights)
 		for i, interval := range dayIntervals {
-			if int64(days[i]) < nextHour.Unix() {
+			if int64(days[i]) < nextDay.Unix() {
 				continue
 			}
 			m := models.NodeVersion{
@@ -1359,7 +1359,7 @@ func (pg *PgDb) updateNodeLocationBinData(ctx context.Context) error {
 		}
 		days, dayHeights, dayIntervals := cache.GenerateDayBin(dates, heights)
 		for i, interval := range dayIntervals {
-			if int64(days[i]) < nextHour.Unix() {
+			if int64(days[i]) < nextDay.Unix() {
 				continue
 			}
 			m := models.NodeLocation{
