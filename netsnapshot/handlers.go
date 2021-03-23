@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/go-chi/chi"
 	"github.com/planetdecred/pdanalytics/chart"
 	"github.com/planetdecred/pdanalytics/web"
@@ -576,7 +575,6 @@ func (t *taker) fetchEncodeSnapshotLocationsChart(ctx context.Context, axis, bin
 		if err != nil {
 			return nil, err
 		}
-		spew.Dump(records, country)
 		var nodeCounts chart.ChartUints
 		for _, rec := range records {
 			if _, f := datesMap[rec.Timestamp]; !f {
