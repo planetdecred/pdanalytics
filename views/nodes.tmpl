@@ -17,7 +17,7 @@
             {{$height := .Data.snapshot.Height}}
 
             <div class="control-wrapper">
-                <div class="d-flex flex-row bottom-ctl">
+                <div class="d-flex flex-row bottom-ctl" style="overflow: auto;">
 
                     <div class="chart-control-wrapper ml-auto mr-3 my-2">
                         <div class="chart-control-label">Data Type</div>
@@ -145,10 +145,11 @@
 
                 </div>
 
-                    <div class="inner-content d-hide offset-2" data-target="nodes.tableWrapper">
+                    <div class="inner-content d-hide offset-2" data-target="nodes.tableWrapper"
+                    style="max-width: fit-content; margin: 0 auto;">
 
                         <div class="table-details">
-                            <h3 data-target="nodes.tableTitle">Network Snapshots</h3>
+                            <h3 data-target="nodes.tableTitle" class="mr-5">Network Snapshots</h3>
                             <div class="pagination">
                                 <div data-target="nodes.numPageWrapper"
                                     class="control-div p-0">
