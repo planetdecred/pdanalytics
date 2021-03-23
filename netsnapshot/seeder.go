@@ -27,7 +27,7 @@ const (
 )
 
 var (
-	defaultHomeDir = dcrutil.AppDataDir("dcrextdata", false)
+	defaultHomeDir = dcrutil.AppDataDir("pdanalytics", false)
 
 	amgr *Manager
 	wg   sync.WaitGroup
@@ -39,7 +39,7 @@ func creep(netParams *chaincfg.Params) {
 	onaddr := make(chan struct{})
 	verack := make(chan struct{})
 	peerConfig := peer.Config{
-		UserAgentName:    "dcrextdata",
+		UserAgentName:    "pdanalytics",
 		UserAgentVersion: "0.0.1",
 		Net:              netParams.Net,
 		DisableRelayTx:   true,

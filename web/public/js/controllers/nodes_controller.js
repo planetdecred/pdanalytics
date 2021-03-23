@@ -187,7 +187,7 @@ export default class extends Controller {
     let html = ''
     _this.allChartSourceTarget.checked = true
     result.forEach((item, i) => {
-      var checked = i <= 1
+      var checked = i <= 4
       if (item === '') {
         checked = false
         item = 'Unknown'

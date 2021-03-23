@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/go-chi/chi"
 	"github.com/planetdecred/pdanalytics/chart"
 	"github.com/planetdecred/pdanalytics/web"
@@ -557,8 +558,9 @@ func (t *taker) fetchEncodeSnapshotNodeVersionsChart(ctx context.Context, axis, 
 	}
 
 	recs := []chart.Lengther{allDates}
-	for _, r := range versions {
-		recs = append(recs, r)
+
+	for _, v := range userAgentsArg {
+		recs = append(recs, versions[v])
 	}
 
 	return chart.Encode(nil, recs...)
@@ -574,6 +576,7 @@ func (t *taker) fetchEncodeSnapshotLocationsChart(ctx context.Context, axis, bin
 		if err != nil {
 			return nil, err
 		}
+		spew.Dump(records, country)
 		var nodeCounts chart.ChartUints
 		for _, rec := range records {
 			if _, f := datesMap[rec.Timestamp]; !f {
@@ -589,8 +592,8 @@ func (t *taker) fetchEncodeSnapshotLocationsChart(ctx context.Context, axis, bin
 	}
 
 	recs := []chart.Lengther{allDates}
-	for _, r := range locationSet {
-		recs = append(recs, r)
+	for _, c := range countriesArg {
+		recs = append(recs, locationSet[c])
 	}
 
 	return chart.Encode(nil, recs...)
