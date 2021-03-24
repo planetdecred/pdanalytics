@@ -1357,7 +1357,7 @@ func (pg *PgDb) updateNodeLocationBinData(ctx context.Context) error {
 	var lastDay int64
 	if lastDayEntry != nil {
 		lastDay = lastDayEntry.Timestamp
-		nextDay = time.Unix(lastDayEntry.Timestamp, 0).Add(chart.AnHour * time.Second).UTC()
+		nextDay = time.Unix(lastDayEntry.Timestamp, 0).Add(chart.ADay * time.Second).UTC()
 	}
 	if time.Now().Before(nextDay) {
 		return nil
