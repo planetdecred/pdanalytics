@@ -254,8 +254,8 @@ export function getParameterByName (name, url) {
 
 export function zipXYZData (gData, isHeightAxis, isDayBinned, yFormatter, zFormatter, windowS) {
   windowS = windowS || 1
-  yFormatter = yFormatter || 1
-  zFormatter = zFormatter || 1
+  yFormatter = yFormatter || function (d) { return d }
+  zFormatter = zFormatter || function (d) { return d }
   return map(gData.x, (n, i) => {
     let xAxisVal
     if (isHeightAxis && isDayBinned) {
