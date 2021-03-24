@@ -58,14 +58,14 @@ export default class extends Controller {
     if (e.keyCode !== 13) {
       return
     }
-    if(!this.validateDate(true)) {
+    if (!this.validateDate(true)) {
       return
     }
     this.startDateChanged()
   }
 
   startDateChanged () {
-    if(!this.validateDate()) {
+    if (!this.validateDate()) {
       return
     }
     let startDateUnix = new Date(this.startDateTarget.value).getTime()
@@ -77,14 +77,14 @@ export default class extends Controller {
     if (e.keyCode !== 13) {
       return
     }
-    if(!this.validateDate(true)) {
+    if (!this.validateDate(true)) {
       return
     }
     this.endDateChanged()
   }
 
   endDateChanged () {
-    if(!this.validateDate()) {
+    if (!this.validateDate()) {
       return
     }
     let endDateUnix = new Date(this.endDateTarget.value).getTime()
