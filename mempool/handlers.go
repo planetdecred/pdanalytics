@@ -136,7 +136,7 @@ func (s *Collector) fetchMempoolData(req *http.Request) (map[string]interface{},
 
 // api/charts/mempool/{dataType}
 func (c *Collector) chart(w http.ResponseWriter, r *http.Request) {
-	dataType := getChartDataTypeCtx(r)
+	dataType := web.GetChartDataTypeCtx(r)
 	bin := r.URL.Query().Get("bin")
 
 	chartData, err := c.dataStore.FetchEncodeChart(r.Context(), dataType, bin)

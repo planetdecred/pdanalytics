@@ -509,7 +509,7 @@ func (prop *propagation) votesReceiveTimeChart(ctx context.Context, axis string,
 // part {chartAxisType} into the request context.
 func chartDataTypeCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), "ctxChartDataType",
+		ctx := context.WithValue(r.Context(), web.CtxChartDataType,
 			chi.URLParam(r, "chartDataType"))
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -518,7 +518,7 @@ func chartDataTypeCtx(next http.Handler) http.Handler {
 // getChartDataTypeCtx retrieves the ctxChartAxisType data from the request context.
 // If not set, the return value is an empty string.
 func getChartDataTypeCtx(r *http.Request) string {
-	chartAxisType, ok := r.Context().Value("ctxChartDataType").(string)
+	chartAxisType, ok := r.Context().Value(web.CtxChartDataType).(string)
 	if !ok {
 		log.Trace("chart axis type not set")
 		return ""

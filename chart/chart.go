@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/volatiletech/null"
+	"github.com/volatiletech/null/v8"
 )
 
 // Keys for specifying chart data type.

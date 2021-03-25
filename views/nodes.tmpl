@@ -1,0 +1,267 @@
+{{define "nodes"}}
+<!DOCTYPE html>
+<html lang="en">
+{{ template "html-head" "Nodes"}}
+
+<body>
+<div class="body">
+    {{ template "navbar" . }}
+    <div class="content" data-controller="nodes"
+         data-nodes-page-size="{{ .Data.pageSize }}"
+         data-nodes-page="{{ .Data.currentPage }}"
+         data-nodes-view-option="{{ .Data.selectedViewOption }}"
+         data-nodes-data-type="{{ .Data.dataType }}"
+    >
+        <div class="container-fluid">
+
+            {{$height := .Data.snapshot.Height}}
+
+            <div class="control-wrapper">
+                <div class="d-flex flex-row bottom-ctl" style="overflow: auto;">
+
+                    <div class="chart-control-wrapper ml-auto mr-3 my-2">
+                        <div class="chart-control-label">Data Type</div>
+                        <div class="chart-control">
+                            <ul class="nav nav-pills">
+                                <li class="nav-item">
+                                    <a data-target="nodes.dataType"
+                                    data-action="click->nodes#setDataType" class="nav-link active"
+                                    href="javascript:void(0);" data-option="nodes"
+                                    >Nodes</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a data-target="nodes.dataType"
+                                    data-action="click->nodes#setDataType" class="nav-link"
+                                    href="javascript:void(0);" data-option="version"
+                                    >Version</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a data-target="nodes.dataType"
+                                    data-action="click->nodes#setDataType" class="nav-link"
+                                    href="javascript:void(0);" data-option="location"
+                                    >Location</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="d-flex mr-auto my-2">
+                        <div class="chart-control-wrapper control-div p-0"
+                             data-target="nodes.dataTypeSelector">
+                            <div class="chart-control-label">View</div>
+                            <div class="chart-control mx-auto">
+                                <ul class="nav nav-pills">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" href="javascript:void(0);" data-target="nodes.viewOption"
+                                        data-action="click->nodes#setChart" data-option="chart">Chart</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="javascript:void(0);"
+                                        data-target="nodes.viewOption" data-action="click->nodes#setTable"
+                                        data-option="table">Table</a>
+                                    </li>
+                                </ul>
+                                
+                            </div>
+                        </div>
+
+                        <div data-target="nodes.graphIntervalWrapper" class="control-div p-0 chart-control-wrapper mr-2 mb-1">
+                            <div class="chart-control-label">Group By</div>
+                            <div class="chart-control">
+                                <ul class="nav nav-pills">
+                                    <li class="nav-item">
+                                        <a data-target="nodes.interval"
+                                           data-action="click->nodes#setInterval" class="nav-link active"
+                                           href="javascript:void(0);" data-option="day">Day</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a data-target="nodes.interval"
+                                           data-action="click->nodes#setInterval" class="nav-link"
+                                           href="javascript:void(0);" data-option="hour">Hour</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a data-target="nodes.interval"
+                                           data-action="click->nodes#setInterval" class="nav-link"
+                                           href="javascript:void(0);" data-option="default">None</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="chart-control-wrapper mr-2 mb-1 d-none" data-target="nodes.zoomSelector">
+                            <div class="chart-control-label">Zoom</div>
+                            <div class="chart-control">
+                                <ul class="nav nav-pills">
+                                    <li class="nav-item">
+                                        <a
+                                                class="nav-link active d-none"
+                                                href="javascript:void(0);"
+                                                data-target="nodes.zoomOption"
+                                                data-action="click->nodes#setZoom"
+                                                data-option="all"
+                                        >All</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a
+                                                class="nav-link d-none"
+                                                href="javascript:void(0);"
+                                                data-target="nodes.zoomOption"
+                                                data-action="click->nodes#setZoom"
+                                                data-option="year"
+                                        >Year</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a
+                                                class="nav-link d-none"
+                                                href="javascript:void(0);"
+                                                data-target="nodes.zoomOption"
+                                                data-action="click->nodes#setZoom"
+                                                data-option="month"
+                                        >Month</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a
+                                                class="nav-link d-none"
+                                                href="javascript:void(0);"
+                                                data-target="nodes.zoomOption"
+                                                data-action="click->nodes#setZoom"
+                                                data-option="week"
+                                        >Week</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a
+                                                class="nav-link d-none"
+                                                href="javascript:void(0);"
+                                                data-target="nodes.zoomOption"
+                                                data-action="click->nodes#setZoom"
+                                                data-option="day"
+                                        >Day</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                    <div class="inner-content d-hide offset-2" data-target="nodes.tableWrapper"
+                    style="max-width: fit-content; margin: 0 auto;">
+
+                        <div class="table-details">
+                            <h3 data-target="nodes.tableTitle" class="mr-5">Network Snapshots</h3>
+                            <div class="pagination">
+                                <div data-target="nodes.numPageWrapper"
+                                    class="control-div p-0">
+                                    <div class="control-label">Page Size:</div>
+                                    <select data-target="nodes.pageSize" data-action="change->nodes#changePageSize" class="form-control"
+                                            style="width: 70px;">
+                                        {{$pageSize := .Data.pageSize}}
+                                        {{ range $index, $filter := .Data.pageSizeSelector}}
+                                            <option value="{{$index}}" {{ if eq $index $pageSize}} selected {{ end }}>{{$filter}}</option>
+                                        {{ end }}
+                                    </select>
+                                </div>
+                                <div data-target="nodes.btnWrapper" class="page-size d-flex mt-1">
+                                    <a href="javascript:void(0)" data-target="nodes.previousPageButton"
+                                    data-action="click->nodes#loadPreviousPage"
+                                    class="mr-2 {{ if lt .Data.previousPage 1 }}d-hide{{ end }}">&lt;Previous </a>
+
+                                    <p class="text-muted" style="white-space: nowrap;"> Page <span
+                                                data-target="nodes.currentPage" class="text-muted">{{ .Data.currentPage }}</span>
+                                        of <span data-target="nodes.totalPageCount"
+                                                class="text-muted">{{ .Data.totalPages }}</span>
+                                    </p>
+                                    <a href="javascript:void(0)" data-target="nodes.nextPageButton"
+                                    data-action="click->nodes#loadNextPage"
+                                    class="ml-2 {{ if not .Data.nextPage }}d-hide{{ end }}"> Next&gt;</a>
+                                </div>
+                            </div>
+                        </div>
+                        <table class="table mx-auto">
+                            <thead>
+                            <tr class="d-hide" data-target="nodes.tableHeader" data-for="nodes">
+                                <th>Timestamp (UTC)</th>
+                                <th>Total Nodes</th>
+                                <th>Reached Nodes</th>
+                            </tr>
+                            <tr class="d-hide" data-target="nodes.tableHeader" data-for="version">
+                                <th>Timestamp (UTC)</th>
+                                <th>User Agent</th>
+                                <th># of Nodes</th>
+                            </tr>
+                            <tr class="d-hide" data-target="nodes.tableHeader" data-for="location">
+                                <th>Timestamp (UTC)</th>
+                                <th>Country</th>
+                                <th># of Nodes</th>
+                            </tr>
+                            </thead>
+                            <tbody data-target="nodes.tableBody">
+                            </tbody>
+                        </table>
+
+                        <template data-target="nodes.snapshotRowTemplate">
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </template>
+
+                        <template data-target="nodes.userAgentRowTemplate">
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </template>
+
+                        <template data-target="nodes.countriesRowTemplate">
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </template>
+                    </div>
+
+                    <div data-target="nodes.chartWrapper" class="inner-content chart-wrapper pl-2 pr-2 mb-5 d-none">
+                        <div class="row">
+                            <div class="col-xs-10 col-xs-offset-1 col-md-2 col-md-offset-0 side-vsp-panel d-none" 
+                            data-target="nodes.chartSourceWrapper">
+                                <div class="form-check d-none">
+                                    <input name="vspCheckbox-all" data-target="nodes.allChartSource"
+                                     data-action="click->nodes#allChartSourceCheckChanged"
+                                    class="form-check-input" type="checkbox" id="vspCheckbox-all">
+                                    <label class="form-check-label" for="vspCheckbox-all">Select All</label>
+                                </div>
+                                <div data-target="nodes.chartSourceList">
+
+                                </div>
+                            </div>
+                            <div class="col-md-24 chart-panel" data-target="nodes.chartsViewWrapper">
+                                <div id="chart" data-target="nodes.chartsView"
+                                    style="width:100%; height:73vh; margin:0 auto;"></div>
+                                <div class="d-flex justify-content-center legend-wrapper">
+                                    <div class="legend d-flex" data-target="nodes.labels"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div data-target="nodes.messageView" class="d-hide mx-auto">
+                    </div>
+                    <div class="loading" data-target="nodes.loadingData">
+                        <div class="loader"></div>
+                    </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+{{ template "footer" . }}
+</body>
+
+</html>
+{{end}}
