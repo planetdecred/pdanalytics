@@ -4,10 +4,13 @@ go 1.13
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0 // indirect
+	github.com/asdine/storm/v3 v3.2.1
 	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/chaincfg/chainhash v1.0.2
 	github.com/decred/dcrd/chaincfg/v2 v2.3.0
+	github.com/decred/dcrd/chaincfg/v3 v3.0.0
+	github.com/decred/dcrd/dcrjson/v3 v3.1.0
 	github.com/decred/dcrd/dcrutil v1.4.0
 	github.com/decred/dcrd/dcrutil/v2 v2.0.1
 	github.com/decred/dcrd/peer/v2 v2.2.0
@@ -16,6 +19,7 @@ require (
 	github.com/decred/dcrd/wire v1.4.0
 	github.com/decred/dcrdata/exchanges/v2 v2.1.0
 	github.com/decred/dcrdata/v5 v5.2.2
+	github.com/decred/politeia v0.0.0-20191031182202-b33af07598f2
 	github.com/decred/slog v1.1.0
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-chi/chi v4.1.2+incompatible
@@ -35,6 +39,7 @@ require (
 	github.com/volatiletech/sqlboiler v3.7.1+incompatible
 	github.com/volatiletech/sqlboiler/v4 v4.5.0
 	github.com/volatiletech/strmangle v0.0.1
+	golang.org/x/crypto v0.0.0-20190923035154-9ee001bba392 // indirect
 )
 
 replace (
