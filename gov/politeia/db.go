@@ -48,7 +48,7 @@ type ProposalDB struct {
 // the provided file name. Returns an initialized instance of proposals DB, http
 // client and the formatted politeia API URL path to be used. It also checks the
 // db version, Reindexes the db if need be and sets the required db version.
-func NewProposalsDB(politeiaURL, dbPath string) (*ProposalDB, error) {
+func newProposalsDB(politeiaURL, dbPath string) (*ProposalDB, error) {
 	if politeiaURL == "" {
 		return nil, fmt.Errorf("missing politeia API URL")
 	}
