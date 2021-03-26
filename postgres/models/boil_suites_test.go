@@ -23,6 +23,7 @@ func TestParent(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocations)
 	t.Run("NodeVersions", testNodeVersions)
 	t.Run("Propagations", testPropagations)
+	t.Run("Proposals", testProposals)
 	t.Run("Votes", testVotes)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviations)
 }
@@ -39,6 +40,7 @@ func TestDelete(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsDelete)
 	t.Run("NodeVersions", testNodeVersionsDelete)
 	t.Run("Propagations", testPropagationsDelete)
+	t.Run("Proposals", testProposalsDelete)
 	t.Run("Votes", testVotesDelete)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsDelete)
 }
@@ -55,6 +57,7 @@ func TestQueryDeleteAll(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsQueryDeleteAll)
 	t.Run("NodeVersions", testNodeVersionsQueryDeleteAll)
 	t.Run("Propagations", testPropagationsQueryDeleteAll)
+	t.Run("Proposals", testProposalsQueryDeleteAll)
 	t.Run("Votes", testVotesQueryDeleteAll)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsQueryDeleteAll)
 }
@@ -71,6 +74,7 @@ func TestSliceDeleteAll(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsSliceDeleteAll)
 	t.Run("NodeVersions", testNodeVersionsSliceDeleteAll)
 	t.Run("Propagations", testPropagationsSliceDeleteAll)
+	t.Run("Proposals", testProposalsSliceDeleteAll)
 	t.Run("Votes", testVotesSliceDeleteAll)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsSliceDeleteAll)
 }
@@ -87,6 +91,7 @@ func TestExists(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsExists)
 	t.Run("NodeVersions", testNodeVersionsExists)
 	t.Run("Propagations", testPropagationsExists)
+	t.Run("Proposals", testProposalsExists)
 	t.Run("Votes", testVotesExists)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsExists)
 }
@@ -103,6 +108,7 @@ func TestFind(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsFind)
 	t.Run("NodeVersions", testNodeVersionsFind)
 	t.Run("Propagations", testPropagationsFind)
+	t.Run("Proposals", testProposalsFind)
 	t.Run("Votes", testVotesFind)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsFind)
 }
@@ -119,6 +125,7 @@ func TestBind(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsBind)
 	t.Run("NodeVersions", testNodeVersionsBind)
 	t.Run("Propagations", testPropagationsBind)
+	t.Run("Proposals", testProposalsBind)
 	t.Run("Votes", testVotesBind)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsBind)
 }
@@ -135,6 +142,7 @@ func TestOne(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsOne)
 	t.Run("NodeVersions", testNodeVersionsOne)
 	t.Run("Propagations", testPropagationsOne)
+	t.Run("Proposals", testProposalsOne)
 	t.Run("Votes", testVotesOne)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsOne)
 }
@@ -151,6 +159,7 @@ func TestAll(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsAll)
 	t.Run("NodeVersions", testNodeVersionsAll)
 	t.Run("Propagations", testPropagationsAll)
+	t.Run("Proposals", testProposalsAll)
 	t.Run("Votes", testVotesAll)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsAll)
 }
@@ -167,6 +176,7 @@ func TestCount(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsCount)
 	t.Run("NodeVersions", testNodeVersionsCount)
 	t.Run("Propagations", testPropagationsCount)
+	t.Run("Proposals", testProposalsCount)
 	t.Run("Votes", testVotesCount)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsCount)
 }
@@ -194,6 +204,8 @@ func TestInsert(t *testing.T) {
 	t.Run("NodeVersions", testNodeVersionsInsertWhitelist)
 	t.Run("Propagations", testPropagationsInsert)
 	t.Run("Propagations", testPropagationsInsertWhitelist)
+	t.Run("Proposals", testProposalsInsert)
+	t.Run("Proposals", testProposalsInsertWhitelist)
 	t.Run("Votes", testVotesInsert)
 	t.Run("Votes", testVotesInsertWhitelist)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsInsert)
@@ -260,6 +272,7 @@ func TestReload(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsReload)
 	t.Run("NodeVersions", testNodeVersionsReload)
 	t.Run("Propagations", testPropagationsReload)
+	t.Run("Proposals", testProposalsReload)
 	t.Run("Votes", testVotesReload)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsReload)
 }
@@ -276,6 +289,7 @@ func TestReloadAll(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsReloadAll)
 	t.Run("NodeVersions", testNodeVersionsReloadAll)
 	t.Run("Propagations", testPropagationsReloadAll)
+	t.Run("Proposals", testProposalsReloadAll)
 	t.Run("Votes", testVotesReloadAll)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsReloadAll)
 }
@@ -292,6 +306,7 @@ func TestSelect(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsSelect)
 	t.Run("NodeVersions", testNodeVersionsSelect)
 	t.Run("Propagations", testPropagationsSelect)
+	t.Run("Proposals", testProposalsSelect)
 	t.Run("Votes", testVotesSelect)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsSelect)
 }
@@ -308,6 +323,7 @@ func TestUpdate(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsUpdate)
 	t.Run("NodeVersions", testNodeVersionsUpdate)
 	t.Run("Propagations", testPropagationsUpdate)
+	t.Run("Proposals", testProposalsUpdate)
 	t.Run("Votes", testVotesUpdate)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsUpdate)
 }
@@ -324,6 +340,7 @@ func TestSliceUpdateAll(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsSliceUpdateAll)
 	t.Run("NodeVersions", testNodeVersionsSliceUpdateAll)
 	t.Run("Propagations", testPropagationsSliceUpdateAll)
+	t.Run("Proposals", testProposalsSliceUpdateAll)
 	t.Run("Votes", testVotesSliceUpdateAll)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsSliceUpdateAll)
 }

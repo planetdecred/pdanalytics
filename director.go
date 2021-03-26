@@ -97,13 +97,13 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 				return err
 			}
 
-			if !syncDb.BlockTableExits() {
+			if !syncDb.TableExists("block") {
 				msg := fmt.Sprintf("the database, %s is missing the block table", databaseName)
 				log.Error(msg)
 				return errors.New(msg)
 			}
 
-			if !syncDb.VoteTableExits() {
+			if !syncDb.TableExists("vote") {
 				msg := fmt.Sprintf("the database, %s is missing the vote table", databaseName)
 				log.Error(msg)
 				return errors.New(msg)

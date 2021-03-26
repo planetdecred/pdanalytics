@@ -183,7 +183,7 @@ var (
 
 func (pg *PgDb) CreateTables(ctx context.Context) error {
 	for tableName, createScript := range createTableScripts {
-		if exist, _ := pg.tableExists(tableName); !exist {
+		if exist := pg.TableExists(tableName); !exist {
 			_, err := pg.db.Exec(createScript)
 			if err != nil {
 				return err
@@ -193,7 +193,7 @@ func (pg *PgDb) CreateTables(ctx context.Context) error {
 	return nil
 }
 
-func (pg *PgDb) tableExists(name string) (bool, error) {
+func (pg *PgDb) TableExists(name string) (bool) {
 	rows, err := pg.db.Query(`SELECT relname FROM pg_class WHERE relname = $1`, name)
 	if err == nil {
 		defer func() {
@@ -201,9 +201,9 @@ func (pg *PgDb) tableExists(name string) (bool, error) {
 				log.Error("Close of Query failed: ", e)
 			}
 		}()
-		return rows.Next(), nil
+		return rows.Next()
 	}
-	return false, err
+	return false
 }
 
 func (pg *PgDb) DropTables() error {
