@@ -139,6 +139,23 @@ const (
 		receive_time_difference FLOAT8 NOT NULL,
 		PRIMARY KEY (block_time,bin)
 	);`
+
+	createProposalTableScript = `CREATE TABLE IF NOT EXISTS proposal (
+		id SERIAL PRIMARY KEY,
+		token TEXT NOT NULL,
+		author TEXT,
+		commit_sha TEXT NOT NULL,
+		time TIMESTAMPTZ
+	);`
+
+	createProposalVotesTableScript = `CREATE TABLE IF NOT EXISTS proposal_vote (
+		id SERIAL PRIMARY KEY,
+		proposals_row_id INT8,
+		ticket TEXT NOT NULL,
+		choice TEXT NOT NULL
+	);`
+
+	
 )
 
 var (
