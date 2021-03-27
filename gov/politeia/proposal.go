@@ -54,15 +54,16 @@ type proposals struct {
 	proposalsSync lastSync
 }
 
-func NewProposals(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource, cfg Config,
+func NewProposals(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource, 
+	politeiaURL, dbPath, piPropRepoOwner, piPropRepoName, dataDir string,
 	webServer *web.Server) (*proposals, error) {
 
-	db, err := newProposalsDB(cfg.PoliteiaURL, cfg.DbPath)
+	db, err := newProposalsDB(politeiaURL, dbPath)
 	if err != nil {
 		return nil, err
 	}
 
-	parser, err := piproposals.NewParser(cfg.PiPropRepoOwner, cfg.PiPropRepoName, cfg.DataDir)
+	parser, err := piproposals.NewParser(piPropRepoOwner, piPropRepoName, dataDir)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +72,7 @@ func NewProposals(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource,
 		client:      client,
 		server:      webServer,
 		db:          db,
-		politeiaURL: cfg.PoliteiaURL,
+		politeiaURL: politeiaURL,
 		piparser:    parser,
 	}
 
