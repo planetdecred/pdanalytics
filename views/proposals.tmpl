@@ -1,0 +1,239 @@
+{{define "proposals"}}
+<!DOCTYPE html>
+<html lang="en">
+    {{template "html-head" printf "Politeia Proposals"}}
+        {{template "navbar" .}}
+        <div class="container main" data-controller="pagenavigation">
+            <div class="row justify-content-between">
+                <div class="col-sm-lg-14 col-sm-12 d-flex">
+                    <h4 class="mb-2">
+                        Politeia Proposals
+                        <span class="mb-0 fs11 text-black-50 nowrap">
+                            &nbsp;(<span class="mr-2">Proposals Sync:&nbsp;
+                                <span data-controller="time" data-target="time.age" data-age="{{$.LastPropSync}}"></span>&nbsp;ago
+                            </span>
+                            <span>Votes Sync:&nbsp;
+                                <span data-controller="time" data-target="time.age" data-age="{{$.LastVotesSync}}"></span>&nbsp;ago
+                            </span>)
+                        </span>
+                    </h4>
+                </div>
+            </div>
+            <div class="mb-1 fs13">
+                <h6><a href="{{.PoliteiaURL}}">Politeia</a> is Decred's blockchain-anchored proposal system used for Decred's operational initiatives that don't affect consensus.</h6>
+                {{if not .Proposals }}
+                    {{block  "voteStatusWidget" .}}
+                        <div class="fs12 nowrap text-left" style="margin:auto auto auto 0px;">
+                            <label class="mb-0 mr-1">Vote Status</label>
+                            <select
+                                id="votestatus"
+                                class="form-control-sm mb-2 mr-sm-2 mb-sm-0"
+                                data-target="pagenavigation.votestatus"
+                                data-action="change->pagenavigation#setFilterbyVoteStatus"
+                            >
+                                <option value="all">All</option>
+                                {{range $k, $v := .VotesStatus}}
+                                    <option {{if eq $k $.VStatusFilter}}selected{{end}} value="{{$k}}">{{$v}}</option>
+                                {{end}}
+                            </select>
+                        </div>
+                    {{end}}
+
+                    <table class="table">
+                        <tr>
+                            <td>No proposal found for {{ .NetName }}.</td>
+                        </tr>
+                    </table>
+                {{ else }}
+
+                {{block "proposalsPagination" .}}
+                    <div class="d-flex flex-wrap-reverse align-items-center justify-content-end list-display">
+                        {{template  "voteStatusWidget" .}}
+
+                        {{$count := (int64 (len .Proposals))}}
+                        {{$oldest := (add .Offset $count)}}
+                        {{$pending := (subtract $.TotalCount .Offset)}}
+
+                        <span class="fs12 nowrap text-right">
+                            <label class="mb-0 mr-1" for="tbPagesize">Page Size</label>
+                            <select
+                                id="tbPagesize"
+                                data-target="pagenavigation.pagesize"
+                                data-action="change->pagenavigation#setPageSize"
+                                data-offset="{{$.Offset}}"
+                                data-offsetkey="offset"
+                                class="form-control-sm mb-2 mr-sm-2 mb-sm-0 {{if lt $pending 20}}disabled{{end}}"
+                                {{if lt $pending 20}}disabled="disabled"{{end}}
+                            >
+                            {{if ge $pending 20}}<option {{if eq $count 20}}selected{{end}} value="20">20</option>{{end}}
+                            {{if ge $pending 30}}<option {{if eq $count 30}}selected{{end}} value="30">30</option>{{end}}
+                            {{if ge $pending 50}}<option {{if eq $count 50}}selected{{end}} value="50">50</option>{{end}}
+                            {{if eq $.TotalCount $count 20 30 50}}{{else}}<option value="{{$.TotalCount}}">{{$.TotalCount}}</option>{{end}}
+                            {{if eq $count 20 30 50}}{{else}}<option selected value="{{$count}}">{{$count}}</option>{{end}}
+                            </select>
+                        </span>
+                        <span class="fs12 nowrap text-right px-2">
+                            {{intComma (add .Offset 1)}} &ndash; {{intComma $oldest}} of {{ intComma $.TotalCount }} rows
+                        </span>
+                        <nav aria-label="blocks navigation" data-limit="{{.Limit}}" class="m-2">
+                            <ul class="pagination mb-0 pagination-sm">
+                                <li class="page-item {{if eq .Offset 0}}disabled{{end}}">
+                                    <a
+                                        class="page-link"
+                                        href="?offset=0&rows={{.Limit}}&byvotestatus={{$.VStatusFilter}}"
+                                        id="next"
+                                    > Newest</a>
+                                </li>
+                                <li class="page-item {{if eq .Offset 0}}disabled{{end}}">
+                                    <a
+                                        class="page-link"
+                                        href="?offset={{subtract .Offset .Limit}}&rows={{.Limit}}&byvotestatus={{$.VStatusFilter}}"
+                                        id="next"
+                                    > Newer</a>
+                                </li>
+                                <li class="page-item {{if ge $oldest $.TotalCount}}disabled{{end}}">
+                                    <a
+                                        class="page-link"
+                                        href="?offset={{add .Offset .Limit}}&rows={{.Limit}}&byvotestatus={{$.VStatusFilter}}"
+                                        id="prev"
+                                    >Older</a>
+                                </li>
+                                <li class="page-item {{if ge $oldest $.TotalCount}}disabled{{end}}">
+                                    <a
+                                        class="page-link"
+                                        href="?offset={{subtract $.TotalCount .Limit}}&rows={{.Limit}}&byvotestatus={{$.VStatusFilter}}"
+                                        id="prev"
+                                    >Oldest</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                {{end}}
+            </div>
+
+            <table class="table my-2" data-controller="time">
+                <thead>
+                    <tr>
+                        <th class="text-center">
+                            Title
+                            <span class="d-none d-sm-inline">(Author)</span>
+                        </th>
+                        <th class="text-left">
+                            <span class="d-none d-sm-inline position-relative text-nowrap" data-tooltip="proposal vote status">
+                                Vote Status
+                            </span>
+                            <span class="d-sm-none position-relative text-nowrap" data-tooltip="proposal vote status">
+                                Status
+                            </span>
+                        </th>
+                        <th class="text-right">
+                            <span class="d-none d-sm-inline">Vote Count</span>
+                            <span class="d-sm-none position-relative" data-tooltip="vote count">Votes</span>
+                        </th>
+                        <th class="text-right pr-2">Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {{range $i, $v := .Proposals}}
+                {{with $v}}
+                    <tr>
+                        {{$votesTotalPercent :=  percentage $v.TotalVotes $v.NumOfEligibleVotes}}
+                        <td class="text-left">
+                            <a href="/proposal/{{.RefID}}">{{.Name}}</a>
+                            <span class="d-none d-sm-inline">&nbsp;({{.Username}})</span>
+                        </td>
+                        <td class="text-left">
+                            {{if .VoteStatus}}
+                                {{if eq .VoteStatus.ShortDesc "Not Authorized"}}
+                                    {{if .AbandonedDate}}
+                                        <span class="text-abandoned position-relative" data-tooltip="Proposal abandoned">
+                                            Abandoned
+                                        </span>
+                                    {{else}}
+                                        <span class="text-abandoned position-relative" data-tooltip="Proposal in discussion">
+                                            In Discussion
+                                        </span>
+                                    {{end}}
+                                {{else if eq (len .VoteResults) 0 }}
+                                    <span class="text-progress position-relative" data-tooltip="Waiting for administrator approval to start voting">
+                                        Vote pending
+                                    </span>
+                                {{else}}
+                                    {{range $i, $vr := .VoteResults}}
+                                        {{if eq $vr.Option.OptionID "yes"}}
+                                            {{$votesPercent :=  percentage $vr.VotesReceived $v.TotalVotes}}
+                                            {{$blocksRemaining := subtract (int64 (toInt $v.Endheight)) (int64 $.Tip.Height)}}
+                                            {{if gt $blocksRemaining 0}}
+                                                <span class="text-progress position-relative" data-tooltip="Voting in progress">
+                                                    In Progress
+                                                    <span class="fs12 text-black-50">({{printf "%.0f" ($votesPercent)}}%
+                                                        <span class="d-none d-sm-inline">approval)</span>
+                                                        <span class="d-sm-none">yes)</span>
+                                                    </span>
+                                                </span>
+                                                <div class="fs12 mt-1 d-none d-sm-block">{{secondsToShortDurationString (multiply $blocksRemaining $.TimePerBlock)}} left
+                                                    <span class="text-black-50">({{printf "%.0f" (floor (percentage (subtract 2016 $blocksRemaining) 2016))}}% completed)</span>
+                                                </div>
+                                            {{else if lt $votesTotalPercent (toFloat64 $v.QuorumPercentage)}}
+                                                <span class="text-no-quorum position-relative" data-tooltip="Votes did not attain quorum">
+                                                    No quorum
+                                                </span>
+                                            {{else}}
+                                                {{if lt $votesPercent (toFloat64 $v.PassPercentage)}}
+                                                    <span class="text-failed position-relative" data-tooltip="Failed vote">
+                                                        Failed
+                                                        <span class="fs12 text-black-50">({{printf "%.0f" ($votesPercent)}}%
+                                                            <span class="d-none d-sm-inline">approval)</span>
+                                                            <span class="d-sm-none">yes)</span>
+                                                        </span>
+                                                    </span>
+                                                {{else}}
+                                                    <span class="text-green position-relative" data-tooltip="Passed vote">
+                                                        Passed
+                                                        <span class="fs12 text-black-50">({{printf "%.0f" ($votesPercent)}}%
+                                                            <span class="d-none d-sm-inline">approval)</span>
+                                                            <span class="d-sm-none">yes)</span>
+                                                        </span>
+                                                    </span>
+                                                {{end}}
+                                            {{end}}
+                                        {{end}}
+                                    {{end}}
+                                {{end}}
+                            {{else}}
+                                <span class="text-abandoned position-relative" data-tooltip="Proposal abandoned">
+                                    Abandoned
+                                </span>
+                            {{end}}
+                        </td>
+                        <td class="text-right">
+                            {{if and .VoteStatus (ne .VoteStatus.ShortDesc "Not Authorized")}}
+                                {{.TotalVotes}}
+                                <span class="fs12 text-black-50">
+                                    (
+                                    {{- if eq $v.NumOfEligibleVotes 0 -}}
+                                        0%
+                                    {{else -}}
+                                        {{printf "%.0f" $votesTotalPercent}}%
+                                    {{end}}
+                                    turnout)
+                                </span>
+                            {{else}}
+                               &mdash;
+                            {{end}}
+                        </td>
+                        <td class="text-right" data-target="time.age" data-age="{{.Timestamp}}"></td>
+                    </tr>
+                {{end}}
+                {{end}}
+                </tbody>
+            </table>
+            {{if gt .Limit 20}}
+                {{template "proposalsPagination" .}}
+            {{end}}
+            {{end}}
+        </div>
+        {{template "footer" . }}
+    </body>
+</html>
+{{end}}

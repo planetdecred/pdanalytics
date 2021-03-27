@@ -21,6 +21,9 @@ const (
 	MempoolSize    = "size"
 	MempoolFees    = "fees"
 	MempoolTxCount = "tx-count"
+
+	lastMempoolBlockHeight = `SELECT last_block_height FROM mempool ORDER BY last_block_height DESC LIMIT 1`
+	lastMempoolEntryTime   = `SELECT time FROM mempool ORDER BY time DESC LIMIT 1`
 )
 
 func (pg PgDb) MempoolTableName() string {

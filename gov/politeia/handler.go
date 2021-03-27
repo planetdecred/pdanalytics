@@ -10,7 +10,7 @@ import (
 )
 
 // ProposalsPage is the page handler for the "/proposals" path.
-func (exp *proposals) ProposalsPage(w http.ResponseWriter, r *http.Request) {
+func (prop *proposals) ProposalsPage(w http.ResponseWriter, r *http.Request) {
 	rowsCount := uint64(20)
 	if rowsStr := r.URL.Query().Get("rows"); rowsStr != "" {
 		val, err := strconv.ParseUint(rowsStr, 10, 64)
@@ -47,20 +47,20 @@ func (exp *proposals) ProposalsPage(w http.ResponseWriter, r *http.Request) {
 
 	// Check if filter by votes status query parameter was passed.
 	if filterBy > 0 {
-		proposals, count, err = exp.db.AllProposals(int(offset),
+		proposals, count, err = prop.db.AllProposals(int(offset),
 			int(rowsCount), int(filterBy))
 	} else {
-		proposals, count, err = exp.db.AllProposals(int(offset),
+		proposals, count, err = prop.db.AllProposals(int(offset),
 			int(rowsCount))
 	}
 
 	if err != nil {
 		log.Errorf("Cannot fetch proposals: %v", err)
-		exp.server.StatusPage(w, r, web.DefaultErrorCode, web.DefaultErrorMessage, "", web.ExpStatusError)
+		prop.server.StatusPage(w, r, web.DefaultErrorCode, web.DefaultErrorMessage, "", web.ExpStatusError)
 		return
 	}
 
-	str, err := exp.server.Templates.ExecTemplateToString("proposals", struct {
+	str, err := prop.server.Templates.ExecTemplateToString("proposals", struct {
 		*web.CommonPageData
 		Proposals     []*pitypes.ProposalInfo
 		VotesStatus   map[pitypes.VoteStatusType]string
@@ -73,22 +73,22 @@ func (exp *proposals) ProposalsPage(w http.ResponseWriter, r *http.Request) {
 		LastPropSync  int64
 		TimePerBlock  int64
 	}{
-		CommonPageData: exp.server.CommonData(r),
+		CommonPageData: prop.server.CommonData(r),
 		Proposals:      proposals,
 		VotesStatus:    pitypes.VotesStatuses(),
 		Offset:         int64(offset),
 		Limit:          int64(rowsCount),
 		VStatusFilter:  int(filterBy),
 		TotalCount:     int64(count),
-		PoliteiaURL:    exp.politeiaURL,
-		LastVotesSync:  exp.dataSource.LastPiParserSync().UTC().Unix(),
-		LastPropSync:   exp.db.LastProposalsSync(),
-		TimePerBlock:   int64(exp.client.Params.TargetTimePerBlock.Seconds()),
+		PoliteiaURL:    prop.politeiaURL,
+		LastVotesSync:  prop.LastPiParserSync().UTC().Unix(),
+		LastPropSync:   prop.db.LastProposalsSync(),
+		TimePerBlock:   int64(prop.client.Params.TargetTimePerBlock.Seconds()),
 	})
 
 	if err != nil {
 		log.Errorf("Template execute failure: %v", err)
-		exp.server.StatusPage(w, r, web.DefaultErrorCode, web.DefaultErrorMessage, "", web.ExpStatusError)
+		prop.server.StatusPage(w, r, web.DefaultErrorCode, web.DefaultErrorMessage, "", web.ExpStatusError)
 		return
 	}
 	w.Header().Set("Content-Type", "text/html")

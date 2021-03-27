@@ -28,9 +28,6 @@ const (
 		PRIMARY KEY (time,bin)
 	);`
 
-	lastMempoolBlockHeight = `SELECT last_block_height FROM mempool ORDER BY last_block_height DESC LIMIT 1`
-	lastMempoolEntryTime   = `SELECT time FROM mempool ORDER BY time DESC LIMIT 1`
-
 	createNetworkSnapshotTable = `CREATE TABLE If NOT EXISTS network_snapshot (
 		timestamp INT8 NOT NULL,
 		height INT8 NOT NULL,
@@ -142,48 +139,63 @@ const (
 		receive_time_difference FLOAT8 NOT NULL,
 		PRIMARY KEY (block_time,bin)
 	);`
-
-	createProposalTableScript = `CREATE TABLE IF NOT EXISTS proposal (
-		id SERIAL PRIMARY KEY,
-		token TEXT NOT NULL,
-		author TEXT,
-		commit_sha TEXT NOT NULL,
-		time TIMESTAMPTZ
-	);`
-
-	createProposalVotesTableScript = `CREATE TABLE IF NOT EXISTS proposal_vote (
-		id SERIAL PRIMARY KEY,
-		proposals_row_id INT8,
-		ticket TEXT NOT NULL,
-		choice TEXT NOT NULL
-	);`
-
-	
 )
 
 var (
 	createTableScripts = map[string]string{
-		"mempool": createMempoolTable,
-		"mempool_bin": createMempoolDayBinTable,
-		"network_snapshot": createNetworkSnapshotTable,
-		"network_snapshot_bin": createNetworkSnapshotBinTable,
-		"node_version": createNodeVersionTable,
-		"node_location": createNodeLocationTable,
-		"node": createNodeTable,
-		"heartbeat": createHeartbeatTable,
-		"propagation": createPropagationTableScript,
-		"block": createBlockTableScript,
-		"block_bin": createBlockBinTableScript,
-		"vote": createVoteTableScript,
+		"mempool":                     createMempoolTable,
+		"mempool_bin":                 createMempoolDayBinTable,
+		"network_snapshot":            createNetworkSnapshotTable,
+		"network_snapshot_bin":        createNetworkSnapshotBinTable,
+		"node_version":                createNodeVersionTable,
+		"node_location":               createNodeLocationTable,
+		"node":                        createNodeTable,
+		"heartbeat":                   createHeartbeatTable,
+		"propagation":                 createPropagationTableScript,
+		"block":                       createBlockTableScript,
+		"block_bin":                   createBlockBinTableScript,
+		"vote":                        createVoteTableScript,
 		"vote_receive_time_deviation": createVoteReceiveTimeDeviationTableScript,
-		"proposal": createProposalTableScript,
-		"proposal_vote": createProposalVotesTableScript,
+		"proposals":                   createProposalTableScript,
+		"proposal_votes":              createProposalVotesTableScript,
+	}
+
+	tableOrder = []string{
+		"mempool",
+		"mempool_bin",
+		"network_snapshot",
+		"network_snapshot_bin",
+		"node_version",
+		"node_location",
+		"node",
+		"heartbeat",
+		"propagation",
+		"block",
+		"block_bin",
+		"vote",
+		"vote_receive_time_deviation",
+		"proposals",
+		"proposal_votes",
+	}
+
+	// createIndexScripts is a map of table name to a collection of index on the table
+	createIndexScripts = map[string][]string{
+		"proposal_votes": {
+			IndexProposalVotesTableOnProposalsID,
+		},
 	}
 )
 
 func (pg *PgDb) CreateTables(ctx context.Context) error {
-	for tableName, createScript := range createTableScripts {
-		if exist := pg.TableExists(tableName); !exist {
+	for _, tableName := range tableOrder {
+		if exist := pg.TableExists(tableName); exist {
+			continue
+		}
+		_, err := pg.db.Exec(createTableScripts[tableName])
+		if err != nil {
+			return err
+		}
+		for _, createScript := range createIndexScripts[tableName] {
 			_, err := pg.db.Exec(createScript)
 			if err != nil {
 				return err
@@ -193,7 +205,7 @@ func (pg *PgDb) CreateTables(ctx context.Context) error {
 	return nil
 }
 
-func (pg *PgDb) TableExists(name string) (bool) {
+func (pg *PgDb) TableExists(name string) bool {
 	rows, err := pg.db.Query(`SELECT relname FROM pg_class WHERE relname = $1`, name)
 	if err == nil {
 		defer func() {

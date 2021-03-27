@@ -62,7 +62,7 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 				return nil, err
 			}
 			if err = pgDb.CreateTables(ctx); err != nil {
-				log.Error("Error creating mempool tables: ", err)
+				log.Error("Error creating tables: ", err)
 				return nil, err
 			}
 		}

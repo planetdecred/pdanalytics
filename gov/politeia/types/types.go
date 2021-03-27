@@ -4,7 +4,11 @@
 package types
 
 import (
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
 	"strconv"
+	"time"
 
 	piapi "github.com/decred/politeia/politeiawww/api/www/v1"
 )
@@ -272,4 +276,110 @@ func (pi *ProposalInfo) Metadata(tip, targetBlockTime int64) *ProposalMetadata {
 		}
 	}
 	return meta
+}
+
+// TimeDef is time.Time wrapper that formats time by default as a string without
+// a timezone. The time Stringer interface formats the time into a string
+// with a timezone.
+type TimeDef struct {
+	T time.Time
+}
+
+const (
+	timeDefFmtHuman        = "2006-01-02 15:04:05 (MST)"
+	timeDefFmtDateTimeNoTZ = "2006-01-02 15:04:05"
+	timeDefFmtJS           = time.RFC3339
+)
+
+// String formats the time in a human-friendly layout. This may be used when
+// TimeDef values end up on the explorer pages.
+func (t TimeDef) String() string {
+	return t.T.Format(timeDefFmtHuman)
+}
+
+// RFC3339 formats the time in a machine-friendly layout.
+func (t TimeDef) RFC3339() string {
+	return t.T.Format(timeDefFmtJS)
+}
+
+// UNIX returns the UNIX epoch time stamp.
+func (t TimeDef) UNIX() int64 {
+	return t.T.Unix()
+}
+
+func (t TimeDef) Format(layout string) string {
+	return t.T.Format(layout)
+}
+
+// DatetimeWithoutTZ formats the time in a human-friendly layout, without
+// time zone.
+func (t *TimeDef) DatetimeWithoutTZ() string {
+	return t.T.Format(timeDefFmtDateTimeNoTZ)
+}
+
+// MarshalJSON is set as the default marshalling function for TimeDef struct.
+func (t *TimeDef) MarshalJSON() ([]byte, error) {
+	return json.Marshal(t.RFC3339())
+}
+
+// NewTimeDef constructs a TimeDef from the given time.Time. It presets the
+// timezone for formatting to UTC.
+func NewTimeDef(t time.Time) TimeDef {
+	return TimeDef{
+		T: t.UTC(),
+	}
+}
+
+// NewTimeDefFromUNIX constructs a TimeDef from the given UNIX epoch time stamp
+// in seconds. It presets the timezone for formatting to UTC.
+func NewTimeDefFromUNIX(t int64) TimeDef {
+	return NewTimeDef(time.Unix(t, 0))
+}
+
+// Scan implements the sql.Scanner interface for TimeDef. This will not
+// reinterpret the stored time string for a particular time zone. That is, if
+// the stored time stamp shows no time zone (as with TIMESTAMP), the default
+// time.Time scanner will load it as a local time, and this Scan converts to
+// UTC. If the timestamp has a timezone (as with TIMESTAMPTZ), including UTC
+// explicitly set, it will be accounted for when converting to UTC. All this
+// Scan implementation does beyond the default time.Time scanner is to set the
+// time.Time's location to UTC, which keeps the instant in time the same,
+// adjusting the numbers in the time string to the equivalent time in UTC. For
+// example, if the time read from the DB is "2016-02-08 12:00:00" (with no time
+// zone) and the server time zone is CST (UTC-6), this ensures the default
+// displayed time string is in UTC: "2016-02-08 18:00:00Z". On the other hand,
+// if the time read from the DB is "2016-02-08 12:00:00+6", it does not matter
+// what the server time zone is set to, and the time will still be converted to
+// UTC as "2016-02-08 18:00:00Z".
+func (t *TimeDef) Scan(src interface{}) error {
+	srcTime, ok := src.(time.Time)
+	if !ok {
+		return fmt.Errorf("scanned value not a time.Time")
+	}
+	// Debug:
+	// fmt.Printf("srcTime: %v, location: %p\n", srcTime, srcTime.Location()) // valid location not set!
+
+	// Set location to UTC. This does not shift the UNIX epoch time.
+	t.T = srcTime.UTC()
+
+	// Debug:
+	// fmt.Printf("t: %v, t.T: %v, location: %s\n", t, t.T, t.T.Location().String())
+	return nil
+}
+
+// Value implements the sql.Valuer interface. It ensures that the Time Values
+// are for the UTC time zone. Times will only survive a round trip to and from
+// the DB tables if they are stored from a time.Time with Location set to UTC.
+func (t TimeDef) Value() (driver.Value, error) {
+	return t.T.UTC(), nil
+}
+
+// Ensure TimeDef satisfies sql.Valuer.
+var _ driver.Valuer = (*TimeDef)(nil)
+
+// ProposalChartsData defines the data used to plot proposal votes charts.
+type ProposalChartsData struct {
+	Yes  []uint64  `json:"yes,omitempty"`
+	No   []uint64  `json:"no,omitempty"`
+	Time []TimeDef `json:"time,omitempty"`
 }
