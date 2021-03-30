@@ -222,7 +222,7 @@ func (pg *PgDb) TableExists(name string) bool {
 }
 
 func (pg *PgDb) DropTables() error {
-	for tableName, _ := range createTableScripts {
+	for tableName := range createTableScripts {
 		if err := pg.dropTable(tableName); err != nil {
 			return err
 		}

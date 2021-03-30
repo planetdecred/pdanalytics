@@ -97,7 +97,7 @@ func MakeProposalsInsertStatement(checked bool) string {
 }
 
 // InsertProposal adds the proposal details per commit to the proposal table.
-func  (pg *PgDb) InsertProposal(tokenHash, author, commit string, timestamp time.Time, checked bool) (uint64, error) {
+func (pg *PgDb) InsertProposal(tokenHash, author, commit string, timestamp time.Time, checked bool) (uint64, error) {
 	insertStatement := MakeProposalsInsertStatement(checked)
 	var id uint64
 	err := pg.db.QueryRow(insertStatement, tokenHash, author, commit, timestamp).Scan(&id)
@@ -105,7 +105,7 @@ func  (pg *PgDb) InsertProposal(tokenHash, author, commit string, timestamp time
 }
 
 // InsertProposalVote add the proposal votes entries to the proposal_votes table.
-func  (pg *PgDb) InsertProposalVote(proposalRowID uint64, ticket, choice string, checked bool) (uint64, error) {
+func (pg *PgDb) InsertProposalVote(proposalRowID uint64, ticket, choice string, checked bool) (uint64, error) {
 	var id uint64
 	err := pg.db.QueryRow(InsertProposalVotesRow, proposalRowID, ticket, choice).Scan(&id)
 	return id, err
@@ -113,7 +113,7 @@ func  (pg *PgDb) InsertProposalVote(proposalRowID uint64, ticket, choice string,
 
 // retrieveProposalVotesData returns the vote data associated with the provided
 // proposal token.
-func  (pg *PgDb) RetrieveProposalVotesData(ctx context.Context,
+func (pg *PgDb) RetrieveProposalVotesData(ctx context.Context,
 	proposalToken string) (*dbtypes.ProposalChartsData, error) {
 	rows, err := pg.db.QueryContext(ctx, SelectProposalVotesChartData, proposalToken)
 	if err != nil {

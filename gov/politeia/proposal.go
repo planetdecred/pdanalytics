@@ -54,12 +54,11 @@ type proposals struct {
 	proposalsSync lastSync
 }
 
-// Activate activates the proposal module. 
+// Activate activates the proposal module.
 // This may take some time and should be ran in a goroutine
 func Activate(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource,
 	politeiaURL, dbPath, piPropRepoOwner, piPropRepoName, dataDir string,
-	webServer *web.Server) (error) {
-
+	webServer *web.Server) error {
 
 	prop := &proposals{
 		client:      client,
@@ -84,7 +83,6 @@ func Activate(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource,
 		},
 	})
 
-
 	db, err := newProposalsDB(politeiaURL, dbPath)
 	if err != nil {
 		return err
@@ -104,7 +102,6 @@ func Activate(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource,
 
 	log.Info("Proposal perser created. Starting handler...")
 	prop.start(ctx)
-
 
 	return nil
 }

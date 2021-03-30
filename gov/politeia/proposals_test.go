@@ -117,7 +117,7 @@ func TestNewProposalsDB(t *testing.T) {
 
 	for i, data := range td {
 		t.Run("Test_#"+strconv.Itoa(i), func(t *testing.T) {
-			result, err := NewProposalsDB(data.politeiaAPIURL, data.dbPath)
+			result, err := newProposalsDB(data.politeiaAPIURL, data.dbPath)
 
 			var expectedErrMsg string
 			if err != nil {

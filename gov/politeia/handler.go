@@ -129,7 +129,7 @@ func (prop *proposals) ProposalPage(w http.ResponseWriter, r *http.Request) {
 		CommonPageData: commonData,
 		Data:           proposalInfo,
 		PoliteiaURL:    prop.politeiaURL,
-		Metadata:       proposalInfo.Metadata(int64(commonData.Tip.Height), 
+		Metadata: proposalInfo.Metadata(int64(commonData.Tip.Height),
 			int64(prop.client.Params.TargetTimePerBlock/time.Second)),
 	})
 
