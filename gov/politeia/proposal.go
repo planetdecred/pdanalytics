@@ -69,6 +69,8 @@ func Activate(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource,
 	}
 
 	prop.server.AddRoute("/proposals", web.GET, prop.ProposalsPage)
+	prop.server.AddRoute("/proposal/{proposalrefid}", web.GET, prop.ProposalPage, proposalPathCtx)
+
 	if err := prop.server.Templates.AddTemplate("proposals"); err != nil {
 		return err
 	}

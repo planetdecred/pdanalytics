@@ -6,4 +6,5 @@ const (
 	CtxXcToken contextKey = iota
 	CtxChartDataType
 	CtxTimestamp
+	CtxProposalRefID
 )
