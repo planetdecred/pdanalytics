@@ -191,29 +191,39 @@ var (
 			IndexProposalVotesTableOnProposalsID,
 		},
 		"agendas": {
-			IndexOfAgendasTableOnName,
+			IndexAgendasTableOnAgendaID,
 		},
 		"agenda_votes": {
-			IndexOfAgendaVotesTableOnRowIDs,
+			IndexAgendaVotesTableOnAgendaID,
 		},
 	}
 )
 
 func (pg *PgDb) CreateTables(ctx context.Context) error {
+	tx, err := pg.db.Begin()
+	if err != nil {
+		return err
+	}
 	for _, tableName := range tableOrder {
 		if exist := pg.TableExists(tableName); exist {
 			continue
 		}
-		_, err := pg.db.Exec(createTableScripts[tableName])
+		_, err := tx.Exec(createTableScripts[tableName])
 		if err != nil {
+			_ = tx.Rollback()
+			log.Errorf("an error occured while running %s", createTableScripts[tableName])
 			return err
 		}
 		for _, createScript := range createIndexScripts[tableName] {
-			_, err := pg.db.Exec(createScript)
+			_, err := tx.Exec(createScript)
 			if err != nil {
+				_ = tx.Rollback()
+				log.Errorf("an error occured while running %s", createIndexScripts[tableName])
 				return err
 			}
 		}
+
+		return tx.Commit()
 	}
 	return nil
 }
