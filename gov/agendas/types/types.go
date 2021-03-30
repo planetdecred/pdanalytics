@@ -1,5 +1,10 @@
 package types
 
+import (
+	"encoding/json"
+	"strings"
+)
+
 // AgendaStatusType defines the various agenda statuses.
 type AgendaStatusType int8
 
