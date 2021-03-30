@@ -1,19 +1,18 @@
 package agendas
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 	"testing"
 
-	"github.com/decred/dcrd/chaincfg/v3"
+	"github.com/decred/dcrd/chaincfg/v2"
 	"github.com/decred/dcrd/dcrjson/v3"
 	chainjson "github.com/decred/dcrd/rpc/jsonrpc/types/v2"
 )
 
 type dataSourceStub struct{}
 
-func (source dataSourceStub) GetStakeVersionInfo(_ context.Context, version int32) (*chainjson.GetStakeVersionInfoResult, error) {
+func (source dataSourceStub) GetStakeVersionInfo(version int32) (*chainjson.GetStakeVersionInfoResult, error) {
 	if version > 6 {
 		return nil, fmt.Errorf(" ")
 	}
@@ -74,7 +73,7 @@ func (source dataSourceStub) GetStakeVersionInfo(_ context.Context, version int3
 	}, nil
 }
 
-func (source dataSourceStub) GetVoteInfo(_ context.Context, version uint32) (*chainjson.GetVoteInfoResult, error) {
+func (source dataSourceStub) GetVoteInfo(version uint32) (*chainjson.GetVoteInfoResult, error) {
 	if version > 6 {
 		msg := fmt.Sprintf("stake version %d does not exist", version)
 		return nil, dcrjson.NewRPCError(dcrjson.ErrRPCInvalidParameter, msg)
@@ -131,7 +130,7 @@ func (source dataSourceStub) GetVoteInfo(_ context.Context, version uint32) (*ch
 	}, nil
 }
 
-func (source dataSourceStub) GetStakeVersions(_ context.Context, hash string, count int32) (*chainjson.GetStakeVersionsResult, error) {
+func (source dataSourceStub) GetStakeVersions(hash string, count int32) (*chainjson.GetStakeVersionsResult, error) {
 	h, _ := strconv.Atoi(hash)
 	result := &chainjson.GetStakeVersionsResult{
 		StakeVersions: make([]chainjson.StakeVersions, int(count)),

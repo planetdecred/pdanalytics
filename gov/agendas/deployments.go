@@ -6,7 +6,6 @@
 package agendas
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -54,7 +53,7 @@ const dbInfo = "_agendas.db_"
 // in this package. It also allows usage of alternative implementations to
 // satisfy the interface.
 type DeploymentSource interface {
-	GetVoteInfo(ctx context.Context, version uint32) (*chainjson.GetVoteInfoResult, error)
+	GetVoteInfo(version uint32) (*chainjson.GetVoteInfoResult, error)
 }
 
 // NewAgendasDB opens an existing database or create a new one using with the
@@ -128,7 +127,7 @@ func listStakeVersions(client DeploymentSource) ([]uint32, error) {
 
 	var firstVer uint32
 	for {
-		voteInfo, err := client.GetVoteInfo(context.TODO(), firstVer)
+		voteInfo, err := client.GetVoteInfo(firstVer)
 		if err == nil {
 			// That's the first version.
 			log.Debugf("Stake version %d: %v", firstVer, agendaIDs(voteInfo.Agendas))
@@ -152,7 +151,7 @@ func listStakeVersions(client DeploymentSource) ([]uint32, error) {
 
 	versions := []uint32{firstVer}
 	for i := firstVer + 1; ; i++ {
-		voteInfo, err := client.GetVoteInfo(context.TODO(), i)
+		voteInfo, err := client.GetVoteInfo(i)
 		if err == nil {
 			log.Debugf("Stake version %d: %v", i, agendaIDs(voteInfo.Agendas))
 			versions = append(versions, i)
@@ -193,7 +192,7 @@ func (db *AgendaDB) loadAgenda(agendaID string) (*AgendaTagged, error) {
 
 // agendasForVoteVersion fetches the agendas using the vote versions provided.
 func agendasForVoteVersion(ver uint32, client DeploymentSource) ([]AgendaTagged, error) {
-	voteInfo, err := client.GetVoteInfo(context.TODO(), ver)
+	voteInfo, err := client.GetVoteInfo(ver)
 	if err != nil {
 		return nil, err
 	}
