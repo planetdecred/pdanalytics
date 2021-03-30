@@ -62,7 +62,7 @@ type proposals struct {
 // This may take some time and should be ran in a goroutine
 func Activate(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource,
 	politeiaURL, dbPath, piPropRepoOwner, piPropRepoName, dataDir string,
-	webServer *web.Server) error {
+	webServer *web.Server, dataMode, httpMode bool) error {
 
 	prop := &proposals{
 		client:      client,
@@ -86,25 +86,27 @@ func Activate(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource,
 
 	client.Notif.RegisterBlockHandlerGroup(prop.connectBlock)
 
-	prop.server.AddRoute("/proposals", web.GET, prop.ProposalsPage)
-	prop.server.AddRoute("/proposal/{proposalrefid}", web.GET, prop.ProposalPage, proposalPathCtx)
-	prop.server.AddRoute("/api/proposal/{token}", web.GET, prop.getProposalChartData, proposalTokenCtx)
+	if httpMode {
+		prop.server.AddRoute("/proposals", web.GET, prop.ProposalsPage)
+		prop.server.AddRoute("/proposal/{proposalrefid}", web.GET, prop.ProposalPage, proposalPathCtx)
+		prop.server.AddRoute("/api/proposal/{token}", web.GET, prop.getProposalChartData, proposalTokenCtx)
 
-	if err := prop.server.Templates.AddTemplate("proposals"); err != nil {
-		return err
-	}
-	if err := prop.server.Templates.AddTemplate("proposal"); err != nil {
-		return err
-	}
+		if err := prop.server.Templates.AddTemplate("proposals"); err != nil {
+			return err
+		}
+		if err := prop.server.Templates.AddTemplate("proposal"); err != nil {
+			return err
+		}
 
-	prop.server.AddMenuItem(web.MenuItem{
-		Href:      "/proposals",
-		HyperText: "Proposals",
-		Attributes: map[string]string{
-			"class": "menu-item",
-			"title": "Proposals",
-		},
-	})
+		prop.server.AddMenuItem(web.MenuItem{
+			Href:      "/proposals",
+			HyperText: "Proposals",
+			Attributes: map[string]string{
+				"class": "menu-item",
+				"title": "Proposals",
+			},
+		})
+	}
 
 	db, err := newProposalsDB(politeiaURL, dbPath)
 	if err != nil {
@@ -112,19 +114,21 @@ func Activate(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource,
 	}
 	prop.db = db
 
-	log.Info("Creating proposal perser. This may take some time")
-	parser, err := piproposals.NewParser(piPropRepoOwner, piPropRepoName, dataDir)
-	if err != nil {
-		return err
-	}
+	if dataMode {
+		log.Info("Creating proposal perser. This may take some time")
+		parser, err := piproposals.NewParser(piPropRepoOwner, piPropRepoName, dataDir)
+		if err != nil {
+			return err
+		}
 
-	if parser == nil {
-		return errors.New("Unable to get proposal parser")
-	}
-	prop.piparser = parser
+		if parser == nil {
+			return errors.New("Unable to get proposal parser")
+		}
+		prop.piparser = parser
 
-	log.Info("Proposal perser created. Starting handler...")
-	prop.start(ctx)
+		log.Info("Proposal perser created. Starting handler...")
+		prop.start(ctx)
+	}
 
 	return nil
 }
