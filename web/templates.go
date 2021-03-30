@@ -158,6 +158,113 @@ func netName(chainParams *chaincfg.Params) string {
 	return strings.Title(chainParams.Name)
 }
 
+func amountAsDecimalPartsTrimmed(v, numPlaces int64, useCommas bool) []string {
+	// Filter numPlaces to only allow up to 8 decimal places trimming (eg. 1.12345678)
+	if numPlaces > 8 {
+		numPlaces = 8
+	}
+
+	// Separate values passed in into int.dec parts.
+	intpart := v / 1e8
+	decpart := v % 1e8
+
+	// Format left side.
+	left := strconv.FormatInt(intpart, 10)
+	rightWithTail := fmt.Sprintf("%08d", decpart)
+
+	// Reduce precision according to numPlaces.
+	if len(rightWithTail) > int(numPlaces) {
+		rightWithTail = rightWithTail[0:numPlaces]
+	}
+
+	// Separate trailing zeros.
+	right := strings.TrimRight(rightWithTail, "0")
+	tail := strings.TrimPrefix(rightWithTail, right)
+
+	// Add commas (eg. 3,444.33)
+	if useCommas && (len(left) > 3) {
+		integerAsInt64, err := strconv.ParseInt(left, 10, 64)
+		if err != nil {
+			log.Errorf("amountAsDecimalParts comma formatting failed. Input: %v Error: %v", v, err.Error())
+			left = "ERROR"
+			right = "VALUE"
+			tail = ""
+			return []string{left, right, tail}
+		}
+		left = humanize.Comma(integerAsInt64)
+	}
+
+	return []string{left, right, tail}
+}
+
+var toInt64 = func(v interface{}) int64 {
+	switch vt := v.(type) {
+	case int64:
+		return vt
+	case int32:
+		return int64(vt)
+	case uint32:
+		return int64(vt)
+	case uint64:
+		return int64(vt)
+	case int:
+		return int64(vt)
+	case int16:
+		return int64(vt)
+	case uint16:
+		return int64(vt)
+	default:
+		return math.MinInt64
+	}
+}
+
+var longPeriods = &periodMap{
+	y:   " year",
+	mo:  " month",
+	d:   " day",
+	h:   " hour",
+	min: " minutes",
+	s:   " seconds",
+	sep: ", ",
+	pluralizer: func(s string, count int) string {
+		if count == 1 {
+			return s
+		}
+		return s + "s"
+	},
+}
+
+func formattedDuration(duration time.Duration, str *periodMap) string {
+	durationyr := int(duration / (time.Hour * 24 * 365))
+	durationmo := int((duration / (time.Hour * 24 * 30)) % 12)
+	pl := str.pluralizer
+	i := strconv.Itoa
+	if durationyr != 0 {
+		return i(durationyr) + "y " + i(durationmo) + "mo"
+	}
+
+	durationdays := int((duration / time.Hour / 24) % 30)
+	if durationmo != 0 {
+		return i(durationmo) + pl(str.mo, durationmo) + str.sep + i(durationdays) + pl(str.d, durationdays)
+	}
+
+	durationhr := int((duration / time.Hour) % 24)
+	if durationdays != 0 {
+		return i(durationdays) + pl(str.d, durationdays) + str.sep + i(durationhr) + pl(str.h, durationhr)
+	}
+
+	durationmin := int(duration.Minutes()) % 60
+	if durationhr != 0 {
+		return i(durationhr) + pl(str.h, durationhr) + str.sep + i(durationmin) + pl(str.min, durationmin)
+	}
+
+	durationsec := int(duration.Seconds()) % 60
+	if (durationhr == 0) && (durationmin != 0) {
+		return i(durationmin) + pl(str.min, durationmin) + str.sep + i(durationsec) + pl(str.s, durationsec)
+	}
+	return i(durationsec) + pl(str.s, durationsec)
+}
+
 // MakeTemplateFuncMap defines common template functions that are shered
 // accross all the modules. Individual modules can extend this and add
 // functions that are specific to the module
@@ -165,6 +272,34 @@ func MakeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 	netTheme := "theme-" + strings.ToLower(netName(params))
 
 	return template.FuncMap{
+		"add": func(args ...int64) int64 {
+			var sum int64
+			for _, a := range args {
+				sum += a
+			}
+			return sum
+		},
+		"subtract": func(a, b int64) int64 {
+			return a - b
+		},
+		"floatsubtract": func(a, b float64) float64 {
+			return a - b
+		},
+		"intSubtract": func(a, b int) int {
+			return a - b
+		},
+		"divide": func(n, d int64) int64 {
+			return n / d
+		},
+		"divideFloat": func(n, d float64) float64 {
+			return n / d
+		},
+		"multiply": func(a, b int64) int64 {
+			return a * b
+		},
+		"intMultiply": func(a, b int) int {
+			return a * b
+		},
 		"theme": func() string {
 			return netTheme
 		},
@@ -226,9 +361,23 @@ func MakeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 		"durationToShortDurationString": func(d time.Duration) string {
 			return FormattedDuration(d, shortPeriods)
 		},
+		"amountAsDecimalPartsTrimmed": amountAsDecimalPartsTrimmed,
+		"secondsToLongDurationString": func(d int64) string {
+			return formattedDuration(time.Duration(d)*time.Second, longPeriods)
+		},
+		"secondsToShortDurationString": func(d int64) string {
+			return formattedDuration(time.Duration(d)*time.Second, shortPeriods)
+		},
 		"uint16Mul": func(a uint16, b int) (result int) {
 			result = int(a) * b
 			return
+		},
+		"int64": toInt64,
+		"intComma": func(v interface{}) string {
+			return humanize.Comma(toInt64(v))
+		},
+		"percentage": func(a, b int64) float64 {
+			return (float64(a) / float64(b)) * 100
 		},
 		"convertByteArrayToString": func(arr []byte) (inString string) {
 			inString = hex.EncodeToString(arr)
@@ -246,6 +395,18 @@ func MakeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 			}
 			return url
 		},
+		"toAbsValue": math.Abs,
+		"toFloat64": func(x uint32) float64 {
+			return float64(x)
+		},
+		"toInt": func(str string) int {
+			intStr, err := strconv.Atoi(str)
+			if err != nil {
+				return 0
+			}
+			return intStr
+		},
+		"floor": math.Floor,
 	}
 }
 

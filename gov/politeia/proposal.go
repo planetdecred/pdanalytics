@@ -3,6 +3,7 @@ package politeia
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -24,9 +25,8 @@ var piParserCounter uint32
 
 type dataSource interface {
 	RetrieveLastCommitTime() (time.Time, error)
-	InsertProposal(ctx context.Context, token string, author string, commitSHA string,
-		entryDate time.Time, isChecked bool) (int, error)
-	InsertProposalVote(ctx context.Context, proposalID int, voteTicket, voteBit string, isChecked bool) (int, error)
+	InsertProposal(tokenHash, author, commit string, timestamp time.Time, checked bool) (uint64, error)
+	InsertProposalVote(proposalRowID uint64, ticket, choice string, checked bool) (uint64, error)
 	RetrieveProposalVotesData(ctx context.Context, proposalToken string) (*dbtypes.ProposalChartsData, error)
 }
 
@@ -54,29 +54,25 @@ type proposals struct {
 	proposalsSync lastSync
 }
 
-func NewProposals(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource, 
+// Activate activates the proposal module. 
+// This may take some time and should be ran in a goroutine
+func Activate(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource,
 	politeiaURL, dbPath, piPropRepoOwner, piPropRepoName, dataDir string,
-	webServer *web.Server) (*proposals, error) {
+	webServer *web.Server) (error) {
 
-	db, err := newProposalsDB(politeiaURL, dbPath)
-	if err != nil {
-		return nil, err
-	}
-
-	parser, err := piproposals.NewParser(piPropRepoOwner, piPropRepoName, dataDir)
-	if err != nil {
-		return nil, err
-	}
 
 	prop := &proposals{
 		client:      client,
 		server:      webServer,
-		db:          db,
+		dataSource:  dataSource,
 		politeiaURL: politeiaURL,
-		piparser:    parser,
 	}
 
-	// TODO: templates and routed registration
+	prop.server.AddRoute("/proposals", web.GET, prop.ProposalsPage)
+	if err := prop.server.Templates.AddTemplate("proposals"); err != nil {
+		return err
+	}
+
 	prop.server.AddMenuItem(web.MenuItem{
 		Href:      "/proposals",
 		HyperText: "Proposals",
@@ -86,13 +82,32 @@ func NewProposals(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource,
 		},
 	})
 
-	prop.server.Templates.AddTemplate("proposals")
-	prop.server.AddRoute("/proposals", web.GET, prop.ProposalsPage)
 
-	return prop, nil
+	db, err := newProposalsDB(politeiaURL, dbPath)
+	if err != nil {
+		return err
+	}
+	prop.db = db
+
+	log.Info("Creating proposal perser. This may take some time")
+	parser, err := piproposals.NewParser(piPropRepoOwner, piPropRepoName, dataDir)
+	if err != nil {
+		return err
+	}
+
+	if parser == nil {
+		return errors.New("Unable to get proposal parser")
+	}
+	prop.piparser = parser
+
+	log.Info("Proposal perser created. Starting handler...")
+	prop.start(ctx)
+
+
+	return nil
 }
 
-func (prop *proposals) Start(ctx context.Context) {
+func (prop *proposals) start(ctx context.Context) {
 
 	// Initiate the piparser handler here.
 	prop.startPiparserHandler(ctx)
@@ -112,7 +127,7 @@ func (prop *proposals) Start(ctx context.Context) {
 	// Fetch updates for Politiea's Proposal history(votes) data via the parser.
 	commitsCount, err := prop.PiProposalsHistory(ctx)
 	if err != nil {
-		log.Errorf("chainDB.PiProposalsHistory failed : %v", err)
+		log.Errorf("proposals.PiProposalsHistory failed : %v", err)
 	} else {
 		log.Infof("%d politeia's proposal (auxiliary db) commits were processed",
 			commitsCount)
@@ -121,10 +136,10 @@ func (prop *proposals) Start(ctx context.Context) {
 
 // startPiparserHandler controls how piparser update handler will be initiated.
 // This handler should to be run once only when the first sync after startup completes.
-func (pgb *proposals) startPiparserHandler(ctx context.Context) {
+func (prop *proposals) startPiparserHandler(ctx context.Context) {
 	if atomic.CompareAndSwapUint32(&piParserCounter, 0, isPiparserRunning) {
 		// Start the proposal updates handler async method.
-		pgb.proposalsUpdateHandler(ctx)
+		prop.proposalsUpdateHandler(ctx)
 
 		log.Info("Piparser instance to handle updates is now active")
 	} else {
@@ -134,9 +149,9 @@ func (pgb *proposals) startPiparserHandler(ctx context.Context) {
 
 // proposalsUpdateHandler runs in the background asynchronous to retrieve the
 // politeia proposal updates that the piparser tool signaled.
-func (pgb *proposals) proposalsUpdateHandler(ctx context.Context) {
+func (prop *proposals) proposalsUpdateHandler(ctx context.Context) {
 	// Do not initiate the async update if invalid or disabled piparser instance was found.
-	if pgb.piparser == nil {
+	if prop.piparser == nil {
 		log.Error("invalid or disabled piparser instance found: proposals async update stopped")
 		return
 	}
@@ -148,13 +163,13 @@ func (pgb *proposals) proposalsUpdateHandler(ctx context.Context) {
 				select {
 				case <-time.NewTimer(time.Minute).C:
 					log.Infof("attempting to restart proposalsUpdateHandler")
-					pgb.proposalsUpdateHandler(ctx)
-				case <-pgb.ctx.Done():
+					prop.proposalsUpdateHandler(ctx)
+				case <-prop.ctx.Done():
 				}
 			}
 		}()
-		for range pgb.piparser.UpdateSignal() {
-			count, err := pgb.PiProposalsHistory(ctx)
+		for range prop.piparser.UpdateSignal() {
+			count, err := prop.PiProposalsHistory(ctx)
 			if err != nil {
 				log.Error("pgb.PiProposalsHistory failed : %v", err)
 			} else {
@@ -166,41 +181,41 @@ func (pgb *proposals) proposalsUpdateHandler(ctx context.Context) {
 
 // LastPiParserSync returns last time value when the piparser run sync on proposals
 // and proposal_votes table.
-func (pgb *proposals) LastPiParserSync() time.Time {
-	pgb.proposalsSync.mtx.RLock()
-	defer pgb.proposalsSync.mtx.RUnlock()
-	return pgb.proposalsSync.syncTime
+func (prop *proposals) LastPiParserSync() time.Time {
+	prop.proposalsSync.mtx.RLock()
+	defer prop.proposalsSync.mtx.RUnlock()
+	return prop.proposalsSync.syncTime
 }
 
 // PiProposalsHistory queries the politeia's proposal updates via the parser tool
 // and pushes them to the proposals and proposal_votes tables.
-func (pgb *proposals) PiProposalsHistory(ctx context.Context) (int64, error) {
-	if pgb.piparser == nil {
+func (prop *proposals) PiProposalsHistory(ctx context.Context) (int64, error) {
+	if prop.piparser == nil {
 		return -1, fmt.Errorf("invalid piparser instance was found")
 	}
 
-	pgb.proposalsSync.mtx.Lock()
+	prop.proposalsSync.mtx.Lock()
 
 	// set the sync time
-	pgb.proposalsSync.syncTime = time.Now().UTC()
+	prop.proposalsSync.syncTime = time.Now().UTC()
 
-	pgb.proposalsSync.mtx.Unlock()
+	prop.proposalsSync.mtx.Unlock()
 
 	var isChecked bool
 	var proposalsData []*pitypes.History
 
-	lastUpdate, err := pgb.dataSource.RetrieveLastCommitTime()
+	lastUpdate, err := prop.dataSource.RetrieveLastCommitTime()
 	switch {
 	case err == sql.ErrNoRows:
 		// No records exists yet fetch all the history.
-		proposalsData, err = pgb.piparser.ProposalsHistory()
+		proposalsData, err = prop.piparser.ProposalsHistory()
 
 	case err != nil:
 		return -1, fmt.Errorf("RetrieveLastCommitTime failed :%v", err)
 
 	default:
 		// Fetch the updates since the last insert only.
-		proposalsData, err = pgb.piparser.ProposalsHistorySince(lastUpdate)
+		proposalsData, err = prop.piparser.ProposalsHistorySince(lastUpdate)
 		isChecked = true
 	}
 
@@ -223,14 +238,13 @@ func (pgb *proposals) PiProposalsHistory(ctx context.Context) (int64, error) {
 				continue
 			}
 
-			id, err := pgb.dataSource.InsertProposal(ctx, val.Token, entry.Author,
-				entry.CommitSHA, entry.Date, isChecked)
+			id, err := prop.dataSource.InsertProposal(val.Token, entry.Author, entry.CommitSHA, entry.Date, isChecked)
 			if err != nil {
 				return -1, fmt.Errorf("InsertProposal failed: %v", err)
 			}
 
 			for _, vote := range val.VotesInfo {
-				_, err = pgb.dataSource.InsertProposalVote(ctx, id, vote.Ticket,
+				_, err = prop.dataSource.InsertProposalVote(id, vote.Ticket,
 					string(vote.VoteBit), isChecked)
 				if err != nil {
 					return -1, fmt.Errorf("InsertProposalVote failed: %v", err)
@@ -244,6 +258,6 @@ func (pgb *proposals) PiProposalsHistory(ctx context.Context) (int64, error) {
 }
 
 // ProposalVotes retrieves all the votes data associated with the provided token.
-func (pgb *proposals) ProposalVotes(ctx context.Context, proposalToken string) (*dbtypes.ProposalChartsData, error) {
-	return pgb.dataSource.RetrieveProposalVotesData(ctx, proposalToken)
+func (prop *proposals) ProposalVotes(ctx context.Context, proposalToken string) (*dbtypes.ProposalChartsData, error) {
+	return prop.dataSource.RetrieveProposalVotesData(ctx, proposalToken)
 }

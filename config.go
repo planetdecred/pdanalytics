@@ -189,6 +189,7 @@ func defaultConfig() config {
 		EnableAttackCost:              true,
 		EnableMempool:                 true,
 		EnablePropagation:             true,
+		EnableProposals:               true,
 
 		MempoolInterval: defaultMempoolInterval,
 	}

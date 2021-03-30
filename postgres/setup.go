@@ -180,6 +180,9 @@ var (
 
 	// createIndexScripts is a map of table name to a collection of index on the table
 	createIndexScripts = map[string][]string{
+		"proposals": {
+			IndexProposalsTableOnToken,
+		},
 		"proposal_votes": {
 			IndexProposalVotesTableOnProposalsID,
 		},

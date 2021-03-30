@@ -17,6 +17,9 @@ const (
 		time TIMESTAMPTZ
 	);`
 
+	IndexProposalsTableOnToken = `CREATE UNIQUE INDEX uix_proposals` +
+		` ON proposals(token, time);`
+
 	createProposalVotesTableScript = `CREATE TABLE IF NOT EXISTS proposal_votes (
 		id SERIAL PRIMARY KEY,
 		proposals_row_id INT8,
@@ -94,27 +97,25 @@ func MakeProposalsInsertStatement(checked bool) string {
 }
 
 // InsertProposal adds the proposal details per commit to the proposal table.
-func InsertProposal(db *sql.DB, tokenHash, author, commit string,
-	timestamp time.Time, checked bool) (uint64, error) {
+func  (pg *PgDb) InsertProposal(tokenHash, author, commit string, timestamp time.Time, checked bool) (uint64, error) {
 	insertStatement := MakeProposalsInsertStatement(checked)
 	var id uint64
-	err := db.QueryRow(insertStatement, tokenHash, author, commit, timestamp).Scan(&id)
+	err := pg.db.QueryRow(insertStatement, tokenHash, author, commit, timestamp).Scan(&id)
 	return id, err
 }
 
 // InsertProposalVote add the proposal votes entries to the proposal_votes table.
-func InsertProposalVote(db *sql.DB, proposalRowID uint64, ticket, choice string,
-	checked bool) (uint64, error) {
+func  (pg *PgDb) InsertProposalVote(proposalRowID uint64, ticket, choice string, checked bool) (uint64, error) {
 	var id uint64
-	err := db.QueryRow(InsertProposalVotesRow, proposalRowID, ticket, choice).Scan(&id)
+	err := pg.db.QueryRow(InsertProposalVotesRow, proposalRowID, ticket, choice).Scan(&id)
 	return id, err
 }
 
 // retrieveProposalVotesData returns the vote data associated with the provided
 // proposal token.
-func retrieveProposalVotesData(ctx context.Context, db *sql.DB,
+func  (pg *PgDb) RetrieveProposalVotesData(ctx context.Context,
 	proposalToken string) (*dbtypes.ProposalChartsData, error) {
-	rows, err := db.QueryContext(ctx, SelectProposalVotesChartData, proposalToken)
+	rows, err := pg.db.QueryContext(ctx, SelectProposalVotesChartData, proposalToken)
 	if err != nil {
 		return nil, err
 	}
