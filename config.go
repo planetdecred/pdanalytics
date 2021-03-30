@@ -146,6 +146,8 @@ type config struct {
 	EnablePropagation             bool `long:"propagation" description:"Enable/Disable the propagation module from running"`
 	EnableProposals               bool `long:"proposals" description:"Enable/Disable the proposals module from running"`
 	EnableProposalsHttp           bool `long:"proposalshttp" description:"Enable/Disable the proposals http module from running"`
+	EnableAgendas                 bool `long:"agendas" description:"Enable/Disable the agendas module from running"`
+	EnableAgendasHttp             bool `long:"agendashttp" description:"Enable/Disable the agendas http module from running"`
 
 	// Mempool
 	MempoolInterval float64 `long:"mempoolinterval" description:"The duration of time between mempool collection"`
@@ -192,6 +194,8 @@ func defaultConfig() config {
 		EnablePropagation:             true,
 		EnableProposals:               true,
 		EnableProposalsHttp:           true,
+		EnableAgendas:                 true,
+		EnableAgendasHttp:             true,
 
 		MempoolInterval: defaultMempoolInterval,
 	}
