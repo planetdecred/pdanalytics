@@ -7,4 +7,5 @@ const (
 	CtxChartDataType
 	CtxTimestamp
 	CtxProposalRefID
+	CtxProposalToken
 )

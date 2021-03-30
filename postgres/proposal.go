@@ -140,6 +140,14 @@ func (pg *PgDb) RetrieveProposalVotesData(ctx context.Context,
 	return data, err
 }
 
+// ProposalVotes retrieves all the votes data associated with the provided token.
+func (pg *PgDb) ProposalVotes(ctx context.Context, proposalToken string) (*dbtypes.ProposalChartsData, error) {
+	ctx, cancel := context.WithTimeout(ctx, pg.queryTimeout)
+	defer cancel()
+	chartsData, err := pg.RetrieveProposalVotesData(ctx, proposalToken)
+	return chartsData, pg.replaceCancelError(err)
+}
+
 // closeRows closes the input sql.Rows, logging any error.
 func closeRows(rows *sql.Rows) {
 	if e := rows.Close(); e != nil {

@@ -406,6 +406,26 @@ func MakeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 			}
 			return intStr
 		},
+		"x100": func(v float64) float64 {
+			return v * 100
+		},
+		"f32x100": func(v float32) float32 {
+			return v * 100
+		},
+		"TimeConversion": func(a uint64) string {
+			if a == 0 {
+				return "N/A"
+			}
+			dateTime := time.Unix(int64(a), 0).UTC()
+			return dateTime.Format("2006-01-02 15:04:05 MST")
+		},
+		"dateTimeWithoutTimeZone": func(a uint64) string {
+			if a == 0 {
+				return "N/A"
+			}
+			dateTime := time.Unix(int64(a), 0).UTC()
+			return dateTime.Format("2006-01-02 15:04:05")
+		},
 		"floor": math.Floor,
 	}
 }

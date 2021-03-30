@@ -28,6 +28,7 @@ type dataSource interface {
 	InsertProposal(tokenHash, author, commit string, timestamp time.Time, checked bool) (uint64, error)
 	InsertProposalVote(proposalRowID uint64, ticket, choice string, checked bool) (uint64, error)
 	RetrieveProposalVotesData(ctx context.Context, proposalToken string) (*dbtypes.ProposalChartsData, error)
+	ProposalVotes(ctx context.Context, proposalToken string) (*dbtypes.ProposalChartsData, error)
 }
 
 // ProposalsFetcher defines the interface of the proposals plug-n-play data source.
@@ -69,8 +70,12 @@ func Activate(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource,
 
 	prop.server.AddRoute("/proposals", web.GET, prop.ProposalsPage)
 	prop.server.AddRoute("/proposal/{proposalrefid}", web.GET, prop.ProposalPage, proposalPathCtx)
+	prop.server.AddRoute("/api/proposal/{token}", web.GET, prop.getProposalChartData, proposalTokenCtx)
 
 	if err := prop.server.Templates.AddTemplate("proposals"); err != nil {
+		return err
+	}
+	if err := prop.server.Templates.AddTemplate("proposal"); err != nil {
 		return err
 	}
 

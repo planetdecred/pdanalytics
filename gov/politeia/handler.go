@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/planetdecred/pdanalytics/dbhelper"
 	pitypes "github.com/planetdecred/pdanalytics/gov/politeia/types"
 	"github.com/planetdecred/pdanalytics/web"
 )
@@ -102,7 +103,7 @@ func (prop *proposals) ProposalsPage(w http.ResponseWriter, r *http.Request) {
 // ProposalPage is the page handler for the "/proposal" path.
 func (prop *proposals) ProposalPage(w http.ResponseWriter, r *http.Request) {
 	// Attempts to retrieve a proposal refID from the URL path.
-	param := getProposalTokenCtx(r)
+	param := getProposalPathCtx(r)
 	proposalInfo, err := prop.db.ProposalByRefID(param)
 	if err != nil {
 		// Check if the URL parameter passed is a proposal token and attempt to
@@ -144,7 +145,25 @@ func (prop *proposals) ProposalPage(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, str)
 }
 
-func getProposalTokenCtx(r *http.Request) string {
+func (prop *proposals) getProposalChartData(w http.ResponseWriter, r *http.Request) {
+	token := getProposalTokenCtx(r)
+	votesData, err := prop.dataSource.ProposalVotes(r.Context(), token)
+	if dbhelper.IsTimeoutErr(err) {
+		log.Errorf("ProposalVotes: %v", err)
+		http.Error(w, "Database timeout.", http.StatusServiceUnavailable)
+		return
+	}
+	if err != nil {
+		log.Errorf("Unable to get proposals votes for token %s : %v", token, err)
+		http.Error(w, http.StatusText(http.StatusUnprocessableEntity),
+			http.StatusUnprocessableEntity)
+		return
+	}
+
+	web.RenderJSON(w, votesData)
+}
+
+func getProposalPathCtx(r *http.Request) string {
 	hash, ok := r.Context().Value(web.CtxProposalRefID).(string)
 	if !ok {
 		log.Trace("Proposal ref ID not set")
@@ -160,4 +179,25 @@ func proposalPathCtx(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), web.CtxProposalRefID, proposalRefID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+// proposalTokenCtx returns a http.HandlerFunc that embeds the value at the url
+// part {token} into the request context
+func proposalTokenCtx(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		token := chi.URLParam(r, "token")
+		ctx := context.WithValue(r.Context(), web.CtxProposalToken, token)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// getProposalTokenCtx retrieves the ctxProposalToken data from the request context.
+// If the value is not set, an empty string is returned.
+func getProposalTokenCtx(r *http.Request) string {
+	tp, ok := r.Context().Value(web.CtxProposalToken).(string)
+	if !ok {
+		log.Trace("proposal token hash not set")
+		return ""
+	}
+	return tp
 }
