@@ -163,7 +163,7 @@
                                         {{range $i, $vr := .VoteResults}}
                                             {{if eq $vr.Option.OptionID "yes"}}
                                                 {{$votesPercent :=  percentage $vr.VotesReceived $v.TotalVotes}}
-                                                {{$blocksRemaining := subtract (int64 (toInt $v.Endheight)) (int64 $.Tip.Height)}}
+                                                {{$blocksRemaining := subtract (int64 (toInt $v.Endheight)) (int64 $.Height)}}
                                                 {{if gt $blocksRemaining 0}}
                                                     <span class="text-progress position-relative" data-tooltip="Voting in progress">
                                                         In Progress

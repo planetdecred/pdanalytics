@@ -76,6 +76,7 @@ func (prop *proposals) ProposalsPage(w http.ResponseWriter, r *http.Request) {
 		LastVotesSync int64
 		LastPropSync  int64
 		TimePerBlock  int64
+		Hieght        uint32
 	}{
 		CommonPageData: prop.server.CommonData(r),
 		Proposals:      proposals,
@@ -88,6 +89,7 @@ func (prop *proposals) ProposalsPage(w http.ResponseWriter, r *http.Request) {
 		LastVotesSync:  prop.LastPiParserSync().UTC().Unix(),
 		LastPropSync:   prop.db.LastProposalsSync(),
 		TimePerBlock:   int64(prop.client.Params.TargetTimePerBlock.Seconds()),
+		Hieght:         prop.height,
 	})
 
 	if err != nil {

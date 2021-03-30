@@ -9,6 +9,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/decred/dcrd/wire"
 	piproposals "github.com/dmigwi/go-piparser/proposals"
 	pitypes "github.com/dmigwi/go-piparser/proposals/types"
 	"github.com/planetdecred/pdanalytics/dcrd"
@@ -53,6 +54,8 @@ type proposals struct {
 	dataSource    dataSource
 	piparser      ProposalsFetcher
 	proposalsSync lastSync
+	reorgLock     sync.Mutex
+	height        uint32
 }
 
 // Activate activates the proposal module.
@@ -67,6 +70,21 @@ func Activate(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource,
 		dataSource:  dataSource,
 		politeiaURL: politeiaURL,
 	}
+
+	hash, err := client.Rpc.GetBestBlockHash()
+	if err != nil {
+		return err
+	}
+	blockHeader, err := client.Rpc.GetBlockHeader(hash)
+	if err != nil {
+		return err
+	}
+
+	if err = prop.connectBlock(blockHeader); err != nil {
+		return err
+	}
+
+	client.Notif.RegisterBlockHandlerGroup(prop.connectBlock)
 
 	prop.server.AddRoute("/proposals", web.GET, prop.ProposalsPage)
 	prop.server.AddRoute("/proposal/{proposalrefid}", web.GET, prop.ProposalPage, proposalPathCtx)
@@ -136,6 +154,14 @@ func (prop *proposals) start(ctx context.Context) {
 		log.Infof("%d politeia's proposal (auxiliary db) commits were processed",
 			commitsCount)
 	}
+}
+
+func (prop *proposals) connectBlock(w *wire.BlockHeader) error {
+	prop.reorgLock.Lock()
+	defer prop.reorgLock.Unlock()
+	prop.height = w.Height
+
+	return nil
 }
 
 // startPiparserHandler controls how piparser update handler will be initiated.
