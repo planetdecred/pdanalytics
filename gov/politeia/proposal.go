@@ -83,6 +83,9 @@ func Activate(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource,
 	if err = prop.connectBlock(blockHeader); err != nil {
 		return err
 	}
+	if err := prop.server.Templates.AddTemplate("proposal"); err != nil {
+		return err
+	}
 
 	client.Notif.RegisterBlockHandlerGroup(prop.connectBlock)
 
