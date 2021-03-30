@@ -56,3 +56,4 @@ db/dcrpg/chkdcrpg/chkdcrpg
 pdanalytics.exe~
 pdanalytics.exe
 web/public/dist/css/style.css
+web/public/dist/js/dygraphs.bundle.js
