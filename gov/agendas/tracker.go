@@ -4,11 +4,10 @@
 package agendas
 
 import (
-	"context"
 	"fmt"
 	"sync"
 
-	"github.com/decred/dcrd/chaincfg/v3"
+	"github.com/decred/dcrd/chaincfg/v2"
 	chainjson "github.com/decred/dcrd/rpc/jsonrpc/types/v2"
 )
 
@@ -25,9 +24,9 @@ const (
 
 // VoteDataSource is satisfied by rpcclient.Client.
 type VoteDataSource interface {
-	GetStakeVersionInfo(context.Context, int32) (*chainjson.GetStakeVersionInfoResult, error)
-	GetVoteInfo(context.Context, uint32) (*chainjson.GetVoteInfoResult, error)
-	GetStakeVersions(context.Context, string, int32) (*chainjson.GetStakeVersionsResult, error)
+	GetStakeVersionInfo(int32) (*chainjson.GetStakeVersionInfoResult, error)
+	GetVoteInfo(uint32) (*chainjson.GetVoteInfoResult, error)
+	GetStakeVersions(string, int32) (*chainjson.GetStakeVersionsResult, error)
 }
 
 // dcrd does not supply vote counts for completed votes, so the tracker will
@@ -223,7 +222,7 @@ func (tracker *VoteTracker) refreshRCI() (*chainjson.GetVoteInfoResult, error) {
 
 	// Retrieves the voteinfo for the last stake version supported.
 	for {
-		vinfo, err = tracker.node.GetVoteInfo(context.TODO(), v)
+		vinfo, err = tracker.node.GetVoteInfo(v)
 		if err != nil {
 			break
 		}
@@ -261,7 +260,7 @@ func (tracker *VoteTracker) fetchBlocks(voteInfo *chainjson.GetVoteInfoResult) (
 	if voteInfo.CurrentHeight < 0 || voteInfo.CurrentHeight != tracker.ringHeight+1 {
 		blocksToRequest = int(tracker.params.BlockUpgradeNumToCheck)
 	}
-	r, err := tracker.node.GetStakeVersions(context.TODO(), voteInfo.Hash, int32(blocksToRequest))
+	r, err := tracker.node.GetStakeVersions(voteInfo.Hash, int32(blocksToRequest))
 	if err != nil {
 		return nil, 0, err
 	}
@@ -286,7 +285,7 @@ func (tracker *VoteTracker) refreshSVIs(voteInfo *chainjson.GetVoteInfoResult) (
 	if blocksInCurrentRCI%tracker.params.StakeVersionInterval > 0 {
 		svis++
 	}
-	si, err := tracker.node.GetStakeVersionInfo(context.TODO(), svis)
+	si, err := tracker.node.GetStakeVersionInfo(svis)
 	if err != nil {
 		return nil, fmt.Errorf("Error retrieving stake version info: %v", err)
 	}

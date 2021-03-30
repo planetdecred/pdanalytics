@@ -1,7 +1,6 @@
 package agendas
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -77,7 +76,7 @@ func TestMain(m *testing.M) {
 type testClient int
 
 // GetVoteInfo implementation showing a sample data format expected.
-func (*testClient) GetVoteInfo(_ context.Context, version uint32) (*chainjson.GetVoteInfoResult, error) {
+func (*testClient) GetVoteInfo(version uint32) (*chainjson.GetVoteInfoResult, error) {
 	if version != 5 {
 		msg := fmt.Sprintf("stake version %d does not exist", version)
 		return nil, dcrjson.NewRPCError(dcrjson.ErrRPCInvalidParameter, msg)
