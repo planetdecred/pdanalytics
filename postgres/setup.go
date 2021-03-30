@@ -158,6 +158,8 @@ var (
 		"vote_receive_time_deviation": createVoteReceiveTimeDeviationTableScript,
 		"proposals":                   createProposalTableScript,
 		"proposal_votes":              createProposalVotesTableScript,
+		"agendas":                     CreateAgendasTable,
+		"agenda_votes":                CreateAgendaVotesTable,
 	}
 
 	tableOrder = []string{
@@ -176,6 +178,8 @@ var (
 		"vote_receive_time_deviation",
 		"proposals",
 		"proposal_votes",
+		"agendas",
+		"agenda_votes",
 	}
 
 	// createIndexScripts is a map of table name to a collection of index on the table
@@ -185,6 +189,12 @@ var (
 		},
 		"proposal_votes": {
 			IndexProposalVotesTableOnProposalsID,
+		},
+		"agendas": {
+			IndexOfAgendasTableOnName,
+		},
+		"agenda_votes": {
+			IndexOfAgendaVotesTableOnRowIDs,
 		},
 	}
 )
