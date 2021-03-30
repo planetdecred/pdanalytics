@@ -191,10 +191,10 @@ var (
 			IndexProposalVotesTableOnProposalsID,
 		},
 		"agendas": {
-			IndexOfAgendasTableOnName,
+			IndexAgendasTableOnAgendaID,
 		},
 		"agenda_votes": {
-			IndexOfAgendaVotesTableOnRowIDs,
+			IndexAgendaVotesTableOnAgendaID,
 		},
 	}
 )
