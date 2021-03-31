@@ -1,5 +1,7 @@
 package postgres
 
+import "github.com/planetdecred/pdanalytics/dbhelper"
+
 const (
 	// agendas table
 
@@ -104,3 +106,7 @@ const (
 		AND votes.height >= $5 AND votes.height <= $6
 		AND votes.is_mainchain = TRUE `
 )
+
+func (pg *PgDb) AgendasVotesSummary(agendaID string) (summary *dbhelper.AgendaSummary, err error) {
+	return nil, nil
+}
