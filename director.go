@@ -143,11 +143,15 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 	}
 
 	if cfg.EnableAgendas || cfg.EnableAgendasHttp {
+		db, err := dbInstance()
+		if err != nil {
+			return err
+		}
 		// TODO: use valid implementation
 		var voteCounter = func(string) (uint32, uint32, uint32, error) {
 			return 1, 0, 1, nil
 		}
-		err = agendas.Activate(ctx, client, voteCounter, cfg.AgendasDBFileName,
+		err = agendas.Activate(ctx, client, voteCounter, db, cfg.AgendasDBFileName,
 			cfg.DataDir, server, cfg.EnableAgendas, cfg.EnableAgendasHttp, cfg.SimNet)
 		if err != nil {
 			return err

@@ -8,4 +8,5 @@ const (
 	CtxTimestamp
 	CtxProposalRefID
 	CtxProposalToken
+	CtxAgendaId
 )
