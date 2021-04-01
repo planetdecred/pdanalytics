@@ -36,7 +36,7 @@ func (prop *proposals) ProposalsPage(w http.ResponseWriter, r *http.Request) {
 		offset = val
 	}
 	var filterBy uint64
-	if filterByStr := r.URL.Query().Get("byvotestatus"); filterByStr != "" {
+	if filterByStr := r.URL.Query().Get("byvotestatus"); filterByStr != "" && filterByStr != "all" {
 		val, err := strconv.ParseUint(filterByStr, 10, 64)
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
