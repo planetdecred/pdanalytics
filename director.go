@@ -8,7 +8,6 @@ import (
 	"github.com/decred/dcrdata/exchanges/v2"
 	"github.com/planetdecred/pdanalytics/attackcost"
 	"github.com/planetdecred/pdanalytics/dcrd"
-	"github.com/planetdecred/pdanalytics/gov/agendas"
 	"github.com/planetdecred/pdanalytics/gov/politeia"
 	"github.com/planetdecred/pdanalytics/homepage"
 	"github.com/planetdecred/pdanalytics/mempool"
@@ -140,23 +139,6 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 			}
 			log.Info("Proposals module Enabled")
 		}()
-	}
-
-	if cfg.EnableAgendas || cfg.EnableAgendasHttp {
-		db, err := dbInstance()
-		if err != nil {
-			return err
-		}
-		// TODO: use valid implementation
-		var voteCounter = func(string) (uint32, uint32, uint32, error) {
-			return 1, 0, 1, nil
-		}
-		err = agendas.Activate(ctx, client, voteCounter, db, cfg.AgendasDBFileName,
-			cfg.DataDir, server, cfg.EnableAgendas, cfg.EnableAgendasHttp, cfg.SimNet)
-		if err != nil {
-			return err
-		}
-		log.Info("Agendas module Enabled")
 	}
 
 	if cfg.EnableNetworkSnapshot || cfg.EnableNetworkSnapshotHTTP {

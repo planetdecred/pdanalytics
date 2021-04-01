@@ -158,8 +158,6 @@ var (
 		"vote_receive_time_deviation": createVoteReceiveTimeDeviationTableScript,
 		"proposals":                   createProposalTableScript,
 		"proposal_votes":              createProposalVotesTableScript,
-		"agendas":                     CreateAgendasTable,
-		"agenda_votes":                CreateAgendaVotesTable,
 	}
 
 	tableOrder = []string{
@@ -178,8 +176,6 @@ var (
 		"vote_receive_time_deviation",
 		"proposals",
 		"proposal_votes",
-		"agendas",
-		"agenda_votes",
 	}
 
 	// createIndexScripts is a map of table name to a collection of index on the table
@@ -189,12 +185,6 @@ var (
 		},
 		"proposal_votes": {
 			IndexProposalVotesTableOnProposalsID,
-		},
-		"agendas": {
-			IndexAgendasTableOnAgendaID,
-		},
-		"agenda_votes": {
-			IndexAgendaVotesTableOnAgendaID,
 		},
 	}
 )
@@ -211,14 +201,14 @@ func (pg *PgDb) CreateTables(ctx context.Context) error {
 		_, err := tx.Exec(createTableScripts[tableName])
 		if err != nil {
 			_ = tx.Rollback()
-			log.Errorf("an error occured while running %s", createTableScripts[tableName])
+			log.Errorf("an error occurred while running %s", createTableScripts[tableName])
 			return err
 		}
 		for _, createScript := range createIndexScripts[tableName] {
 			_, err := tx.Exec(createScript)
 			if err != nil {
 				_ = tx.Rollback()
-				log.Errorf("an error occured while running %s", createIndexScripts[tableName])
+				log.Errorf("an error occurred while running %s", createIndexScripts[tableName])
 				return err
 			}
 		}
