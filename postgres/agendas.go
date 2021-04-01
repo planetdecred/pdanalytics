@@ -107,6 +107,21 @@ const (
 		AND votes.is_mainchain = TRUE `
 )
 
+var agendasVotesSummaries = map[string]*dbhelper.AgendaSummary{
+	"treasury": {
+		Yes:           20133,
+		No:            4260,
+		Abstain:       30,
+		VotingStarted: 1596240000,
+		LockedIn:      544383,
+	},
+	"treasurwy": {
+		Yes:     20133,
+		No:      4260,
+		Abstain: 30,
+	},
+}
+
 func (pg *PgDb) AgendasVotesSummary(agendaID string) (summary *dbhelper.AgendaSummary, err error) {
 	return nil, nil
 }
