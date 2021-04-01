@@ -1,0 +1,154 @@
+{{define "agenda"}}
+<!DOCTYPE html>
+<html lang="en">
+    {{template "html-head" printf "Decred Agenda Charts"}}
+        {{template "navbar" .}}
+        {{with .Ai}}
+        <div class="container main">
+            <div class="row justify-content-between">
+                <div class="col-lg-14 col-sm-12 d-flex">
+                    <a class="small row" href="/agendas">All Agendas</a>
+                </div>
+                <div class="col-lg-14 col-sm-12 d-flex">
+                    <h4 class="mb-2">{{.ID}}
+                    </h4>
+                </div>
+            </div>
+            <div class="row justify-content-between">
+                <div class="col-lg-12 col-sm-12 d-flex">
+                    <table class="">
+                        <tr>
+                            <td class="text-right pr-2 lh1rem vam nowrap xs-w117 medium-sans">Description</td>
+                            <td>
+                                <span class="hash lh1rem">{{.Description}}</span>
+                            </td>
+                        </tr>
+                         <tr>
+                            <td class="text-right pr-2 lh1rem vam nowrap xs-w117 medium-sans">Vote Version</td>
+                            <td class="lh1rem">
+                                <span class="hash break-word">v{{.VoteVersion}}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-right pr-2 lh1rem vam nowrap xs-w117 medium-sans">Agenda Valid</td>
+                            <td>
+                                <span class="hash break-word">{{TimeConversion .StartTime}}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-right pr-2 lh1rem vam nowrap xs-w117 medium-sans">Agenda Expire</td>
+                            <td>
+                                <span class="hash break-word">{{TimeConversion .ExpireTime}}</span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-lg-7 col-sm-12 d-flex">
+                <table class="">
+                        <tr>
+                            <td class="text-right pr-2 lh1rem vam nowrap xs-w117 medium-sans">Voting Start</td>
+                            <td class="lh1rem">
+                                <span class="hash break-word">{{if eq $.VotingStarted 0}}N/A{{else}}<a href="/block/{{$.VotingStarted}}">{{$.VotingStarted}}</a>{{end}}</span>
+                            </td>
+                        </tr>
+                         <tr>
+                            <td class="text-right pr-2 lh1rem vam nowrap xs-w117 medium-sans">Voting End</td>
+                            <td class="lh1rem">
+                                <span class="hash break-word">{{if eq $.LockedIn 0}}N/A{{else}}<a href="/block/{{$.LockedIn}}">{{$.LockedIn}}</a>{{end}}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            {{if gt $.BlocksLeft 0}}
+                                <td class="text-right pr-2 lh1rem vam nowrap xs-w117 medium-sans">Blocks Left</td>
+                                <td class="lh1rem">
+                                    <span class="hash break-word">{{intComma $.BlocksLeft}}</span>
+                                </td>
+                            {{end}}
+                        </tr>
+                         <tr>
+                            {{if ne $.TimeRemaining ""}}
+                                <td class="text-right pr-2 lh1rem vam nowrap xs-w117 medium-sans">Remaining</td>
+                                <td class="lh1rem">
+                                    <span class="hash break-word">{{$.TimeRemaining}}</span>
+                                </td>
+                            {{end}}
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-lg-5 col-sm-12 d-flex">
+                    <table class="">
+
+                        <tr>
+                            <td class="text-right pr-2 lh1rem vam nowrap xs-w117 medium-sans">Status</td>
+                            <td class="lh1rem">
+                                <span class="hash break-word">{{toTitleCase .Status.String}}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-right pr-2 lh1rem vam nowrap xs-w117 medium-sans">Total Votes</td>
+                            <td>
+                                <span class="hash break-word">{{$.TotalVotes}}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            {{if gt .QuorumProgress 0.0}}
+                                <td class="text-right pr-2 lh1rem vam nowrap xs-w117 medium-sans">Quorum</td>
+                                <td class="lh1rem">
+                                    <span class="hash break-word">{{$.QuorumVotes}}/{{$.RuleChangeI}} ({{printf "%.2f" (x100 .QuorumProgress)}}%)</span>
+                                </td>
+                            {{end}}
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            {{if .Choices}}
+            {{$isProgress := (ne (index .Choices 0).Progress 0.0)}}
+            {{$isNotDone := (or (eq .Status.String "started") (eq .Status.String "defined"))}}
+            {{$showProgress := or $isProgress $isNotDone}}
+            <table class="table table-mono-cells table-sm my-3">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Description</th>
+                    <th class="text-right">Bits</th>
+                    <th class="text-right">Count</th>
+                    {{if $showProgress}}
+                        <th class="text-right">Progress</th>
+                   {{end}}
+                  </tr>
+                </thead>
+                <tbody>
+                {{range $i, $v := .Choices}}
+                {{with $v}}
+                    <tr>
+                        <td class="text-left">{{.ID}}</td>
+                        <td class="text-left">{{.Description}}</td>
+                        <td class="text-right">{{.Bits}}</td>
+                        <td class="text-right">{{.Count}}</td>
+                        {{if $showProgress}}
+                            <td class="text-right">{{printf "%.2f" (x100 .Progress)}}%</td>
+                        {{end}}
+                    </tr>
+                {{end}}
+                {{end}}
+              </tbody>
+            </table>
+            {{end}}
+            <div data-controller="agenda" data-agenda-id="{{.ID}}" class="position-relative">
+              <div class="modal position-absolute"></div>
+              <div
+                  data-target="agenda.cumulativeVoteChoices"
+                  style="width:100%; height:300px; margin:0 auto;"
+              ></div>
+              <br>
+              <div
+                  data-target="agenda.voteChoicesByBlock"
+                  style="width:100%; height:250px; margin:0 auto;"
+              ></div>
+            </div>
+        </div>
+        {{end}}
+        {{template "footer" . }}
+    </body>
+</html>
+{{end}}
