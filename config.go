@@ -71,6 +71,13 @@ var (
 	defaultSeeder            = "127.0.0.1"
 	defaultSeederPort        = 9108
 	maxPeerConnectionFailure = 3
+
+	// giv
+	defaultAgendasDBFileName  = "agendas.db"
+	defaultProposalsFileName  = "proposals.db"
+	defaultPoliteiaAPIURl     = "https://proposals.decred.org"
+	defaultPiPropoalRepoOwner = "decred-proposals"
+	defaultPiProposalRepo     = "mainnet"
 )
 
 type config struct {
@@ -112,6 +119,13 @@ type config struct {
 	ServerHeader       string `long:"server-http-header" description:"Set the HTTP response header Server key value. Valid values are \"off\", \"version\", or a custom string."`
 	CacheControlMaxAge int    `long:"cachecontrol-maxage" description:"Set CacheControl in the HTTP response header to a value in seconds for clients to cache the response. This applies only to FileServer routes." env:"DCRDATA_MAX_CACHE_AGE"`
 
+	// Politeia/proposals and consensus agendas
+	AgendasDBFileName string `long:"agendadbfile" description:"Agendas DB file name (default is agendas.db)." env:"DCRDATA_AGENDAS_DB_FILE_NAME"`
+	ProposalsFileName string `long:"proposalsdbfile" description:"Proposals DB file name (default is proposals.db)." env:"DCRDATA_PROPOSALS_DB_FILE_NAME"`
+	PoliteiaAPIURL    string `long:"politeiaurl" description:"Defines the root API politeia URL (defaults to https://proposals.decred.org)."`
+	PiPropRepoOwner   string `long:"piproposalsowner" description:"Defines the owner to the github repo where Politeia's proposals are pushed."`
+	PiPropRepoName    string `long:"piproposalsrepo" description:"Defines the name of the github repo where Politeia's proposals are pushed."`
+
 	// Links
 	MainnetLink  string `long:"mainnet-link" description:"When pdanalytics is on testnet, this address will be used to direct a user to a pdanalytics on mainnet when appropriate." env:"PDANALYTICS_MAINNET_LINK"`
 	TestnetLink  string `long:"testnet-link" description:"When pdanalytics is on mainnet, this address will be used to direct a user to a pdanalytics on testnet when appropriate." env:"PDANALYTICS_TESTNET_LINK"`
@@ -130,6 +144,10 @@ type config struct {
 	EnableStakingRewardCalculator bool `long:"staking-reward" description:"Enable/Disables the staking reward calculator component."`
 	EnableMempool                 bool `long:"mempool" description:"Enable/Disables the mempool component from running."`
 	EnablePropagation             bool `long:"propagation" description:"Enable/Disable the propagation module from running"`
+	EnableProposals               bool `long:"proposals" description:"Enable/Disable the proposals module from running"`
+	EnableProposalsHttp           bool `long:"proposalshttp" description:"Enable/Disable the proposals http module from running"`
+	EnableAgendas                 bool `long:"agendas" description:"Enable/Disable the agendas module from running"`
+	EnableAgendasHttp             bool `long:"agendashttp" description:"Enable/Disable the agendas http module from running"`
 
 	// Mempool
 	MempoolInterval float64 `long:"mempoolinterval" description:"The duration of time between mempool collection"`
@@ -153,6 +171,11 @@ func defaultConfig() config {
 		MaxLogZips:                    defaultMaxLogZips,
 		ConfigFile:                    defaultConfigFile,
 		DebugLevel:                    defaultLogLevel,
+		AgendasDBFileName:             defaultAgendasDBFileName,
+		ProposalsFileName:             defaultProposalsFileName,
+		PoliteiaAPIURL:                defaultPoliteiaAPIURl,
+		PiPropRepoOwner:               defaultPiPropoalRepoOwner,
+		PiPropRepoName:                defaultPiProposalRepo,
 		HTTPProfPath:                  defaultHTTPProfPath,
 		APIProto:                      defaultAPIProto,
 		CacheControlMaxAge:            defaultCacheControlMaxAge,
@@ -169,6 +192,10 @@ func defaultConfig() config {
 		EnableAttackCost:              true,
 		EnableMempool:                 true,
 		EnablePropagation:             true,
+		EnableProposals:               true,
+		EnableProposalsHttp:           true,
+		EnableAgendas:                 true,
+		EnableAgendasHttp:             true,
 
 		MempoolInterval: defaultMempoolInterval,
 	}
@@ -606,6 +633,8 @@ func loadConfig() (*config, error) {
 	// Expand some additional paths.
 	cfg.DcrdCert = cleanAndExpandPath(cfg.DcrdCert)
 	cfg.RateCertificate = cleanAndExpandPath(cfg.RateCertificate)
+	cfg.AgendasDBFileName = cleanAndExpandPath(cfg.AgendasDBFileName)
+	cfg.ProposalsFileName = cleanAndExpandPath(cfg.ProposalsFileName)
 
 	// Clean up the provided mainnet and testnet links, ensuring there is a single
 	// trailing slash.

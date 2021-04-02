@@ -17,5 +17,6 @@
         "block",
         "block_bin",
         "vote",
-        "vote_receive_time_deviation"
+        "vote_receive_time_deviation",
+        "proposal"
     ]

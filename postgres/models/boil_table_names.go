@@ -15,6 +15,7 @@ var TableNames = struct {
 	NodeLocation             string
 	NodeVersion              string
 	Propagation              string
+	Proposal                 string
 	Vote                     string
 	VoteReceiveTimeDeviation string
 }{
@@ -29,6 +30,7 @@ var TableNames = struct {
 	NodeLocation:             "node_location",
 	NodeVersion:              "node_version",
 	Propagation:              "propagation",
+	Proposal:                 "proposal",
 	Vote:                     "vote",
 	VoteReceiveTimeDeviation: "vote_receive_time_deviation",
 }

@@ -28,9 +28,6 @@ const (
 		PRIMARY KEY (time,bin)
 	);`
 
-	lastMempoolBlockHeight = `SELECT last_block_height FROM mempool ORDER BY last_block_height DESC LIMIT 1`
-	lastMempoolEntryTime   = `SELECT time FROM mempool ORDER BY time DESC LIMIT 1`
-
 	createNetworkSnapshotTable = `CREATE TABLE If NOT EXISTS network_snapshot (
 		timestamp INT8 NOT NULL,
 		height INT8 NOT NULL,
@@ -144,222 +141,84 @@ const (
 	);`
 )
 
-func (db *PgDb) CreateTables(ctx context.Context) error {
-	if !db.mempoolDataTableExits() {
-		if err := db.createMempoolDataTable(); err != nil {
-			return err
-		}
+var (
+	createTableScripts = map[string]string{
+		"mempool":                     createMempoolTable,
+		"mempool_bin":                 createMempoolDayBinTable,
+		"network_snapshot":            createNetworkSnapshotTable,
+		"network_snapshot_bin":        createNetworkSnapshotBinTable,
+		"node_version":                createNodeVersionTable,
+		"node_location":               createNodeLocationTable,
+		"node":                        createNodeTable,
+		"heartbeat":                   createHeartbeatTable,
+		"propagation":                 createPropagationTableScript,
+		"block":                       createBlockTableScript,
+		"block_bin":                   createBlockBinTableScript,
+		"vote":                        createVoteTableScript,
+		"vote_receive_time_deviation": createVoteReceiveTimeDeviationTableScript,
+		"proposals":                   createProposalTableScript,
+		"proposal_votes":              createProposalVotesTableScript,
 	}
-	if !db.mempoolBinDataTableExits() {
-		if err := db.createMempoolDayBinTable(); err != nil {
-			return err
-		}
+
+	tableOrder = []string{
+		"mempool",
+		"mempool_bin",
+		"network_snapshot",
+		"network_snapshot_bin",
+		"node_version",
+		"node_location",
+		"node",
+		"heartbeat",
+		"propagation",
+		"block",
+		"block_bin",
+		"vote",
+		"vote_receive_time_deviation",
+		"proposals",
+		"proposal_votes",
 	}
-	if !db.NetworkNodeTableExists() {
-		if err := db.CreateNetworkNodeTable(); err != nil {
-			return err
-		}
+
+	// createIndexScripts is a map of table name to a collection of index on the table
+	createIndexScripts = map[string][]string{
+		"proposals": {
+			IndexProposalsTableOnToken,
+		},
+		"proposal_votes": {
+			IndexProposalVotesTableOnProposalsID,
+		},
 	}
-	if !db.NetworkSnapshotTableExists() {
-		if err := db.CreateNetworkSnapshotTable(); err != nil {
-			return err
-		}
+)
+
+func (pg *PgDb) CreateTables(ctx context.Context) error {
+	tx, err := pg.db.Begin()
+	if err != nil {
+		return err
 	}
-	if !db.NetworkSnapshotBinTableExists() {
-		if err := db.CreateNetworkSnapshotBinTable(); err != nil {
+	for _, tableName := range tableOrder {
+		if exist := pg.TableExists(tableName); exist {
+			continue
+		}
+		_, err := tx.Exec(createTableScripts[tableName])
+		if err != nil {
+			_ = tx.Rollback()
+			log.Errorf("an error occurred while running %s", createTableScripts[tableName])
 			return err
 		}
-	}
-	if !db.NodeVersionTableExists() {
-		if err := db.CreateNodeVersoinTable(); err != nil {
-			return err
+		for _, createScript := range createIndexScripts[tableName] {
+			_, err := tx.Exec(createScript)
+			if err != nil {
+				_ = tx.Rollback()
+				log.Errorf("an error occurred while running %s", createIndexScripts[tableName])
+				return err
+			}
 		}
-	}
-	if !db.NodeLocationTableExists() {
-		if err := db.CreateNodeLocationTable(); err != nil {
-			return err
-		}
-	}
-	if !db.NetworkNodeTableExists() {
-		if err := db.CreateNetworkNodeTable(); err != nil {
-			return err
-		}
-	}
-	if !db.HeartbeatTableExists() {
-		if err := db.CreateHeartbeatTable(); err != nil {
-			return err
-		}
-	}
-	if !db.propagationTableExists() {
-		if err := db.createPropagationTable(); err != nil {
-			return err
-		}
-	}
-	if !db.BlockTableExits() {
-		if err := db.CreateBlockTable(); err != nil {
-			return err
-		}
-	}
-	if !db.blockBinTableExits() {
-		if err := db.createBlockBinTable(); err != nil {
-			return err
-		}
-	}
-	if !db.VoteTableExits() {
-		if err := db.CreateVoteTable(); err != nil {
-			return err
-		}
-	}
-	if !db.voteReceiveTimeDeviationTableExits() {
-		if err := db.createVoteReceiveTimeDeviationTable(); err != nil {
-			return err
-		}
+
+		return tx.Commit()
 	}
 	return nil
 }
 
-// Mempool tables
-func (pg *PgDb) createMempoolDataTable() error {
-	_, err := pg.db.Exec(createMempoolTable)
-	return err
-}
-
-func (pg *PgDb) createMempoolDayBinTable() error {
-	_, err := pg.db.Exec(createMempoolDayBinTable)
-	return err
-}
-
-func (pg *PgDb) mempoolDataTableExits() bool {
-	exists, _ := pg.tableExists("mempool")
-	return exists
-}
-
-func (pg *PgDb) mempoolBinDataTableExits() bool {
-	exists, _ := pg.tableExists("mempool_bin")
-	return exists
-}
-
-// network snapshot
-func (pg *PgDb) CreateNetworkSnapshotTable() error {
-	_, err := pg.db.Exec(createNetworkSnapshotTable)
-	return err
-}
-
-func (pg *PgDb) NetworkSnapshotTableExists() bool {
-	exists, _ := pg.tableExists("network_snapshot")
-	return exists
-}
-
-// network_snapshot_bin
-func (pg *PgDb) CreateNetworkSnapshotBinTable() error {
-	_, err := pg.db.Exec(createNetworkSnapshotBinTable)
-	return err
-}
-
-func (pg *PgDb) NetworkSnapshotBinTableExists() bool {
-	exists, _ := pg.tableExists("network_snapshot_bin")
-	return exists
-}
-
-// node_version
-func (pg *PgDb) CreateNodeVersoinTable() error {
-	_, err := pg.db.Exec(createNodeVersionTable)
-	return err
-}
-
-func (pg *PgDb) NodeVersionTableExists() bool {
-	exists, _ := pg.tableExists("node_version")
-	return exists
-}
-
-// node_location
-func (pg *PgDb) CreateNodeLocationTable() error {
-	_, err := pg.db.Exec(createNodeLocationTable)
-	return err
-}
-
-func (pg *PgDb) NodeLocationTableExists() bool {
-	exists, _ := pg.tableExists("node_location")
-	return exists
-}
-
-// network node
-func (pg *PgDb) CreateNetworkNodeTable() error {
-	_, err := pg.db.Exec(createNodeTable)
-	return err
-}
-
-func (pg *PgDb) NetworkNodeTableExists() bool {
-	exists, _ := pg.tableExists("node")
-	return exists
-}
-
-// network peer
-func (pg *PgDb) CreateHeartbeatTable() error {
-	_, err := pg.db.Exec(createHeartbeatTable)
-	return err
-}
-
-func (pg *PgDb) HeartbeatTableExists() bool {
-	exists, _ := pg.tableExists("heartbeat")
-	return exists
-}
-
-func (pg *PgDb) createPropagationTable() error {
-	_, err := pg.db.Exec(createPropagationTableScript)
-	return err
-}
-
-func (pg *PgDb) propagationTableExists() bool {
-	exists, _ := pg.tableExists("propagation")
-	return exists
-}
-
-// block table
-func (pg *PgDb) CreateBlockTable() error {
-	_, err := pg.db.Exec(createBlockTableScript)
-	return err
-}
-
-func (pg *PgDb) BlockTableExits() bool {
-	exists, _ := pg.tableExists("block")
-	return exists
-}
-
-// createBlockBinTable
-func (pg *PgDb) createBlockBinTable() error {
-	_, err := pg.db.Exec(createBlockBinTableScript)
-	return err
-}
-
-func (pg *PgDb) blockBinTableExits() bool {
-	exists, _ := pg.tableExists("block_bin")
-	return exists
-}
-
-// vote table
-func (pg *PgDb) CreateVoteTable() error {
-	_, err := pg.db.Exec(createVoteTableScript)
-	return err
-}
-
-func (pg *PgDb) VoteTableExits() bool {
-	exists, _ := pg.tableExists("vote")
-	return exists
-}
-
-// vote_receive_time_deviation table
-func (pg *PgDb) createVoteReceiveTimeDeviationTable() error {
-	_, err := pg.db.Exec(createVoteReceiveTimeDeviationTableScript)
-	return err
-}
-
-func (pg *PgDb) voteReceiveTimeDeviationTableExits() bool {
-	exists, _ := pg.tableExists("vote_receive_time_deviation")
-	return exists
-}
-
-func (pg *PgDb) tableExists(name string) (bool, error) {
+func (pg *PgDb) TableExists(name string) bool {
 	rows, err := pg.db.Query(`SELECT relname FROM pg_class WHERE relname = $1`, name)
 	if err == nil {
 		defer func() {
@@ -367,73 +226,17 @@ func (pg *PgDb) tableExists(name string) (bool, error) {
 				log.Error("Close of Query failed: ", e)
 			}
 		}()
-		return rows.Next(), nil
+		return rows.Next()
 	}
-	return false, err
+	return false
 }
 
 func (pg *PgDb) DropTables() error {
-
-	if err := pg.dropTable("mempool"); err != nil {
-		return err
+	for tableName := range createTableScripts {
+		if err := pg.dropTable(tableName); err != nil {
+			return err
+		}
 	}
-
-	if err := pg.dropTable("mempool_bin"); err != nil {
-		return err
-	}
-
-	if err := pg.dropTable("network_snapshot"); err != nil {
-		return err
-	}
-
-	if err := pg.dropTable("network_snapshot_bin"); err != nil {
-		return err
-	}
-
-	if err := pg.dropTable("heartbeat"); err != nil {
-		return err
-	}
-
-	if err := pg.dropTable("node"); err != nil {
-		return err
-	}
-
-	// propagation
-	if err := pg.dropTable("propagation"); err != nil {
-		return err
-	}
-
-	// block
-	if err := pg.dropTable("block"); err != nil {
-		return err
-	}
-
-	// block_bin
-	if err := pg.dropTable("block_bin"); err != nil {
-		return err
-	}
-
-	// vote
-	if err := pg.dropTable("vote"); err != nil {
-		return err
-	}
-
-	// vote_receive_time_deviation
-	if err := pg.dropTable("vote_receive_time_deviation"); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (pg *PgDb) DropCacheTables() error {
-	if err := pg.dropTable("network_snapshot_bin"); err != nil {
-		return err
-	}
-
-	if err := pg.dropTable("mempool_bin"); err != nil {
-		return err
-	}
-
 	return nil
 }
 

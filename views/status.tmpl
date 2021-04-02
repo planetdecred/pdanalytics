@@ -6,7 +6,7 @@
 
     <div class="container py-1" data-controller="status">
         <br/>
-        <div class="alert alert-info" data-target="status.message">
+        <div class="alert alert-info mt-5" data-target="status.message">
             {{if .StatusType.IsNotFound}}
                 <h5>No matching page, block, address or transaction that could be found.</h5>
                 <h5>{{.Message}}</h5>
@@ -35,12 +35,12 @@
                 <h5>{{.Message}}</h5>
             {{end}}
         </div>
-        <div data-target="status.init" class="sync-progress">
+        <div data-target="status.init" class="sync-progress mt-5">
         {{if .StatusType.IsSyncing}}
             <img src="/images/loader.gif" style="margin: 0px auto;display: block;"/>
         {{end}}
         </div>
-        <div data-target="status.address" class="sync-progress"></div>
+        <div data-target="status.address" class="sync-progress mt-5"></div>
     </div>
 {{ template "footer" . }}
 </body>

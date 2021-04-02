@@ -8,6 +8,7 @@ import (
 	"github.com/decred/dcrdata/exchanges/v2"
 	"github.com/planetdecred/pdanalytics/attackcost"
 	"github.com/planetdecred/pdanalytics/dcrd"
+	"github.com/planetdecred/pdanalytics/gov/politeia"
 	"github.com/planetdecred/pdanalytics/homepage"
 	"github.com/planetdecred/pdanalytics/mempool"
 	"github.com/planetdecred/pdanalytics/netsnapshot"
@@ -62,7 +63,7 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 				return nil, err
 			}
 			if err = pgDb.CreateTables(ctx); err != nil {
-				log.Error("Error creating mempool tables: ", err)
+				log.Error("Error creating tables: ", err)
 				return nil, err
 			}
 		}
@@ -97,13 +98,13 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 				return err
 			}
 
-			if !syncDb.BlockTableExits() {
+			if !syncDb.TableExists("block") {
 				msg := fmt.Sprintf("the database, %s is missing the block table", databaseName)
 				log.Error(msg)
 				return errors.New(msg)
 			}
 
-			if !syncDb.VoteTableExits() {
+			if !syncDb.TableExists("vote") {
 				msg := fmt.Sprintf("the database, %s is missing the vote table", databaseName)
 				log.Error(msg)
 				return errors.New(msg)
@@ -122,6 +123,24 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 		}
 	}
 
+	if cfg.EnableProposals || cfg.EnableProposalsHttp {
+		db, err := dbInstance()
+		if err != nil {
+			return err
+		}
+
+		go func() {
+			err = politeia.Activate(ctx, client, db, cfg.PoliteiaAPIURL,
+				cfg.ProposalsFileName, cfg.PiPropRepoOwner, cfg.PiPropRepoName, cfg.DataDir, server,
+				cfg.EnableProposals, cfg.EnableProposalsHttp)
+			if err != nil {
+				log.Error(err)
+				requestShutdown()
+			}
+			log.Info("Proposals module Enabled")
+		}()
+	}
+
 	if cfg.EnableNetworkSnapshot || cfg.EnableNetworkSnapshotHTTP {
 		db, err := dbInstance()
 		if err != nil {
@@ -133,6 +152,7 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 			log.Error(err)
 			return fmt.Errorf("Failed to activate network snapshot component, %s", err.Error())
 		}
+		log.Info("Network nodes module Enabled")
 	}
 
 	_, err = homepage.New(server, homepage.Mods{
