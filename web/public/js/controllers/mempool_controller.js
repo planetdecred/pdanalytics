@@ -67,6 +67,12 @@ export default class extends Controller {
     }
   }
 
+  disconnect () {
+    if (this.chartsView !== undefined) {
+      this.chartsView.destroy()
+    }
+  }
+
   setTable () {
     this.selectedViewOption = 'table'
     setActiveOptionBtn(this.selectedViewOption, this.viewOptionTargets)
