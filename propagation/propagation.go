@@ -42,6 +42,7 @@ func New(ctx context.Context, client *dcrd.Dcrd, dataStore Store, externalDBs ma
 	prop.server.AddMenuItem(web.MenuItem{
 		Href:      "/propagation",
 		HyperText: "Propagation",
+		Info:      "Comparisons of block and vote propagation times on the network.",
 		Attributes: map[string]string{
 			"class": "menu-item",
 			"title": "Block Propagation",

@@ -104,6 +104,7 @@ func Activate(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource,
 		prop.server.AddMenuItem(web.MenuItem{
 			Href:      "/proposals",
 			HyperText: "Proposals",
+			Info:      "Governance Proposals",
 			Attributes: map[string]string{
 				"class": "menu-item",
 				"title": "Proposals",

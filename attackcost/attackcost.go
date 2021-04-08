@@ -58,6 +58,7 @@ func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot)
 	ac.server.AddMenuItem(web.MenuItem{
 		Href:      "/attackcost",
 		HyperText: "Attack Cost",
+		Info:      "Attack cost calculator",
 		Attributes: map[string]string{
 			"class": "menu-item",
 			"title": "Decred Attack Cost",

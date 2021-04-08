@@ -44,6 +44,7 @@ func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot)
 	calc.webServer.AddMenuItem(web.MenuItem{
 		Href:      "/stakingcalc",
 		HyperText: "Staking Calc",
+		Info:      "Staking Reward Calculator",
 		Attributes: map[string]string{
 			"class": "menu-item",
 			"title": "Staking Reward Calculator",

@@ -22,13 +22,12 @@ func New(client *dcrd.Dcrd, server *web.Server) (*Parameters, error) {
 	prm.server.AddMenuItem(web.MenuItem{
 		Href:      "/parameters",
 		HyperText: "Parameters",
+		Info:      "Network parameters",
 		Attributes: map[string]string{
 			"class": "menu-item",
 			"title": "Chain Parameters",
 		},
 	})
-
-	prm.server.AddMenuItem(web.MenuItem{})
 
 	err := prm.server.Templates.AddTemplate("parameters")
 	if err != nil {

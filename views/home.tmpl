@@ -3,16 +3,26 @@
 <html lang="en">
     {{ template "html-head" printf "PdAnalytics"}}
 
-        {{template "navbar" . }}
+        {{template "navbar" "Welcome" }}
         <div class="content" style="padding-top: 70px;">
            <div class="container-fluid">
             {{if .NoModEnabled}}
                 No module enabled
             {{else}}
-                Modules Enabled: <br/>
-                Staking Reward Calculator: {{.StakingRewardEnabled}}<br/>
-                Chain Parameters:    {{.ParametersEnabled}}<br/>
-                Attack Cost Calculator:    {{.AttackCostEnabled}}<br/>
+                
+            <div class="items ml-auto mr-auto mt-5" style="width: fit-content;">
+                {{ range $menuItem := .MenuItems }}
+                    {{ if neq $menuItem.Href "/" }}
+                    <div class="item-info">
+                        <p>
+                            <a href="{{$menuItem.Href}}" class="header">{{$menuItem.HyperText}} -</a> {{$menuItem.Info}}
+                        </p>
+                    </div>
+                    {{ end }}
+                {{ end }}
+                
+            </div>
+
             {{end}}
            </div>
         </div>

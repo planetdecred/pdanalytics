@@ -328,6 +328,9 @@ func MakeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 			}
 			return false
 		},
+		"neq": func (a, b interface{}) bool {
+			return a != b
+		},
 		"redirectToTestnet": func(netName string, message string) bool {
 			if netName != TestnetNetName && strings.Contains(message, "testnet") {
 				return true

@@ -43,6 +43,7 @@ type Links struct {
 type MenuItem struct {
 	Href       string
 	HyperText  string
+	Info       string
 	Attributes map[string]string
 }
 

@@ -266,6 +266,7 @@ func (t *taker) configHTTPHandlers() error {
 	t.server.AddMenuItem(web.MenuItem{
 		Href:      "/nodes",
 		HyperText: "Nodes",
+		Info:      "Historical data about detected full nodes.",
 		Attributes: map[string]string{
 			"class": "menu-item",
 			"title": "Network nodes",
