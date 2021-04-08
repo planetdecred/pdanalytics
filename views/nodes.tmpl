@@ -5,7 +5,7 @@
 
 <body>
 <div class="body">
-    {{ template "navbar" . }}
+    {{ template "navbar" "Network Nodes" }}
     <div class="content" data-controller="nodes"
          data-nodes-page-size="{{ .Data.pageSize }}"
          data-nodes-page="{{ .Data.currentPage }}"

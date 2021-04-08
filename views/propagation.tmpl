@@ -6,7 +6,7 @@
 <body data-controller="receive" class="{{ theme }}{{if .Cookies.DarkMode}} darkBG{{end}}">
 <div class="body" data-controller="propagation" data-propagation-block-time="{{.BlockTime}}" 
     data-action="scroll@window->propagation#onScroll">
-    {{ template "navbar" . }}
+    {{ template "navbar" "Block Propagation" }}
     <div class="content">
         <div class="container-fluid">
 
