@@ -6,10 +6,8 @@ require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0 // indirect
 	github.com/asdine/storm/v3 v3.2.1
 	github.com/caarlos0/env v3.5.0+incompatible
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/chaincfg/chainhash v1.0.2
 	github.com/decred/dcrd/chaincfg/v2 v2.3.0
-	github.com/decred/dcrd/dcrjson/v3 v3.1.0
 	github.com/decred/dcrd/dcrutil v1.4.0
 	github.com/decred/dcrd/dcrutil/v2 v2.0.1
 	github.com/decred/dcrd/gcs/v2 v2.1.0 // indirect
