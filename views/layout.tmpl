@@ -37,8 +37,12 @@
 				style="background-color: inherit !important; 
 				padding: 0 !important; font-size: 1.1rem;">
 				<li class="breadcrumb-item"><a href="/">Pdanalytics</a></li>
-				{{ if neq . "" }}
-				<li class="breadcrumb-item active" aria-current="page">{{ . }}</li>
+				{{ range $menuItem := .Breadcrumbs }}
+					{{ if $menuItem.Active }}
+					<li class="breadcrumb-item active" aria-current="page">{{ $menuItem.HyperText }}</li>
+					{{ else }}
+					<li class="breadcrumb-item"><a href="{{$menuItem.Href}}">{{$menuItem.HyperText}}</a></li>
+					{{ end }}
 				{{ end }}
 			</ol>
 		</div>

@@ -41,12 +41,19 @@ func (prop *propagation) propagationPage(w http.ResponseWriter, r *http.Request)
 
 	str, err := prop.server.Templates.ExecTemplateToString("propagation", struct {
 		*web.CommonPageData
-		Propagation map[string]interface{}
-		BlockTime   float64
+		Propagation     map[string]interface{}
+		BlockTime       float64
+		BreadcrumbItems []web.BreadcrumbItem
 	}{
 		CommonPageData: prop.server.CommonData(r),
 		Propagation:    block,
 		BlockTime:      prop.client.Params.MinDiffReductionTime.Seconds(),
+		BreadcrumbItems: []web.BreadcrumbItem{
+			{
+				HyperText: "Block Propagation",
+				Active:    true,
+			},
+		},
 	})
 
 	if err != nil {

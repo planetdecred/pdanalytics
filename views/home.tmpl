@@ -3,7 +3,7 @@
 <html lang="en">
     {{ template "html-head" printf "PdAnalytics"}}
 
-        {{template "navbar" "Home" }}
+        {{template "navbar" . }}
         <div class="content" style="padding-top: 70px;">
            <div class="container-fluid">
             {{if .NoModEnabled}}

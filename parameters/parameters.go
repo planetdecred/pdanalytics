@@ -64,12 +64,19 @@ func (prm *Parameters) handle(w http.ResponseWriter, r *http.Request) {
 	str, err := prm.server.Templates.ExecTemplateToString("parameters", struct {
 		*web.CommonPageData
 		ExtendedParams
+		BreadcrumbItems []web.BreadcrumbItem
 	}{
 		CommonPageData: prm.server.CommonData(r),
 		ExtendedParams: ExtendedParams{
 			MaximumBlockSize:     maxBlockSize,
 			AddressPrefix:        addrPrefix,
 			ActualTicketPoolSize: actualTicketPoolSize,
+		},
+		BreadcrumbItems: []web.BreadcrumbItem{
+			{
+				HyperText: "Network Parameters",
+				Active:    true,
+			},
 		},
 	})
 
