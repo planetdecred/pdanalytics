@@ -4,7 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/decred/dcrdata)](https://goreportcard.com/report/github.com/planetdecred/pdanalytics)
 [![ISC License](https://img.shields.io/badge/license-ISC-blue.svg)](http://copyfree.org)
 
-    pdanalytics is a collection of standalone modules for exploring the decred blockchain and collecting additional info about the decred cryptocurrency like ticker and orderbook data from various exchanges. Each module can be enabled/disabled giving the user the ability to run a light-weight version of the program at will. 
+pdanalytics is a contains modules for exploring the decred blockchain and collecting additional info about the decred cryptocurrency like ticker and orderbook data from various exchanges. Each module can be enabled/disabled giving the user the ability to run a light-weight version of the program at will. 
 
 ## Requirements
 To run **pdanalytics** on your machine you will need the following to be setup.
