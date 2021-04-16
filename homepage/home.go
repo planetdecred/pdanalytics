@@ -56,7 +56,7 @@ func (hm *Home) homepage(w http.ResponseWriter, r *http.Request) {
 		BreadcrumbItems: []web.BreadcrumbItem{
 			{
 				HyperText: "Home",
-				Active: true,
+				Active:    true,
 			},
 		},
 	})

@@ -149,7 +149,7 @@ func (prop *proposals) ProposalPage(w http.ResponseWriter, r *http.Request) {
 			},
 			{
 				HyperText: proposalInfo.Name,
-				Active: true,
+				Active:    true,
 			},
 		},
 	})
