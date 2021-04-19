@@ -22,13 +22,12 @@ func New(client *dcrd.Dcrd, server *web.Server) (*Parameters, error) {
 	prm.server.AddMenuItem(web.MenuItem{
 		Href:      "/parameters",
 		HyperText: "Parameters",
+		Info:      "Network parameters",
 		Attributes: map[string]string{
 			"class": "menu-item",
 			"title": "Chain Parameters",
 		},
 	})
-
-	prm.server.AddMenuItem(web.MenuItem{})
 
 	err := prm.server.Templates.AddTemplate("parameters")
 	if err != nil {
@@ -65,12 +64,19 @@ func (prm *Parameters) handle(w http.ResponseWriter, r *http.Request) {
 	str, err := prm.server.Templates.ExecTemplateToString("parameters", struct {
 		*web.CommonPageData
 		ExtendedParams
+		BreadcrumbItems []web.BreadcrumbItem
 	}{
 		CommonPageData: prm.server.CommonData(r),
 		ExtendedParams: ExtendedParams{
 			MaximumBlockSize:     maxBlockSize,
 			AddressPrefix:        addrPrefix,
 			ActualTicketPoolSize: actualTicketPoolSize,
+		},
+		BreadcrumbItems: []web.BreadcrumbItem{
+			{
+				HyperText: "Network Parameters",
+				Active:    true,
+			},
 		},
 	})
 

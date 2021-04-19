@@ -83,6 +83,9 @@ func Activate(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource,
 	if err = prop.connectBlock(blockHeader); err != nil {
 		return err
 	}
+	if err := prop.server.Templates.AddTemplate("proposal"); err != nil {
+		return err
+	}
 
 	client.Notif.RegisterBlockHandlerGroup(prop.connectBlock)
 
@@ -101,6 +104,7 @@ func Activate(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource,
 		prop.server.AddMenuItem(web.MenuItem{
 			Href:      "/proposals",
 			HyperText: "Proposals",
+			Info:      "Governance Proposals",
 			Attributes: map[string]string{
 				"class": "menu-item",
 				"title": "Proposals",

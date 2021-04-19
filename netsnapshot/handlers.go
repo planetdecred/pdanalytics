@@ -111,10 +111,17 @@ func (t *taker) nodesPage(w http.ResponseWriter, r *http.Request) {
 
 	str, err := t.server.Templates.ExecTemplateToString("nodes", struct {
 		*web.CommonPageData
-		Data map[string]interface{}
+		Data            map[string]interface{}
+		BreadcrumbItems []web.BreadcrumbItem
 	}{
 		CommonPageData: t.server.CommonData(r),
 		Data:           data,
+		BreadcrumbItems: []web.BreadcrumbItem{
+			{
+				HyperText: "Network Nodes",
+				Active:    true,
+			},
+		},
 	})
 
 	if err != nil {

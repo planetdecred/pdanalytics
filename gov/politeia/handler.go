@@ -66,17 +66,18 @@ func (prop *proposals) ProposalsPage(w http.ResponseWriter, r *http.Request) {
 
 	str, err := prop.server.Templates.ExecTemplateToString("proposals", struct {
 		*web.CommonPageData
-		Proposals     []*pitypes.ProposalInfo
-		VotesStatus   map[pitypes.VoteStatusType]string
-		VStatusFilter int
-		Offset        int64
-		Limit         int64
-		TotalCount    int64
-		PoliteiaURL   string
-		LastVotesSync int64
-		LastPropSync  int64
-		TimePerBlock  int64
-		Height        uint32
+		Proposals       []*pitypes.ProposalInfo
+		VotesStatus     map[pitypes.VoteStatusType]string
+		VStatusFilter   int
+		Offset          int64
+		Limit           int64
+		TotalCount      int64
+		PoliteiaURL     string
+		LastVotesSync   int64
+		LastPropSync    int64
+		TimePerBlock    int64
+		Height          uint32
+		BreadcrumbItems []web.BreadcrumbItem
 	}{
 		CommonPageData: prop.server.CommonData(r),
 		Proposals:      proposals,
@@ -90,6 +91,12 @@ func (prop *proposals) ProposalsPage(w http.ResponseWriter, r *http.Request) {
 		LastPropSync:   prop.db.LastProposalsSync(),
 		TimePerBlock:   int64(prop.client.Params.TargetTimePerBlock.Seconds()),
 		Height:         prop.height,
+		BreadcrumbItems: []web.BreadcrumbItem{
+			{
+				HyperText: "Proposals",
+				Active:    true,
+			},
+		},
 	})
 
 	if err != nil {
@@ -125,15 +132,26 @@ func (prop *proposals) ProposalPage(w http.ResponseWriter, r *http.Request) {
 	commonData := prop.server.CommonData(r)
 	str, err := prop.server.Templates.ExecTemplateToString("proposal", struct {
 		*web.CommonPageData
-		Data        *pitypes.ProposalInfo
-		PoliteiaURL string
-		Metadata    *pitypes.ProposalMetadata
+		Data            *pitypes.ProposalInfo
+		PoliteiaURL     string
+		Metadata        *pitypes.ProposalMetadata
+		BreadcrumbItems []web.BreadcrumbItem
 	}{
 		CommonPageData: commonData,
 		Data:           proposalInfo,
 		PoliteiaURL:    prop.politeiaURL,
 		Metadata: proposalInfo.Metadata(int64(commonData.Tip.Height),
 			int64(prop.client.Params.TargetTimePerBlock/time.Second)),
+		BreadcrumbItems: []web.BreadcrumbItem{
+			{
+				HyperText: "Proposals",
+				Href:      "/proposals",
+			},
+			{
+				HyperText: proposalInfo.Name,
+				Active:    true,
+			},
+		},
 	})
 
 	if err != nil {

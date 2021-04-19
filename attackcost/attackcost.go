@@ -58,6 +58,7 @@ func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot)
 	ac.server.AddMenuItem(web.MenuItem{
 		Href:      "/attackcost",
 		HyperText: "Attack Cost",
+		Info:      "Majority Attack Cost Calculator",
 		Attributes: map[string]string{
 			"class": "menu-item",
 			"title": "Decred Attack Cost",
@@ -140,6 +141,7 @@ func (ac *Attackcost) attackCost(w http.ResponseWriter, r *http.Request) {
 		TicketPoolSize  int64
 		TicketPoolValue float64
 		CoinSupply      int64
+		BreadcrumbItems []web.BreadcrumbItem
 	}{
 		CommonPageData:  ac.server.CommonData(r),
 		HashRate:        ac.hashrate,
@@ -150,6 +152,12 @@ func (ac *Attackcost) attackCost(w http.ResponseWriter, r *http.Request) {
 		TicketPoolSize:  ac.ticketPoolSize,
 		TicketPoolValue: ac.ticketPoolValue,
 		CoinSupply:      ac.coinSupply,
+		BreadcrumbItems: []web.BreadcrumbItem{
+			{
+				HyperText: "Majority Attack Cost Calculator",
+				Active:    true,
+			},
+		},
 	})
 	ac.reorgLock.Unlock()
 
