@@ -156,7 +156,7 @@ export default class extends Controller {
       target_pos: 51,
       device: 0,
       attack_type: externalAttackType,
-      price_type: 'current'
+      price_type: 'predicted'
     }
 
     if (this.settings.attack_time) this.attackPeriodTarget.value = parseInt(this.settings.attack_time)
@@ -172,15 +172,15 @@ export default class extends Controller {
       this.settings.attack_type = externalAttackType
     }
     switch (this.settings.price_type === null) {
-      case 'predicted':
+      default:
         this.hideAll(this.priceDCRWrapperTargets)
         this.showAll(this.projectedDcrPriceDivTargets)
         this.showAll(this.predictedTooltipTargets)
+        this.settings.price_type = 'predicted'
         break
-      default:
+      case 'current':
         this.showAll(this.priceDCRWrapperTargets)
         this.hideAll(this.predictedTooltipTargets)
-        this.settings.price_type = 'current'
         break
     }
     switch (this.settings.attack_type) {
