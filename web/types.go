@@ -43,7 +43,14 @@ type Links struct {
 type MenuItem struct {
 	Href       string
 	HyperText  string
+	Info       string
 	Attributes map[string]string
+}
+
+type BreadcrumbItem struct {
+	Href      string
+	HyperText string
+	Active    bool
 }
 
 // Cookies contains information from the request cookies.

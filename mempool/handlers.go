@@ -25,12 +25,19 @@ func (c *Collector) mempoolPage(w http.ResponseWriter, r *http.Request) {
 
 	str, err := c.webServer.Templates.ExecTemplateToString("mempool", struct {
 		*web.CommonPageData
-		Mempool   map[string]interface{}
-		BlockTime float64
+		Mempool         map[string]interface{}
+		BlockTime       float64
+		BreadcrumbItems []web.BreadcrumbItem
 	}{
 		CommonPageData: c.webServer.CommonData(r),
 		Mempool:        mempoolData,
 		BlockTime:      c.client.Params.MinDiffReductionTime.Seconds(),
+		BreadcrumbItems: []web.BreadcrumbItem{
+			{
+				HyperText: "Mempool",
+				Active:    true,
+			},
+		},
 	})
 
 	if err != nil {

@@ -144,6 +144,7 @@ func (s *Server) CommonData(r *http.Request) *CommonPageData {
 	// 	RequestURI: r.URL.RequestURI(),
 	// }
 	data := s.common
+	data.Tip = &WebBasicBlock{}
 
 	data.RequestURI = r.URL.RequestURI()
 

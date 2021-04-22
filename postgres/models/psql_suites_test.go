@@ -28,6 +28,8 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("Propagations", testPropagationsUpsert)
 
+	t.Run("Proposals", testProposalsUpsert)
+
 	t.Run("Votes", testVotesUpsert)
 
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsUpsert)

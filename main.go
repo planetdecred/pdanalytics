@@ -173,7 +173,9 @@ func _main(ctx context.Context) error {
 	// starting here if the block explorer is disable.
 	// The action here assumes that all other modules has being configured
 	webServer.BuildRoute()
-	listenAndServeProto(ctx, &wg, cfg.APIListen, cfg.APIProto, webMux)
+	if !cfg.NoHttp {
+		listenAndServeProto(ctx, &wg, cfg.APIListen, cfg.APIProto, webMux)
+	}
 
 	// Register for notifications from dcrd. This also sets the daemon RPC
 	// client used by other functions in the notify/notification package (i.e.

@@ -466,7 +466,7 @@ export default class extends Controller {
       hideLoading(this.loadingDataTarget)
       return
     }
-    if(!result.x || result.x.length === 0) {
+    if (!result.x || result.x.length === 0) {
       this.messageViewTarget.innerHTML = `<div class="alert alert-primary"><strong>No record for the selected chart</strong></div>`
       show(this.messageViewTarget)
       hide(this.chartWrapperTarget)

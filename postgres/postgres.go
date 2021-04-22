@@ -8,6 +8,9 @@ package postgres
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/planetdecred/pdanalytics/dbhelper"
@@ -45,4 +48,29 @@ func NewPgDb(host, port, user, pass, dbname string, debug bool) (*PgDb, error) {
 func (pg *PgDb) Close() error {
 	log.Trace("Closing postgresql connection")
 	return pg.db.Close()
+}
+
+func (pg *PgDb) timeoutError() string {
+	return fmt.Sprintf("%s after %v", dbhelper.TimeoutPrefix, pg.queryTimeout)
+}
+
+// replaceCancelError will replace the generic error strings that can occur when
+// a PG query is canceled (dbtypes.PGCancelError) or a context deadline is
+// exceeded (dbtypes.CtxDeadlineExceeded from context.DeadlineExceeded).
+func (pg *PgDb) replaceCancelError(err error) error {
+	if err == nil {
+		return err
+	}
+
+	patched := err.Error()
+	if strings.Contains(patched, dbhelper.PGCancelError) {
+		patched = strings.Replace(patched, dbhelper.PGCancelError,
+			pg.timeoutError(), -1)
+	} else if strings.Contains(patched, dbhelper.CtxDeadlineExceeded) {
+		patched = strings.Replace(patched, dbhelper.CtxDeadlineExceeded,
+			pg.timeoutError(), -1)
+	} else {
+		return err
+	}
+	return errors.New(patched)
 }

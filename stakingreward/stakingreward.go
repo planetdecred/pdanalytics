@@ -44,6 +44,7 @@ func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot)
 	calc.webServer.AddMenuItem(web.MenuItem{
 		Href:      "/stakingcalc",
 		HyperText: "Staking Calc",
+		Info:      "Staking Reward Calculator",
 		Attributes: map[string]string{
 			"class": "menu-item",
 			"title": "Staking Reward Calculator",
@@ -265,16 +266,23 @@ func (calc *Calculator) stakingReward(w http.ResponseWriter, r *http.Request) {
 
 	str, err := calc.webServer.Templates.ExecTemplateToString("stakingreward", struct {
 		*web.CommonPageData
-		TicketPrice  float64
-		RewardPeriod float64
-		TicketReward float64
-		DCRPrice     float64
+		TicketPrice     float64
+		RewardPeriod    float64
+		TicketReward    float64
+		DCRPrice        float64
+		BreadcrumbItems []web.BreadcrumbItem
 	}{
 		CommonPageData: calc.webServer.CommonData(r),
 		TicketPrice:    calc.TicketPrice,
 		RewardPeriod:   calc.RewardPeriod,
 		TicketReward:   calc.TicketReward,
 		DCRPrice:       price,
+		BreadcrumbItems: []web.BreadcrumbItem{
+			{
+				HyperText: "Staking Reward Calculator",
+				Active:    true,
+			},
+		},
 	})
 	calc.reorgLock.Unlock()
 

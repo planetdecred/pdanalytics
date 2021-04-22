@@ -164,7 +164,7 @@ type NetworkSnapshotOptions struct {
 	Seeder                    string `short:"s" long:"seeder" description:"IP address of a working node"`
 	IpStackAccessKey          string `long:"ip-stack-access-key" description:"IP stack access key https://ipstack.com/"`
 	IpLocationProvidingPeer   string `long:"ip-location-providing-peer" description:"An optional peer address for getting IP info"`
-	SnapshotInterval          int    `long:"snapshotinterval" description:"The number of minutes between snapshot (default 5)"`
+	SnapshotInterval          int    `long:"snapshotinterval" description:"The number of minutes between snapshot"`
 	MaxPeerConnectionFailure  int    `long:"max-peer-connection-failure" description:"Number of failed connection before a pair is marked a dead"`
 }
 

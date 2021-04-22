@@ -32,6 +32,7 @@ func NewCollector(ctx context.Context, client *dcrd.Dcrd, interval float64,
 	c.webServer.AddMenuItem(web.MenuItem{
 		Href:      "/mempool",
 		HyperText: "Mempool",
+		Info:      "Historical data on full node mempool size.",
 		Attributes: map[string]string{
 			"class": "menu-item",
 			"title": "Historic mempool data",

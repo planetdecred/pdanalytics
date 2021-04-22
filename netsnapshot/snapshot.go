@@ -44,12 +44,6 @@ func Activate(ctx context.Context, store DataStore, cfg NetworkSnapshotOptions, 
 		}
 	}
 
-	go func() {
-		if err := store.UpdateSnapshotNodesBin(ctx); err != nil {
-			log.Error(err)
-		}
-	}()
-
 	return nil
 }
 
@@ -81,7 +75,7 @@ func (t *taker) Start(ctx context.Context) {
 	}
 
 	// enqueue previous known ips
-	loadLiveNodes()
+	// loadLiveNodes()
 
 	go runSeeder(t.cfg, netParams)
 
@@ -272,6 +266,7 @@ func (t *taker) configHTTPHandlers() error {
 	t.server.AddMenuItem(web.MenuItem{
 		Href:      "/nodes",
 		HyperText: "Nodes",
+		Info:      "Historical data about detected full nodes.",
 		Attributes: map[string]string{
 			"class": "menu-item",
 			"title": "Network nodes",

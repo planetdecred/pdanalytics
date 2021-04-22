@@ -46,12 +46,19 @@ func (hm *Home) homepage(w http.ResponseWriter, r *http.Request) {
 		StakingRewardEnabled bool
 		ParametersEnabled    bool
 		AttackCostEnabled    bool
+		BreadcrumbItems      []web.BreadcrumbItem
 	}{
 		NoModEnabled:         !(stk || prm || ac),
 		CommonPageData:       hm.server.CommonData(r),
 		StakingRewardEnabled: stk,
 		ParametersEnabled:    prm,
 		AttackCostEnabled:    ac,
+		BreadcrumbItems: []web.BreadcrumbItem{
+			{
+				HyperText: "Home",
+				Active:    true,
+			},
+		},
 	})
 
 	if err != nil {

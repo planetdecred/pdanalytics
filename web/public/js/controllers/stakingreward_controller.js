@@ -98,7 +98,7 @@ export default class extends Controller {
 
     const days = moment.duration(endDate.diff(startDate)).asDays()
     if (days < this.rewardPeriod) {
-      if(showAlert) {
+      if (showAlert) {
         window.alert(`You must stake for more than ${this.rewardPeriod} days`)
       }
       return false
