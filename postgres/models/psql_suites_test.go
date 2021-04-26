@@ -10,6 +10,10 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("BlockBins", testBlockBinsUpsert)
 
+	t.Run("Exchanges", testExchangesUpsert)
+
+	t.Run("ExchangeTicks", testExchangeTicksUpsert)
+
 	t.Run("Heartbeats", testHeartbeatsUpsert)
 
 	t.Run("Mempools", testMempoolsUpsert)
@@ -27,8 +31,6 @@ func TestUpsert(t *testing.T) {
 	t.Run("NodeVersions", testNodeVersionsUpsert)
 
 	t.Run("Propagations", testPropagationsUpsert)
-
-	t.Run("Proposals", testProposalsUpsert)
 
 	t.Run("Votes", testVotesUpsert)
 

@@ -18,5 +18,7 @@
         "block_bin",
         "vote",
         "vote_receive_time_deviation",
-        "proposal"
+        "proposal",
+        "exchange",
+        "exchange_tick"
     ]

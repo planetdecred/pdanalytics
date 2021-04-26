@@ -6,6 +6,8 @@ package models
 var TableNames = struct {
 	Block                    string
 	BlockBin                 string
+	Exchange                 string
+	ExchangeTick             string
 	Heartbeat                string
 	Mempool                  string
 	MempoolBin               string
@@ -15,12 +17,13 @@ var TableNames = struct {
 	NodeLocation             string
 	NodeVersion              string
 	Propagation              string
-	Proposal                 string
 	Vote                     string
 	VoteReceiveTimeDeviation string
 }{
 	Block:                    "block",
 	BlockBin:                 "block_bin",
+	Exchange:                 "exchange",
+	ExchangeTick:             "exchange_tick",
 	Heartbeat:                "heartbeat",
 	Mempool:                  "mempool",
 	MempoolBin:               "mempool_bin",
@@ -30,7 +33,6 @@ var TableNames = struct {
 	NodeLocation:             "node_location",
 	NodeVersion:              "node_version",
 	Propagation:              "propagation",
-	Proposal:                 "proposal",
 	Vote:                     "vote",
 	VoteReceiveTimeDeviation: "vote_receive_time_deviation",
 }

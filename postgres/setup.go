@@ -158,6 +158,8 @@ var (
 		"vote_receive_time_deviation": createVoteReceiveTimeDeviationTableScript,
 		"proposals":                   createProposalTableScript,
 		"proposal_votes":              createProposalVotesTableScript,
+		"exchange":                    createExchangeTable,
+		"exchange_tick":               createExchangeTickTable,
 	}
 
 	tableOrder = []string{
@@ -176,6 +178,8 @@ var (
 		"vote_receive_time_deviation",
 		"proposals",
 		"proposal_votes",
+		"exchange",
+		"exchange_tick",
 	}
 
 	// createIndexScripts is a map of table name to a collection of index on the table
@@ -185,6 +189,9 @@ var (
 		},
 		"proposal_votes": {
 			IndexProposalVotesTableOnProposalsID,
+		},
+		"exchange_tick": {
+			createExchangeTickIndex,
 		},
 	}
 )
@@ -212,10 +219,9 @@ func (pg *PgDb) CreateTables(ctx context.Context) error {
 				return err
 			}
 		}
-
-		return tx.Commit()
+		log.Infof("Created %s table", tableName)
 	}
-	return nil
+	return tx.Commit()
 }
 
 func (pg *PgDb) TableExists(name string) bool {
