@@ -9,6 +9,7 @@ import (
 	"github.com/jrick/logrotate/rotator"
 	"github.com/planetdecred/pdanalytics/attackcost"
 	"github.com/planetdecred/pdanalytics/chart"
+	"github.com/planetdecred/pdanalytics/exchanges"
 	"github.com/planetdecred/pdanalytics/gov/politeia"
 	"github.com/planetdecred/pdanalytics/homepage"
 	"github.com/planetdecred/pdanalytics/mempool"
@@ -59,6 +60,7 @@ var (
 	propLog          = backendLog.Logger("PROP")
 	snapshotLog      = backendLog.Logger("NETS")
 	politeiaLog      = backendLog.Logger("POLI")
+	exchangeLog	     = backendLog.Logger("EXCH")
 	webLogger        = backendLog.Logger("WEBL")
 )
 
@@ -74,6 +76,7 @@ func init() {
 	propagation.UseLogger(propLog)
 	netsnapshot.UseLogger(snapshotLog)
 	politeia.UseLogger(politeiaLog)
+	exchanges.UseLogger(exchangeLog)
 	web.UseLogger(webLogger)
 }
 
@@ -90,6 +93,7 @@ var subsystemLoggers = map[string]slog.Logger{
 	"MEMP": mempoolLog,
 	"PSQL": psqlLog,
 	"POLI": politeiaLog,
+	"EXCH": exchangeLog,
 }
 
 // initLogRotator initializes the logging rotater to write logs to logFile and
