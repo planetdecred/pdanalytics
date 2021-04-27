@@ -223,5 +223,21 @@ func (hub *TickHub) Run(ctx context.Context) {
 }
 
 func (hub *TickHub) setupHttp() {
+	hub.server.AddMenuItem(web.MenuItem{
+		Href:      "/exchanges",
+		HyperText: "Exchanges",
+		Info:      "Historical exchange rate information",
+		Attributes: map[string]string{
+			"class": "menu-item",
+			"title": "Historical exchange rate information",
+		},
+	})
 
+	hub.server.Templates.AddTemplate("exchange")
+
+	hub.server.AddRoute("/exchanges", web.GET, hub.getExchangeTicks)
+	hub.server.AddRoute("/exchangedata", web.GET, hub.getFilteredExchangeTicks)
+	hub.server.AddRoute("/exchangechart", web.GET, hub.getExchangeChartData)
+	hub.server.AddRoute("/api/exchanges/intervals", web.GET, hub.tickIntervalsByExchangeAndPair)
+	hub.server.AddRoute("/api/exchanges/currency-pairs", web.GET, hub.currencyPairByExchange)
 }
