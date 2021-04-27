@@ -173,12 +173,19 @@ func (s *Server) StatusPage(w http.ResponseWriter, r *http.Request, code, messag
 		Code           string
 		Message        string
 		AdditionalInfo string
+		BreadcrumbItems []BreadcrumbItem
 	}{
 		CommonPageData: commonPageData,
 		StatusType:     sType,
 		Code:           code,
 		Message:        message,
 		AdditionalInfo: additionalInfo,
+		BreadcrumbItems: []BreadcrumbItem{
+			{
+				HyperText: "Status",
+				Active:    true,
+			},
+		},
 	})
 	if err != nil {
 		log.Errorf("Template execute failure: %v", err)

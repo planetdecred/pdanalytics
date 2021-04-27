@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/planetdecred/pdanalytics/chart"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
@@ -24,7 +25,7 @@ var (
 	}
 )
 
-func (s *TickHub) getExchangeTicks(w http.ResponseWriter, r *http.Request) {
+func (s *TickHub) exchangesPage(w http.ResponseWriter, r *http.Request) {
 	exchanges, err := s.fetchExchangeData(r)
 	if err != nil {
 		log.Errorf("fetchExchangeData execute failure: %v", err)
@@ -35,7 +36,7 @@ func (s *TickHub) getExchangeTicks(w http.ResponseWriter, r *http.Request) {
 	str, err := s.server.Templates.ExecTemplateToString("exchange", struct {
 		*web.CommonPageData
 		BreadcrumbItems []web.BreadcrumbItem
-		Data map[string]interface{}
+		Data            map[string]interface{}
 	}{
 		CommonPageData: s.server.CommonData(r),
 		BreadcrumbItems: []web.BreadcrumbItem{
@@ -46,6 +47,12 @@ func (s *TickHub) getExchangeTicks(w http.ResponseWriter, r *http.Request) {
 		},
 		Data: exchanges,
 	})
+
+	if err != nil {
+		log.Errorf("Template execute failure: %v", err)
+		s.server.StatusPage(w, r, web.DefaultErrorCode, web.DefaultErrorMessage, err.Error(), web.ExpStatusError)
+		return
+	}
 
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
@@ -169,7 +176,7 @@ func (s *TickHub) fetchExchangeData(req *http.Request) (map[string]interface{}, 
 		return data, nil
 	}
 
-	allExchangeTicksSlice, totalCount, err := s.db.FetchExchangeTicks(ctx, selectedCurrencyPair, selectedExchange, selectedInterval, offset, pageSize)
+	allExchangeTicksSlice, totalCount, err := s.store.FetchExchangeTicks(ctx, selectedCurrencyPair, selectedExchange, selectedInterval, offset, pageSize)
 	if err != nil {
 		return nil, fmt.Errorf("Error in fetching exchange ticks, %s", err.Error())
 	}
@@ -268,4 +275,31 @@ func (s *TickHub) currencyPairByExchange(w http.ResponseWriter, r *http.Request)
 		result = append(result, p.CurrencyPair)
 	}
 	web.RenderJSON(w, result)
+}
+
+// api/charts/mempool/{dataType}
+func (s *TickHub) chart(w http.ResponseWriter, r *http.Request) {
+	dataType := web.GetChartDataTypeCtx(r)
+	bin := r.URL.Query().Get("bin")
+	axis := r.URL.Query().Get("axis")
+
+	selectedCurrencyPair := r.FormValue("selected-currency-pair")
+	selectedInterval := r.FormValue("selected-interval")
+	selectedExchange := r.FormValue("selected-exchange")
+
+	interval, err := strconv.Atoi(selectedInterval)
+	if err != nil {
+		web.RenderErrorfJSON(w, fmt.Sprintf("Invalid interval, %s", err.Error()))
+		return
+	}
+
+	extras := chart.BuildExchangeKey(selectedExchange, selectedCurrencyPair, interval)
+
+	chartData, err := s.store.FetchEncodeExchangeChart(r.Context(), dataType, axis, bin, extras)
+	if err != nil {
+		web.RenderErrorfJSON(w, err.Error())
+		log.Warnf(`Error fetching mempool %s chart: %v`, dataType, err)
+		return
+	}
+	web.RenderJSONBytes(w, chartData)
 }

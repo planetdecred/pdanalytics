@@ -38,7 +38,8 @@ var (
 	}
 )
 
-func Activate(ctx context.Context, disabledexchanges []string, store ticks.Store, dataMode, httpMode bool) error {
+func Activate(ctx context.Context, disabledexchanges []string, store ticks.Store, server *web.Server,
+	 dataMode, httpMode bool) error {
 	collectors := make([]ticks.Collector, 0, len(availableExchanges)-len(disabledexchanges))
 	disabledMap := make(map[string]struct{})
 	for _, e := range disabledexchanges {
@@ -67,9 +68,13 @@ func Activate(ctx context.Context, disabledexchanges []string, store ticks.Store
 		collectors: collectors,
 		client:     &http.Client{Timeout: clientTimeout},
 		store:      store,
+		server: server,
 	}
+
 	if httpMode {
-		t.setupHttp()
+		if err := t.setupHttp(); err != nil {
+			return err
+		}
 	}
 
 	if dataMode {
@@ -222,7 +227,7 @@ func (hub *TickHub) Run(ctx context.Context) {
 	}()
 }
 
-func (hub *TickHub) setupHttp() {
+func (hub *TickHub) setupHttp() error {
 	hub.server.AddMenuItem(web.MenuItem{
 		Href:      "/exchanges",
 		HyperText: "Exchanges",
@@ -233,11 +238,16 @@ func (hub *TickHub) setupHttp() {
 		},
 	})
 
-	hub.server.Templates.AddTemplate("exchange")
+	if err := hub.server.Templates.AddTemplate("exchange"); err != nil {
+		return err
+	}
 
-	hub.server.AddRoute("/exchanges", web.GET, hub.getExchangeTicks)
+	hub.server.AddRoute("/exchanges", web.GET, hub.exchangesPage)
 	hub.server.AddRoute("/exchangedata", web.GET, hub.getFilteredExchangeTicks)
 	hub.server.AddRoute("/exchangechart", web.GET, hub.getExchangeChartData)
 	hub.server.AddRoute("/api/exchanges/intervals", web.GET, hub.tickIntervalsByExchangeAndPair)
 	hub.server.AddRoute("/api/exchanges/currency-pairs", web.GET, hub.currencyPairByExchange)
+	hub.server.AddRoute("/api/charts/exchange/{chartDataType}", web.GET, hub.chart, web.ChartDataTypeCtx)
+
+	return nil
 }

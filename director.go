@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/decred/dcrdata/exchanges/v2"
 	"github.com/planetdecred/pdanalytics/attackcost"
@@ -161,10 +162,11 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 		if err != nil {
 			return err
 		}
-		if err := exchangesModule.Activate(ctx, cfg.DisabledExchanges, db, 
-			cfg.EnableExchange, cfg.EnableExchangeHttp)); err != nil {
+		if err := exchangesModule.Activate(ctx, strings.Split(cfg.DisabledExchanges, ","), db, server, 
+			cfg.EnableExchange, cfg.EnableExchangeHttp); err != nil {
 			return fmt.Errorf("Failed to ectivate the exchanges modules, %s", err.Error())
 		}
+		log.Info("Exchange module enabled")
 	}
 
 	_, err = homepage.New(server, homepage.Mods{

@@ -265,6 +265,11 @@ func formattedDuration(duration time.Duration, str *periodMap) string {
 	return i(durationsec) + pl(str.s, durationsec)
 }
 
+var pairMap = map[string]string{
+	"BTC/DCR": "DCR/BTC",
+	"USD/BTC": "BTC/USD",
+}
+
 // MakeTemplateFuncMap defines common template functions that are shered
 // accross all the modules. Individual modules can extend this and add
 // functions that are specific to the module
@@ -430,6 +435,12 @@ func MakeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 			return dateTime.Format("2006-01-02 15:04:05")
 		},
 		"floor": math.Floor,
+		"commonPair": func(pair string) string {
+			if v, f := pairMap[pair]; f {
+				return v
+			}
+			return pair
+		},
 	}
 }
 

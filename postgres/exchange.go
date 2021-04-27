@@ -166,9 +166,21 @@ func (pg *PgDb) SaveExchangeFromSync(ctx context.Context, exchangeData interface
 }
 
 // AllExchange fetches a slice of all exchange from the db
-func (pg *PgDb) AllExchange(ctx context.Context) (models.ExchangeSlice, error) {
+func (pg *PgDb) AllExchange(ctx context.Context) ([]ticks.ExchangeDto, error) {
 	exchangeSlice, err := models.Exchanges(models.ExchangeWhere.Name.NEQ("bluetrade")).All(ctx, pg.db)
-	return exchangeSlice, err
+	if err != nil {
+		return nil, err
+	}
+	var result = make([]ticks.ExchangeDto, len(exchangeSlice))
+	for i, e := range exchangeSlice {
+		result[i] = ticks.ExchangeDto{
+			ID: e.ID,
+			Name: e.Name,
+			URL: e.URL,
+		}
+	}
+
+	return result, nil
 }
 
 func (pg *PgDb) FetchExchangeForSync(ctx context.Context, lastID int, skip, take int) ([]ticks.ExchangeData, int64, error) {
@@ -516,7 +528,7 @@ func (pg *PgDb) LastExchangeEntryID() (id int64) {
 	return
 }
 
-func (pg *PgDb) fetchEncodeExchangeChart(ctx context.Context, dataType, _ string, binString string, setKey ...string) ([]byte, error) {
+func (pg *PgDb) FetchEncodeExchangeChart(ctx context.Context, dataType, _ string, binString string, setKey ...string) ([]byte, error) {
 	if len(setKey) < 1 {
 		return nil, errors.New("exchange set key is required for exchange chart")
 	}

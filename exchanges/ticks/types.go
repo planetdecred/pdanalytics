@@ -35,6 +35,7 @@ type Store interface {
 	ExchangeTicksChartData(ctx context.Context, filter string, currencyPair string, selectedInterval int, exchanges string) ([]TickChartData, error)
 	AllExchangeTicksInterval(ctx context.Context) ([]TickDtoInterval, error)
 	TickIntervalsByExchangeAndPair(ctx context.Context, exchange string, currencyPair string) ([]TickDtoInterval, error)
+	FetchEncodeExchangeChart(ctx context.Context, dataType, _ string, binString string, setKey ...string) ([]byte, error)
 }
 
 type urlRequester func(time.Time, time.Duration, string) (string, error)
