@@ -20,6 +20,7 @@ const (
 	DefaultViewOption           = ChartViewOption
 	MaxPageSize                 = 250
 	DefaultPageSize             = 20
+	DefaultInterval             = 1440 // All
 	NoDataMessage               = "does not have data for the selected query option(s)."
 )
 

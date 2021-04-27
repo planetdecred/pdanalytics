@@ -14,6 +14,7 @@ import (
 	"github.com/planetdecred/pdanalytics/app"
 	"github.com/planetdecred/pdanalytics/app/helpers"
 	"github.com/planetdecred/pdanalytics/exchanges/ticks"
+	"github.com/planetdecred/pdanalytics/web"
 )
 
 const (
@@ -21,6 +22,7 @@ const (
 )
 
 type TickHub struct {
+	server     *web.Server
 	collectors []ticks.Collector
 	client     *http.Client
 	store      ticks.Store
@@ -36,7 +38,7 @@ var (
 	}
 )
 
-func Activate(ctx context.Context, disabledexchanges []string, store ticks.Store, dataMode, httpMode bool) (error) {
+func Activate(ctx context.Context, disabledexchanges []string, store ticks.Store, dataMode, httpMode bool) error {
 	collectors := make([]ticks.Collector, 0, len(availableExchanges)-len(disabledexchanges))
 	disabledMap := make(map[string]struct{})
 	for _, e := range disabledexchanges {

@@ -25,6 +25,16 @@ type Store interface {
 	FetchExchangeForSync(ctx context.Context, lastID int, skip, take int) ([]ExchangeData, int64, error)
 	StoreExchangeTicks(ctx context.Context, exchange string, interval int, pair string, data []Tick) (time.Time, error)
 	LastExchangeTickEntryTime() (time time.Time)
+
+	ExchangeTickCount(ctx context.Context) (int64, error)
+	AllExchangeTicks(ctx context.Context, currencyPair string, defaultInterval, offset, limit int) ([]TickDto, int64, error)
+	AllExchange(ctx context.Context) ([]ExchangeDto, error)
+	FetchExchangeTicks(ctx context.Context, currencyPair, name string, defaultInterval, offset, limit int) ([]TickDto, int64, error)
+	AllExchangeTicksCurrencyPair(ctx context.Context) ([]TickDtoCP, error)
+	CurrencyPairByExchange(ctx context.Context, exchangeName string) ([]TickDtoCP, error)
+	ExchangeTicksChartData(ctx context.Context, filter string, currencyPair string, selectedInterval int, exchanges string) ([]TickChartData, error)
+	AllExchangeTicksInterval(ctx context.Context) ([]TickDtoInterval, error)
+	TickIntervalsByExchangeAndPair(ctx context.Context, exchange string, currencyPair string) ([]TickDtoInterval, error)
 }
 
 type urlRequester func(time.Time, time.Duration, string) (string, error)
@@ -39,6 +49,12 @@ type ExchangeData struct {
 	LongInterval     time.Duration
 	HistoricInterval time.Duration
 	requester        urlRequester
+}
+
+type ExchangeDto struct {
+	ID   int
+	Name string
+	URL  string
 }
 
 type tickable interface {
