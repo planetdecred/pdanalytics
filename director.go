@@ -8,6 +8,7 @@ import (
 	"github.com/decred/dcrdata/exchanges/v2"
 	"github.com/planetdecred/pdanalytics/attackcost"
 	"github.com/planetdecred/pdanalytics/dcrd"
+	exchangesModule "github.com/planetdecred/pdanalytics/exchanges"
 	"github.com/planetdecred/pdanalytics/gov/politeia"
 	"github.com/planetdecred/pdanalytics/homepage"
 	"github.com/planetdecred/pdanalytics/mempool"
@@ -153,6 +154,17 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 			return fmt.Errorf("Failed to activate network snapshot component, %s", err.Error())
 		}
 		log.Info("Network nodes module Enabled")
+	}
+
+	if cfg.EnableExchange || cfg.EnableExchangeHttp {
+		db, err := dbInstance()
+		if err != nil {
+			return err
+		}
+		if err := exchangesModule.Activate(ctx, cfg.DisabledExchanges, db, 
+			cfg.EnableExchange, cfg.EnableExchangeHttp)); err != nil {
+			return fmt.Errorf("Failed to ectivate the exchanges modules, %s", err.Error())
+		}
 	}
 
 	_, err = homepage.New(server, homepage.Mods{

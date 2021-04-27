@@ -36,7 +36,7 @@ var (
 	}
 )
 
-func NewTickHub(ctx context.Context, disabledexchanges []string, store ticks.Store, dataMode, httpMode bool) (error) {
+func Activate(ctx context.Context, disabledexchanges []string, store ticks.Store, dataMode, httpMode bool) (error) {
 	collectors := make([]ticks.Collector, 0, len(availableExchanges)-len(disabledexchanges))
 	disabledMap := make(map[string]struct{})
 	for _, e := range disabledexchanges {

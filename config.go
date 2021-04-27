@@ -149,6 +149,10 @@ type config struct {
 	EnableProposalsHttp           bool `long:"proposalshttp" description:"Enable/Disable the proposals http module from running"`
 	EnableAgendas                 bool `long:"agendas" description:"Enable/Disable the agendas module from running"`
 	EnableAgendasHttp             bool `long:"agendashttp" description:"Enable/Disable the agendas http module from running"`
+	EnableExchange                bool `long:"exchange" description:"Enable/Disable the exchange historic data collector from running"`
+	EnableExchangeHttp            bool `long:"exchange-http" description:"Enable/Disable the exchange historic http endpoint from running"`
+
+	// Exchange
 
 	// Mempool
 	MempoolInterval float64 `long:"mempoolinterval" description:"The duration of time between mempool collection"`
@@ -197,6 +201,8 @@ func defaultConfig() config {
 		EnableProposalsHttp:           true,
 		EnableAgendas:                 true,
 		EnableAgendasHttp:             true,
+		EnableExchange:                true,
+		EnableExchangeHttp:            true,
 
 		MempoolInterval: defaultMempoolInterval,
 	}
