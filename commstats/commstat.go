@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/planetdecred/pdanalytics/app"
+	"github.com/planetdecred/pdanalytics/web"
 )
 
 const (
@@ -17,12 +18,26 @@ const (
 	retryLimit       = 3
 )
 
-func NewCommStatCollector(store DataStore, options *CommunityStatOptions) (*Collector, error) {
-	return &Collector{
+func Activate(ctx context.Context, store DataStore, server *web.Server, options *CommunityStatOptions) error {
+	c := &Collector{
 		client:    http.Client{Timeout: 10 * time.Second},
 		dataStore: store,
 		options:   options,
-	}, nil
+		server:    server,
+	}
+
+	if options.CommunityStat {
+		go func() {
+			c.Run(ctx)
+		}()
+	}
+
+	if options.CommunityStatHttp {
+		if err := c.setupServer(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (c *Collector) Run(ctx context.Context) {
@@ -52,4 +67,8 @@ func SetAccounts(options CommunityStatOptions) {
 	twitterHandles = options.TwitterHandles
 	repositories = options.GithubRepositories
 	youtubeChannels = options.YoutubeChannelName
+}
+
+func (c *Collector) setupServer() error {
+	return nil
 }

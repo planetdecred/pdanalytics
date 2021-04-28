@@ -174,9 +174,9 @@ func (pg *PgDb) AllExchange(ctx context.Context) ([]ticks.ExchangeDto, error) {
 	var result = make([]ticks.ExchangeDto, len(exchangeSlice))
 	for i, e := range exchangeSlice {
 		result[i] = ticks.ExchangeDto{
-			ID: e.ID,
+			ID:   e.ID,
 			Name: e.Name,
-			URL: e.URL,
+			URL:  e.URL,
 		}
 	}
 

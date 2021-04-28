@@ -39,7 +39,7 @@ var (
 )
 
 func Activate(ctx context.Context, disabledexchanges []string, store ticks.Store, server *web.Server,
-	 dataMode, httpMode bool) error {
+	dataMode, httpMode bool) error {
 	collectors := make([]ticks.Collector, 0, len(availableExchanges)-len(disabledexchanges))
 	disabledMap := make(map[string]struct{})
 	for _, e := range disabledexchanges {
@@ -68,7 +68,7 @@ func Activate(ctx context.Context, disabledexchanges []string, store ticks.Store
 		collectors: collectors,
 		client:     &http.Client{Timeout: clientTimeout},
 		store:      store,
-		server: server,
+		server:     server,
 	}
 
 	if httpMode {

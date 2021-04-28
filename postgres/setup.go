@@ -160,6 +160,10 @@ var (
 		"proposal_votes":              createProposalVotesTableScript,
 		"exchange":                    createExchangeTable,
 		"exchange_tick":               createExchangeTickTable,
+		"reddit":                      createRedditTable,
+		"twitter":                     createTwitterTable,
+		"github":                      createGithubTable,
+		"youtube":                     createYoutubeTable,
 	}
 
 	tableOrder = []string{
@@ -180,6 +184,10 @@ var (
 		"proposal_votes",
 		"exchange",
 		"exchange_tick",
+		"reddit",
+		"twitter",
+		"github",
+		"youtube",
 	}
 
 	// createIndexScripts is a map of table name to a collection of index on the table

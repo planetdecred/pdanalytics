@@ -60,7 +60,7 @@ var (
 	propLog          = backendLog.Logger("PROP")
 	snapshotLog      = backendLog.Logger("NETS")
 	politeiaLog      = backendLog.Logger("POLI")
-	exchangeLog	     = backendLog.Logger("EXCH")
+	exchangeLog      = backendLog.Logger("EXCH")
 	webLogger        = backendLog.Logger("WEBL")
 )
 

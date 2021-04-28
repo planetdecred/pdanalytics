@@ -16,6 +16,7 @@ func TestParent(t *testing.T) {
 	t.Run("BlockBins", testBlockBins)
 	t.Run("Exchanges", testExchanges)
 	t.Run("ExchangeTicks", testExchangeTicks)
+	t.Run("Githubs", testGithubs)
 	t.Run("Heartbeats", testHeartbeats)
 	t.Run("Mempools", testMempools)
 	t.Run("MempoolBins", testMempoolBins)
@@ -25,8 +26,11 @@ func TestParent(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocations)
 	t.Run("NodeVersions", testNodeVersions)
 	t.Run("Propagations", testPropagations)
+	t.Run("Reddits", testReddits)
+	t.Run("Twitters", testTwitters)
 	t.Run("Votes", testVotes)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviations)
+	t.Run("Youtubes", testYoutubes)
 }
 
 func TestDelete(t *testing.T) {
@@ -34,6 +38,7 @@ func TestDelete(t *testing.T) {
 	t.Run("BlockBins", testBlockBinsDelete)
 	t.Run("Exchanges", testExchangesDelete)
 	t.Run("ExchangeTicks", testExchangeTicksDelete)
+	t.Run("Githubs", testGithubsDelete)
 	t.Run("Heartbeats", testHeartbeatsDelete)
 	t.Run("Mempools", testMempoolsDelete)
 	t.Run("MempoolBins", testMempoolBinsDelete)
@@ -43,8 +48,11 @@ func TestDelete(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsDelete)
 	t.Run("NodeVersions", testNodeVersionsDelete)
 	t.Run("Propagations", testPropagationsDelete)
+	t.Run("Reddits", testRedditsDelete)
+	t.Run("Twitters", testTwittersDelete)
 	t.Run("Votes", testVotesDelete)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsDelete)
+	t.Run("Youtubes", testYoutubesDelete)
 }
 
 func TestQueryDeleteAll(t *testing.T) {
@@ -52,6 +60,7 @@ func TestQueryDeleteAll(t *testing.T) {
 	t.Run("BlockBins", testBlockBinsQueryDeleteAll)
 	t.Run("Exchanges", testExchangesQueryDeleteAll)
 	t.Run("ExchangeTicks", testExchangeTicksQueryDeleteAll)
+	t.Run("Githubs", testGithubsQueryDeleteAll)
 	t.Run("Heartbeats", testHeartbeatsQueryDeleteAll)
 	t.Run("Mempools", testMempoolsQueryDeleteAll)
 	t.Run("MempoolBins", testMempoolBinsQueryDeleteAll)
@@ -61,8 +70,11 @@ func TestQueryDeleteAll(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsQueryDeleteAll)
 	t.Run("NodeVersions", testNodeVersionsQueryDeleteAll)
 	t.Run("Propagations", testPropagationsQueryDeleteAll)
+	t.Run("Reddits", testRedditsQueryDeleteAll)
+	t.Run("Twitters", testTwittersQueryDeleteAll)
 	t.Run("Votes", testVotesQueryDeleteAll)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsQueryDeleteAll)
+	t.Run("Youtubes", testYoutubesQueryDeleteAll)
 }
 
 func TestSliceDeleteAll(t *testing.T) {
@@ -70,6 +82,7 @@ func TestSliceDeleteAll(t *testing.T) {
 	t.Run("BlockBins", testBlockBinsSliceDeleteAll)
 	t.Run("Exchanges", testExchangesSliceDeleteAll)
 	t.Run("ExchangeTicks", testExchangeTicksSliceDeleteAll)
+	t.Run("Githubs", testGithubsSliceDeleteAll)
 	t.Run("Heartbeats", testHeartbeatsSliceDeleteAll)
 	t.Run("Mempools", testMempoolsSliceDeleteAll)
 	t.Run("MempoolBins", testMempoolBinsSliceDeleteAll)
@@ -79,8 +92,11 @@ func TestSliceDeleteAll(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsSliceDeleteAll)
 	t.Run("NodeVersions", testNodeVersionsSliceDeleteAll)
 	t.Run("Propagations", testPropagationsSliceDeleteAll)
+	t.Run("Reddits", testRedditsSliceDeleteAll)
+	t.Run("Twitters", testTwittersSliceDeleteAll)
 	t.Run("Votes", testVotesSliceDeleteAll)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsSliceDeleteAll)
+	t.Run("Youtubes", testYoutubesSliceDeleteAll)
 }
 
 func TestExists(t *testing.T) {
@@ -88,6 +104,7 @@ func TestExists(t *testing.T) {
 	t.Run("BlockBins", testBlockBinsExists)
 	t.Run("Exchanges", testExchangesExists)
 	t.Run("ExchangeTicks", testExchangeTicksExists)
+	t.Run("Githubs", testGithubsExists)
 	t.Run("Heartbeats", testHeartbeatsExists)
 	t.Run("Mempools", testMempoolsExists)
 	t.Run("MempoolBins", testMempoolBinsExists)
@@ -97,8 +114,11 @@ func TestExists(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsExists)
 	t.Run("NodeVersions", testNodeVersionsExists)
 	t.Run("Propagations", testPropagationsExists)
+	t.Run("Reddits", testRedditsExists)
+	t.Run("Twitters", testTwittersExists)
 	t.Run("Votes", testVotesExists)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsExists)
+	t.Run("Youtubes", testYoutubesExists)
 }
 
 func TestFind(t *testing.T) {
@@ -106,6 +126,7 @@ func TestFind(t *testing.T) {
 	t.Run("BlockBins", testBlockBinsFind)
 	t.Run("Exchanges", testExchangesFind)
 	t.Run("ExchangeTicks", testExchangeTicksFind)
+	t.Run("Githubs", testGithubsFind)
 	t.Run("Heartbeats", testHeartbeatsFind)
 	t.Run("Mempools", testMempoolsFind)
 	t.Run("MempoolBins", testMempoolBinsFind)
@@ -115,8 +136,11 @@ func TestFind(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsFind)
 	t.Run("NodeVersions", testNodeVersionsFind)
 	t.Run("Propagations", testPropagationsFind)
+	t.Run("Reddits", testRedditsFind)
+	t.Run("Twitters", testTwittersFind)
 	t.Run("Votes", testVotesFind)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsFind)
+	t.Run("Youtubes", testYoutubesFind)
 }
 
 func TestBind(t *testing.T) {
@@ -124,6 +148,7 @@ func TestBind(t *testing.T) {
 	t.Run("BlockBins", testBlockBinsBind)
 	t.Run("Exchanges", testExchangesBind)
 	t.Run("ExchangeTicks", testExchangeTicksBind)
+	t.Run("Githubs", testGithubsBind)
 	t.Run("Heartbeats", testHeartbeatsBind)
 	t.Run("Mempools", testMempoolsBind)
 	t.Run("MempoolBins", testMempoolBinsBind)
@@ -133,8 +158,11 @@ func TestBind(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsBind)
 	t.Run("NodeVersions", testNodeVersionsBind)
 	t.Run("Propagations", testPropagationsBind)
+	t.Run("Reddits", testRedditsBind)
+	t.Run("Twitters", testTwittersBind)
 	t.Run("Votes", testVotesBind)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsBind)
+	t.Run("Youtubes", testYoutubesBind)
 }
 
 func TestOne(t *testing.T) {
@@ -142,6 +170,7 @@ func TestOne(t *testing.T) {
 	t.Run("BlockBins", testBlockBinsOne)
 	t.Run("Exchanges", testExchangesOne)
 	t.Run("ExchangeTicks", testExchangeTicksOne)
+	t.Run("Githubs", testGithubsOne)
 	t.Run("Heartbeats", testHeartbeatsOne)
 	t.Run("Mempools", testMempoolsOne)
 	t.Run("MempoolBins", testMempoolBinsOne)
@@ -151,8 +180,11 @@ func TestOne(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsOne)
 	t.Run("NodeVersions", testNodeVersionsOne)
 	t.Run("Propagations", testPropagationsOne)
+	t.Run("Reddits", testRedditsOne)
+	t.Run("Twitters", testTwittersOne)
 	t.Run("Votes", testVotesOne)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsOne)
+	t.Run("Youtubes", testYoutubesOne)
 }
 
 func TestAll(t *testing.T) {
@@ -160,6 +192,7 @@ func TestAll(t *testing.T) {
 	t.Run("BlockBins", testBlockBinsAll)
 	t.Run("Exchanges", testExchangesAll)
 	t.Run("ExchangeTicks", testExchangeTicksAll)
+	t.Run("Githubs", testGithubsAll)
 	t.Run("Heartbeats", testHeartbeatsAll)
 	t.Run("Mempools", testMempoolsAll)
 	t.Run("MempoolBins", testMempoolBinsAll)
@@ -169,8 +202,11 @@ func TestAll(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsAll)
 	t.Run("NodeVersions", testNodeVersionsAll)
 	t.Run("Propagations", testPropagationsAll)
+	t.Run("Reddits", testRedditsAll)
+	t.Run("Twitters", testTwittersAll)
 	t.Run("Votes", testVotesAll)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsAll)
+	t.Run("Youtubes", testYoutubesAll)
 }
 
 func TestCount(t *testing.T) {
@@ -178,6 +214,7 @@ func TestCount(t *testing.T) {
 	t.Run("BlockBins", testBlockBinsCount)
 	t.Run("Exchanges", testExchangesCount)
 	t.Run("ExchangeTicks", testExchangeTicksCount)
+	t.Run("Githubs", testGithubsCount)
 	t.Run("Heartbeats", testHeartbeatsCount)
 	t.Run("Mempools", testMempoolsCount)
 	t.Run("MempoolBins", testMempoolBinsCount)
@@ -187,8 +224,11 @@ func TestCount(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsCount)
 	t.Run("NodeVersions", testNodeVersionsCount)
 	t.Run("Propagations", testPropagationsCount)
+	t.Run("Reddits", testRedditsCount)
+	t.Run("Twitters", testTwittersCount)
 	t.Run("Votes", testVotesCount)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsCount)
+	t.Run("Youtubes", testYoutubesCount)
 }
 
 func TestInsert(t *testing.T) {
@@ -200,6 +240,8 @@ func TestInsert(t *testing.T) {
 	t.Run("Exchanges", testExchangesInsertWhitelist)
 	t.Run("ExchangeTicks", testExchangeTicksInsert)
 	t.Run("ExchangeTicks", testExchangeTicksInsertWhitelist)
+	t.Run("Githubs", testGithubsInsert)
+	t.Run("Githubs", testGithubsInsertWhitelist)
 	t.Run("Heartbeats", testHeartbeatsInsert)
 	t.Run("Heartbeats", testHeartbeatsInsertWhitelist)
 	t.Run("Mempools", testMempoolsInsert)
@@ -218,10 +260,16 @@ func TestInsert(t *testing.T) {
 	t.Run("NodeVersions", testNodeVersionsInsertWhitelist)
 	t.Run("Propagations", testPropagationsInsert)
 	t.Run("Propagations", testPropagationsInsertWhitelist)
+	t.Run("Reddits", testRedditsInsert)
+	t.Run("Reddits", testRedditsInsertWhitelist)
+	t.Run("Twitters", testTwittersInsert)
+	t.Run("Twitters", testTwittersInsertWhitelist)
 	t.Run("Votes", testVotesInsert)
 	t.Run("Votes", testVotesInsertWhitelist)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsInsert)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsInsertWhitelist)
+	t.Run("Youtubes", testYoutubesInsert)
+	t.Run("Youtubes", testYoutubesInsertWhitelist)
 }
 
 // TestToOne tests cannot be run in parallel
@@ -281,6 +329,7 @@ func TestReload(t *testing.T) {
 	t.Run("BlockBins", testBlockBinsReload)
 	t.Run("Exchanges", testExchangesReload)
 	t.Run("ExchangeTicks", testExchangeTicksReload)
+	t.Run("Githubs", testGithubsReload)
 	t.Run("Heartbeats", testHeartbeatsReload)
 	t.Run("Mempools", testMempoolsReload)
 	t.Run("MempoolBins", testMempoolBinsReload)
@@ -290,8 +339,11 @@ func TestReload(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsReload)
 	t.Run("NodeVersions", testNodeVersionsReload)
 	t.Run("Propagations", testPropagationsReload)
+	t.Run("Reddits", testRedditsReload)
+	t.Run("Twitters", testTwittersReload)
 	t.Run("Votes", testVotesReload)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsReload)
+	t.Run("Youtubes", testYoutubesReload)
 }
 
 func TestReloadAll(t *testing.T) {
@@ -299,6 +351,7 @@ func TestReloadAll(t *testing.T) {
 	t.Run("BlockBins", testBlockBinsReloadAll)
 	t.Run("Exchanges", testExchangesReloadAll)
 	t.Run("ExchangeTicks", testExchangeTicksReloadAll)
+	t.Run("Githubs", testGithubsReloadAll)
 	t.Run("Heartbeats", testHeartbeatsReloadAll)
 	t.Run("Mempools", testMempoolsReloadAll)
 	t.Run("MempoolBins", testMempoolBinsReloadAll)
@@ -308,8 +361,11 @@ func TestReloadAll(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsReloadAll)
 	t.Run("NodeVersions", testNodeVersionsReloadAll)
 	t.Run("Propagations", testPropagationsReloadAll)
+	t.Run("Reddits", testRedditsReloadAll)
+	t.Run("Twitters", testTwittersReloadAll)
 	t.Run("Votes", testVotesReloadAll)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsReloadAll)
+	t.Run("Youtubes", testYoutubesReloadAll)
 }
 
 func TestSelect(t *testing.T) {
@@ -317,6 +373,7 @@ func TestSelect(t *testing.T) {
 	t.Run("BlockBins", testBlockBinsSelect)
 	t.Run("Exchanges", testExchangesSelect)
 	t.Run("ExchangeTicks", testExchangeTicksSelect)
+	t.Run("Githubs", testGithubsSelect)
 	t.Run("Heartbeats", testHeartbeatsSelect)
 	t.Run("Mempools", testMempoolsSelect)
 	t.Run("MempoolBins", testMempoolBinsSelect)
@@ -326,8 +383,11 @@ func TestSelect(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsSelect)
 	t.Run("NodeVersions", testNodeVersionsSelect)
 	t.Run("Propagations", testPropagationsSelect)
+	t.Run("Reddits", testRedditsSelect)
+	t.Run("Twitters", testTwittersSelect)
 	t.Run("Votes", testVotesSelect)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsSelect)
+	t.Run("Youtubes", testYoutubesSelect)
 }
 
 func TestUpdate(t *testing.T) {
@@ -335,6 +395,7 @@ func TestUpdate(t *testing.T) {
 	t.Run("BlockBins", testBlockBinsUpdate)
 	t.Run("Exchanges", testExchangesUpdate)
 	t.Run("ExchangeTicks", testExchangeTicksUpdate)
+	t.Run("Githubs", testGithubsUpdate)
 	t.Run("Heartbeats", testHeartbeatsUpdate)
 	t.Run("Mempools", testMempoolsUpdate)
 	t.Run("MempoolBins", testMempoolBinsUpdate)
@@ -344,8 +405,11 @@ func TestUpdate(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsUpdate)
 	t.Run("NodeVersions", testNodeVersionsUpdate)
 	t.Run("Propagations", testPropagationsUpdate)
+	t.Run("Reddits", testRedditsUpdate)
+	t.Run("Twitters", testTwittersUpdate)
 	t.Run("Votes", testVotesUpdate)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsUpdate)
+	t.Run("Youtubes", testYoutubesUpdate)
 }
 
 func TestSliceUpdateAll(t *testing.T) {
@@ -353,6 +417,7 @@ func TestSliceUpdateAll(t *testing.T) {
 	t.Run("BlockBins", testBlockBinsSliceUpdateAll)
 	t.Run("Exchanges", testExchangesSliceUpdateAll)
 	t.Run("ExchangeTicks", testExchangeTicksSliceUpdateAll)
+	t.Run("Githubs", testGithubsSliceUpdateAll)
 	t.Run("Heartbeats", testHeartbeatsSliceUpdateAll)
 	t.Run("Mempools", testMempoolsSliceUpdateAll)
 	t.Run("MempoolBins", testMempoolBinsSliceUpdateAll)
@@ -362,6 +427,9 @@ func TestSliceUpdateAll(t *testing.T) {
 	t.Run("NodeLocations", testNodeLocationsSliceUpdateAll)
 	t.Run("NodeVersions", testNodeVersionsSliceUpdateAll)
 	t.Run("Propagations", testPropagationsSliceUpdateAll)
+	t.Run("Reddits", testRedditsSliceUpdateAll)
+	t.Run("Twitters", testTwittersSliceUpdateAll)
 	t.Run("Votes", testVotesSliceUpdateAll)
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsSliceUpdateAll)
+	t.Run("Youtubes", testYoutubesSliceUpdateAll)
 }

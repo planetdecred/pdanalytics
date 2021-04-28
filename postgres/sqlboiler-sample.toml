@@ -20,5 +20,9 @@
         "vote_receive_time_deviation",
         "proposal",
         "exchange",
-        "exchange_tick"
+        "exchange_tick",
+        "reddit",
+        "twitter",
+        "github",
+        "youtube"
     ]

@@ -8,6 +8,7 @@ import (
 
 	"github.com/decred/dcrdata/exchanges/v2"
 	"github.com/planetdecred/pdanalytics/attackcost"
+	"github.com/planetdecred/pdanalytics/commstats"
 	"github.com/planetdecred/pdanalytics/dcrd"
 	exchangesModule "github.com/planetdecred/pdanalytics/exchanges"
 	"github.com/planetdecred/pdanalytics/gov/politeia"
@@ -162,11 +163,22 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 		if err != nil {
 			return err
 		}
-		if err := exchangesModule.Activate(ctx, strings.Split(cfg.DisabledExchanges, ","), db, server, 
+		if err := exchangesModule.Activate(ctx, strings.Split(cfg.DisabledExchanges, ","), db, server,
 			cfg.EnableExchange, cfg.EnableExchangeHttp); err != nil {
 			return fmt.Errorf("Failed to ectivate the exchanges modules, %s", err.Error())
 		}
 		log.Info("Exchange module enabled")
+	}
+
+	if cfg.CommunityStat || cfg.CommunityStatHttp {
+		db, err := dbInstance()
+		if err != nil {
+			return err
+		}
+		if err := commstats.Activate(ctx, db, server, &cfg.CommunityStatOptions); err != nil {
+			return fmt.Errorf("Failed to ectivate the exchanges modules, %s", err.Error())
+		}
+		log.Info("Community stat module enabled")
 	}
 
 	_, err = homepage.New(server, homepage.Mods{

@@ -16,6 +16,7 @@ import (
 	"github.com/decred/dcrdata/v5/netparams"
 	"github.com/decred/slog"
 	flags "github.com/jessevdk/go-flags"
+	"github.com/planetdecred/pdanalytics/commstats"
 	"github.com/planetdecred/pdanalytics/netsnapshot"
 	"github.com/planetdecred/pdanalytics/version"
 )
@@ -72,12 +73,23 @@ var (
 	defaultSeederPort        = 9108
 	maxPeerConnectionFailure = 3
 
-	// giv
+	// gov
 	defaultAgendasDBFileName  = "agendas.db"
 	defaultProposalsFileName  = "proposals.db"
 	defaultPoliteiaAPIURl     = "https://proposals.decred.org"
 	defaultPiPropoalRepoOwner = "decred-proposals"
 	defaultPiProposalRepo     = "mainnet"
+
+	// community
+	defaultRedditInterval      = 60
+	defaultTwitterStatInterval = 60 * 24
+	defaultGithubStatInterval  = 60 * 24
+	defaultYoutubeInterval     = 60 * 24
+	defaultSubreddits          = []string{"decred"}
+	defaultTwitterHandles      = []string{"decredproject"}
+	defaultGithubRepositories  = []string{"decred/dcrd", "decred/dcrdata", "decred/dcrwallet", "decred/politeia", "decred/decrediton"}
+	defaultYoutubeChannelNames = []string{"Decred"}
+	defaultYoutubeChannelId    = []string{"UCJ2bYDaPYHpSmJPh_M5dNSg"}
 )
 
 type config struct {
@@ -161,6 +173,7 @@ type config struct {
 	SyncDatabases []string `long:"syncdatabase" description:"Database with external block propagation entry for comparison. Must comatain block and vote tables"`
 
 	netsnapshot.NetworkSnapshotOptions
+	commstats.CommunityStatOptions
 }
 
 func defaultConfig() config {
@@ -212,6 +225,18 @@ func defaultConfig() config {
 	cfg.Seeder = defaultSeeder
 	cfg.SeederPort = uint16(defaultSeederPort)
 	cfg.MaxPeerConnectionFailure = maxPeerConnectionFailure
+
+	cfg.CommunityStat = true
+	cfg.CommunityStatHttp = true
+	cfg.RedditStatInterval = defaultRedditInterval
+	cfg.Subreddit = defaultSubreddits
+	cfg.TwitterStatInterval = defaultTwitterStatInterval
+	cfg.TwitterHandles = defaultTwitterHandles
+	cfg.GithubStatInterval = defaultGithubStatInterval
+	cfg.GithubRepositories = defaultGithubRepositories
+	cfg.YoutubeStatInterval = defaultYoutubeInterval
+	cfg.YoutubeChannelName = defaultYoutubeChannelNames
+	cfg.YoutubeChannelId = defaultYoutubeChannelId
 
 	return cfg
 }

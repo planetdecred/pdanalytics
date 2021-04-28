@@ -8,6 +8,7 @@ var TableNames = struct {
 	BlockBin                 string
 	Exchange                 string
 	ExchangeTick             string
+	Github                   string
 	Heartbeat                string
 	Mempool                  string
 	MempoolBin               string
@@ -17,13 +18,17 @@ var TableNames = struct {
 	NodeLocation             string
 	NodeVersion              string
 	Propagation              string
+	Reddit                   string
+	Twitter                  string
 	Vote                     string
 	VoteReceiveTimeDeviation string
+	Youtube                  string
 }{
 	Block:                    "block",
 	BlockBin:                 "block_bin",
 	Exchange:                 "exchange",
 	ExchangeTick:             "exchange_tick",
+	Github:                   "github",
 	Heartbeat:                "heartbeat",
 	Mempool:                  "mempool",
 	MempoolBin:               "mempool_bin",
@@ -33,6 +38,9 @@ var TableNames = struct {
 	NodeLocation:             "node_location",
 	NodeVersion:              "node_version",
 	Propagation:              "propagation",
+	Reddit:                   "reddit",
+	Twitter:                  "twitter",
 	Vote:                     "vote",
 	VoteReceiveTimeDeviation: "vote_receive_time_deviation",
+	Youtube:                  "youtube",
 }
