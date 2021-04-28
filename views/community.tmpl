@@ -10,7 +10,7 @@
 <div class="content"  data-controller="commstat">
     <div class="container-fluid">
         <div class="control-wrapper">
-            <div class="d-flex flex-row bottom-ctl">
+            <div class="d-flex flex-row bottom-ctl" style="overflow: auto;">
                 <div class="chart-control-wrapper  ml-auto mr-3 my-2" data-target="nodes.dataTypeSelector">
                     <div class="chart-control-label">View</div>
                     <div class="chart-control" data-target="commstat.viewOptionControl"
@@ -164,19 +164,22 @@
             </div>
         </div>
 
-        <div class="inner-content row {{ if eq .Data.viewOption "chart" }}d-none{{ end }}" data-target="commstat.tableWrapper">
-            <div class="col-md-12">
+        <div style="max-width: fit-content; margin: 0 auto;"
+            class="inner-content row {{ if eq .Data.viewOption "chart" }}d-none{{ end }}"
+            data-target="commstat.tableWrapper">
+            <div class="col-md-24">
                 <div class="">
                     <div class="table-details">
-                        <h3>Community</h3>
-                        <div class="paginate">
+                        <h3 class="mr-5">Community</h3>
+                        <div class="paginate float-right">
                             <div data-target="commstat.pageSizeWrapper"
                                 class="control-div p-0 ml-1 {{ if eq .Data.viewOption "chart" }}d-none{{ end }}">
                                 <div class=" mb-2 float-md-right">
 
                                     <div class="control-label">Page Size:</div>
                                     <select data-target="commstat.pageSize"
-                                            data-action="change->commstat#pageSizeChanged" class="form-control">
+                                            data-action="change->commstat#pageSizeChanged" 
+                                            class="form-control" style="width: 70px;">
                                         {{$selectedNum := .Data.selectedNum}}
                                         {{ range $index, $filter := .Data.pageSizeSelector}}
                                             <option value="{{$index}}" {{ if eq $index $selectedNum}} selected {{ end }}>{{$filter}}</option>
@@ -203,7 +206,7 @@
                             </div>
                         </div>
                     </div>
-                    <table class="table mx-auto">
+                    <table class="table mx-auto" style="min-width: 650px;">
                         <thead>
                         <tr>
                             <th data-target="commstat.tableCol1" style="width: 110px;">Date</th>

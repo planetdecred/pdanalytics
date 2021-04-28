@@ -12,12 +12,6 @@ import (
 	"github.com/planetdecred/pdanalytics/app/helpers"
 )
 
-var repositories []string
-
-func Repositories() []string {
-	return repositories
-}
-
 func (c *Collector) startGithubCollector(ctx context.Context) {
 	var lastCollectionDate time.Time
 	err := c.dataStore.LastEntry(ctx, "github", &lastCollectionDate)

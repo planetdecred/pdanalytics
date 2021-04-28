@@ -62,13 +62,6 @@ func (c *Collector) Run(ctx context.Context) {
 	go c.startRedditCollector(ctx)
 }
 
-func SetAccounts(options CommunityStatOptions) {
-	subreddits = options.Subreddit
-	twitterHandles = options.TwitterHandles
-	repositories = options.GithubRepositories
-	youtubeChannels = options.YoutubeChannelName
-}
-
 func (c *Collector) setupServer() error {
 	c.server.AddMenuItem(web.MenuItem{
 		Href:      "/community",

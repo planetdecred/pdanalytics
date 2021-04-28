@@ -17,12 +17,6 @@ const (
 	twitterRequestURL = "https://cdn.syndication.twimg.com/widgets/followbutton/info.json?screen_names=%s"
 )
 
-var twitterHandles []string
-
-func TwitterHandles() []string {
-	return twitterHandles
-}
-
 func (c *Collector) startTwitterCollector(ctx context.Context) {
 	var lastCollectionDate time.Time
 	err := c.dataStore.LastEntry(ctx, "twitter", &lastCollectionDate)

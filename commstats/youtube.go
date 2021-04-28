@@ -14,12 +14,6 @@ import (
 	"github.com/planetdecred/pdanalytics/app/helpers"
 )
 
-var youtubeChannels []string
-
-func YoutubeChannels() []string {
-	return youtubeChannels
-}
-
 func (c *Collector) startYoutubeCollector(ctx context.Context) {
 	if c.options.YoutubeDataApiKey == "" {
 		log.Error("youtubedataapikey is required for the youtube stat collector to work")

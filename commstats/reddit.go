@@ -16,12 +16,6 @@ const (
 	redditRequestURL = "https://www.reddit.com/r/%s/about.json"
 )
 
-var subreddits []string
-
-func Subreddits() []string {
-	return subreddits
-}
-
 func (c *Collector) startRedditCollector(ctx context.Context) {
 	var lastCollectionDate time.Time
 	err := c.dataStore.LastEntry(ctx, "reddit", &lastCollectionDate)

@@ -23,7 +23,7 @@ var (
 )
 
 // /community
-func (s *Collector) community(w http.ResponseWriter, r *http.Request) {
+func (c *Collector) community(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	pageStr := r.FormValue("page")
 	viewOption := r.FormValue("view-option")
@@ -48,20 +48,20 @@ func (s *Collector) community(w http.ResponseWriter, r *http.Request) {
 		platform = commStatPlatforms[0]
 	}
 
-	if subreddit == "" && len(Subreddits()) > 0 {
-		subreddit = Subreddits()[0]
+	if subreddit == "" && len(c.options.Subreddit) > 0 {
+		subreddit = c.options.Subreddit[0]
 	}
 
-	if twitterHandle == "" && len(TwitterHandles()) > 0 {
-		twitterHandle = TwitterHandles()[0]
+	if twitterHandle == "" && len(c.options.TwitterHandles) > 0 {
+		twitterHandle = c.options.TwitterHandles[0]
 	}
 
-	if repository == "" && len(Repositories()) > 0 {
-		repository = Repositories()[0]
+	if repository == "" && len(c.options.GithubRepositories) > 0 {
+		repository = c.options.GithubRepositories[0]
 	}
 
-	if channel == "" && len(YoutubeChannels()) > 0 {
-		channel = YoutubeChannels()[0]
+	if channel == "" && len(c.options.YoutubeChannelName) > 0 {
+		channel = c.options.YoutubeChannelName[0]
 	}
 
 	selectedNum, _ := strconv.Atoi(selectedNumStr)
@@ -83,13 +83,13 @@ func (s *Collector) community(w http.ResponseWriter, r *http.Request) {
 		"viewOption":       viewOption,
 		"platforms":        commStatPlatforms,
 		"platform":         platform,
-		"subreddits":       Subreddits(),
+		"subreddits":       c.options.Subreddit,
 		"subreddit":        subreddit,
-		"twitterHandles":   TwitterHandles(),
+		"twitterHandles":   c.options.TwitterHandles,
 		"twitterHandle":    twitterHandle,
-		"repositories":     Repositories(),
+		"repositories":     c.options.GithubRepositories,
 		"repository":       repository,
-		"channels":         YoutubeChannels(),
+		"channels":         c.options.YoutubeChannelName,
 		"channel":          channel,
 		"dataType":         dataType,
 		"currentPage":      page,
@@ -99,12 +99,12 @@ func (s *Collector) community(w http.ResponseWriter, r *http.Request) {
 		"nextPage":         nextPage,
 	}
 
-	str, err := s.server.Templates.ExecTemplateToString("community", struct {
+	str, err := c.server.Templates.ExecTemplateToString("community", struct {
 		*web.CommonPageData
 		BreadcrumbItems []web.BreadcrumbItem
 		Data            map[string]interface{}
 	}{
-		CommonPageData: s.server.CommonData(r),
+		CommonPageData: c.server.CommonData(r),
 		BreadcrumbItems: []web.BreadcrumbItem{
 			{
 				HyperText: "Historic exchange rate data",
@@ -116,7 +116,7 @@ func (s *Collector) community(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Errorf("Template execute failure: %v", err)
-		s.server.StatusPage(w, r, web.DefaultErrorCode, web.DefaultErrorMessage, err.Error(), web.ExpStatusError)
+		c.server.StatusPage(w, r, web.DefaultErrorCode, web.DefaultErrorMessage, err.Error(), web.ExpStatusError)
 		return
 	}
 

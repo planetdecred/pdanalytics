@@ -75,7 +75,6 @@ type DataStore interface {
 	CountGithubStat(ctx context.Context, repository string) (int64, error)
 	GithubStat(ctx context.Context, repository string, offset int, limit int) ([]Github, error)
 	CommunityChart(ctx context.Context, platform string, dataType string, filters map[string]string) ([]ChartData, error)
-
 }
 
 type Collector struct {
