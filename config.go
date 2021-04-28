@@ -66,6 +66,7 @@ var (
 	defaultOnionAddress = ""
 
 	defaultMempoolInterval = 60.0
+	defaultPowInterval     = 300
 
 	// network snapshot
 	defaultSnapshotInterval  = 720
@@ -163,14 +164,19 @@ type config struct {
 	EnableAgendasHttp             bool `long:"agendashttp" description:"Enable/Disable the agendas http module from running"`
 	EnableExchange                bool `long:"exchange" description:"Enable/Disable the exchange historic data collector from running"`
 	EnableExchangeHttp            bool `long:"exchange-http" description:"Enable/Disable the exchange historic http endpoint from running"`
-
-	// Exchange
+	EnablePow                     bool `long:"pow" description:"Enable/Disable PoW module from running"`
+	EnablePowHttp                 bool `long:"powhttp" description:"Enable/Disable PoW http endpoint from running"`
 
 	// Mempool
 	MempoolInterval float64 `long:"mempoolinterval" description:"The duration of time between mempool collection"`
 
 	// sync
 	SyncDatabases []string `long:"syncdatabase" description:"Database with external block propagation entry for comparison. Must comatain block and vote tables"`
+
+	// pow
+	// PoW collector
+	DisabledPows []string `long:"disabledpow" description:"Disable data collection for this Pow"`
+	PowInterval  int64    `long:"powinterval" description:"Collection interval for Pow"`
 
 	netsnapshot.NetworkSnapshotOptions
 	commstats.CommunityStatOptions
@@ -216,8 +222,11 @@ func defaultConfig() config {
 		EnableAgendasHttp:             true,
 		EnableExchange:                true,
 		EnableExchangeHttp:            true,
+		EnablePow:                     true,
+		EnablePowHttp:                 true,
 
 		MempoolInterval: defaultMempoolInterval,
+		PowInterval:     int64(defaultPowInterval),
 	}
 	cfg.EnableNetworkSnapshot = true
 	cfg.EnableNetworkSnapshotHTTP = true

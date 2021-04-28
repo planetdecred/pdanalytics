@@ -164,6 +164,8 @@ var (
 		"twitter":                     createTwitterTable,
 		"github":                      createGithubTable,
 		"youtube":                     createYoutubeTable,
+		"pow_data": createPowDataTable,
+		"pow_bin": createPowBInTable,
 	}
 
 	tableOrder = []string{
@@ -188,6 +190,8 @@ var (
 		"twitter",
 		"github",
 		"youtube",
+		"pow_data",
+		"pow_bin",
 	}
 
 	// createIndexScripts is a map of table name to a collection of index on the table

@@ -32,6 +32,10 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("NodeVersions", testNodeVersionsUpsert)
 
+	t.Run("PowBins", testPowBinsUpsert)
+
+	t.Run("PowData", testPowDataUpsert)
+
 	t.Run("Propagations", testPropagationsUpsert)
 
 	t.Run("Reddits", testRedditsUpsert)

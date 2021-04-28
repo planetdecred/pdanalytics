@@ -17,6 +17,8 @@ var TableNames = struct {
 	Node                     string
 	NodeLocation             string
 	NodeVersion              string
+	PowBin                   string
+	PowData                  string
 	Propagation              string
 	Reddit                   string
 	Twitter                  string
@@ -37,6 +39,8 @@ var TableNames = struct {
 	Node:                     "node",
 	NodeLocation:             "node_location",
 	NodeVersion:              "node_version",
+	PowBin:                   "pow_bin",
+	PowData:                  "pow_data",
 	Propagation:              "propagation",
 	Reddit:                   "reddit",
 	Twitter:                  "twitter",

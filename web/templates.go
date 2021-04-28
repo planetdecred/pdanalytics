@@ -342,6 +342,14 @@ func MakeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 			}
 			return false
 		},
+		"strListContains": func(stringList []string, needle string) bool {
+			for _, value := range stringList {
+				if value == needle {
+					return true
+				}
+			}
+			return false
+		},
 		"PKAddr2PKHAddr": func(address string) (p2pkh string) {
 			// Attempt to decode the pay-to-pubkey address.
 			var addr dcrutil.Address

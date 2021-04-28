@@ -17,6 +17,7 @@ import (
 	"github.com/planetdecred/pdanalytics/netsnapshot"
 	"github.com/planetdecred/pdanalytics/parameters"
 	"github.com/planetdecred/pdanalytics/postgres"
+	"github.com/planetdecred/pdanalytics/pow"
 	"github.com/planetdecred/pdanalytics/propagation"
 	"github.com/planetdecred/pdanalytics/stakingreward"
 	"github.com/planetdecred/pdanalytics/web"
@@ -179,6 +180,17 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 			return fmt.Errorf("Failed to ectivate the exchanges modules, %s", err.Error())
 		}
 		log.Info("Community stat module enabled")
+	}
+
+	if cfg.EnablePow || cfg.EnablePowHttp {
+		db, err := dbInstance()
+		if err != nil {
+			return err
+		}
+		if err := pow.Activate(ctx, cfg.DisabledPows, cfg.PowInterval, db, server, cfg.EnablePow, cfg.EnablePowHttp); err != nil {
+			return fmt.Errorf("Failed to ectivate the pow modules, %s", err.Error())
+		}
+		log.Info("PoW module enabled")
 	}
 
 	_, err = homepage.New(server, homepage.Mods{

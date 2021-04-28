@@ -17,6 +17,7 @@ import (
 	"github.com/planetdecred/pdanalytics/netsnapshot"
 	"github.com/planetdecred/pdanalytics/parameters"
 	"github.com/planetdecred/pdanalytics/postgres"
+	"github.com/planetdecred/pdanalytics/pow"
 	"github.com/planetdecred/pdanalytics/propagation"
 	"github.com/planetdecred/pdanalytics/stakingreward"
 	"github.com/planetdecred/pdanalytics/web"
@@ -64,6 +65,7 @@ var (
 	exchangeLog      = backendLog.Logger("EXCH")
 	webLogger        = backendLog.Logger("WEBL")
 	commLog          = backendLog.Logger("COMM")
+	powLog      = backendLog.Logger("POWL")
 )
 
 // Initialize package-global logger variables.
@@ -81,6 +83,7 @@ func init() {
 	exchanges.UseLogger(exchangeLog)
 	web.UseLogger(webLogger)
 	commstats.UseLogger(commLog)
+	pow.UseLogger(powLog)
 }
 
 // subsystemLoggers maps each subsystem identifier to its associated logger.
@@ -98,6 +101,7 @@ var subsystemLoggers = map[string]slog.Logger{
 	"POLI": politeiaLog,
 	"EXCH": exchangeLog,
 	"COMM": commLog,
+	"POWL": powLog,
 }
 
 // initLogRotator initializes the logging rotater to write logs to logFile and

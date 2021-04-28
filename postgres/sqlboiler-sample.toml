@@ -24,5 +24,7 @@
         "reddit",
         "twitter",
         "github",
-        "youtube"
+        "youtube",
+        "pow_data",
+        "pow_bin"
     ]
