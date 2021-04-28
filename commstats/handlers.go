@@ -278,6 +278,9 @@ func (s *Collector) communityChat(w http.ResponseWriter, r *http.Request) {
 	}
 	var dates, records cache.ChartUints
 	for _, record := range data {
+		if record.Record == 0 {
+			continue
+		}
 		dates = append(dates, uint64(record.Date.Unix()))
 		records = append(records, uint64(record.Record))
 	}
