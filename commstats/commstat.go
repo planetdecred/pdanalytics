@@ -70,5 +70,22 @@ func SetAccounts(options CommunityStatOptions) {
 }
 
 func (c *Collector) setupServer() error {
+	c.server.AddMenuItem(web.MenuItem{
+		Href:      "/community",
+		HyperText: "Community",
+		Info:      "Historical data points for twitter, reddit, github, etc",
+		Attributes: map[string]string{
+			"class": "menu-item",
+			"title": "Historical data points for twitter, reddit, github, etc",
+		},
+	})
+
+	if err := c.server.Templates.AddTemplate("community"); err != nil {
+		return err
+	}
+
+	c.server.AddRoute("/community", web.GET, c.community)
+	c.server.AddRoute("/getCommunityStat", web.GET, c.getCommunityStat)
+	c.server.AddRoute("/communitychat", web.GET, c.communityChat)
 	return nil
 }

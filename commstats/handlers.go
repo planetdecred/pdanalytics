@@ -153,7 +153,7 @@ func (s *Collector) getCommunityStat(w http.ResponseWriter, r *http.Request) {
 	switch plarform {
 	case redditPlatform:
 		subreddit := r.FormValue("subreddit")
-		stats, err = s.db.RedditStats(r.Context(), subreddit, offset, pageSize)
+		stats, err = s.dataStore.RedditStats(r.Context(), subreddit, offset, pageSize)
 		if err != nil {
 			web.RenderErrorfJSON(w, "cannot fetch Reddit stat, %s", err.Error())
 			return
@@ -198,9 +198,9 @@ func (s *Collector) getCommunityStat(w http.ResponseWriter, r *http.Request) {
 		columnHeaders = append(columnHeaders, "Date", "Stars", "Forks")
 	case youtubePlatform:
 		channel := r.FormValue("channel")
-		stats, err = s.db.YoutubeStat(r.Context(), channel, offset, pageSize)
+		stats, err = s.dataStore.YoutubeStat(r.Context(), channel, offset, pageSize)
 		if err != nil {
-			web.RenderErrorfJSON(w, fmt.Sprintf("cannot fetch Youtbue stat, %s", err.Error())
+			web.RenderErrorfJSON(w, fmt.Sprintf("cannot fetch Youtbue stat, %s", err.Error()))
 			return
 		}
 
@@ -228,10 +228,10 @@ func (s *Collector) getCommunityStat(w http.ResponseWriter, r *http.Request) {
 }
 
 // /communitychat
-func (s *Collector) communityChat(resp http.ResponseWriter, req *http.Request) {
-	req.ParseForm()
-	platform := req.FormValue("platform")
-	dataType := req.FormValue("data-type")
+func (s *Collector) communityChat(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	platform := r.FormValue("platform")
+	dataType := r.FormValue("data-type")
 
 	filters := map[string]string{}
 	yLabel := ""
@@ -243,7 +243,7 @@ func (s *Collector) communityChat(resp http.ResponseWriter, req *http.Request) {
 			yLabel = "Stars"
 		}
 		platform = models.TableNames.Github
-		filters[models.GithubColumns.Repository] = fmt.Sprintf("'%s'", req.FormValue("repository"))
+		filters[models.GithubColumns.Repository] = fmt.Sprintf("'%s'", r.FormValue("repository"))
 	case twitterPlatform:
 		yLabel = "Followers"
 		dataType = models.TwitterColumns.Followers
@@ -255,7 +255,7 @@ func (s *Collector) communityChat(resp http.ResponseWriter, req *http.Request) {
 			yLabel = "Subscribers"
 		}
 		platform = models.TableNames.Reddit
-		filters[models.RedditColumns.Subreddit] = fmt.Sprintf("'%s'", req.FormValue("subreddit"))
+		filters[models.RedditColumns.Subreddit] = fmt.Sprintf("'%s'", r.FormValue("subreddit"))
 	case youtubePlatform:
 		platform = models.TableNames.Youtube
 		if dataType == models.YoutubeColumns.ViewCount {
@@ -263,17 +263,17 @@ func (s *Collector) communityChat(resp http.ResponseWriter, req *http.Request) {
 		} else if dataType == models.YoutubeColumns.Subscribers {
 			yLabel = "Subscribers"
 		}
-		filters[models.YoutubeColumns.Channel] = fmt.Sprintf("'%s'", req.FormValue("channel"))
+		filters[models.YoutubeColumns.Channel] = fmt.Sprintf("'%s'", r.FormValue("channel"))
 	}
 
 	if dataType == "" {
-		s.renderErrorJSON("Data type cannot be empty", resp)
+		web.RenderErrorfJSON(w, "Data type cannot be empty")
 		return
 	}
 
-	data, err := s.db.CommunityChart(req.Context(), platform, dataType, filters)
+	data, err := s.dataStore.CommunityChart(r.Context(), platform, dataType, filters)
 	if err != nil {
-		s.renderErrorJSON(fmt.Sprintf("Cannot fetch chart data, %s", err.Error()), resp)
+		web.RenderErrorfJSON(w, "Cannot fetch chart data, %s", err.Error())
 		return
 	}
 	var dates, records cache.ChartUints
@@ -282,9 +282,9 @@ func (s *Collector) communityChat(resp http.ResponseWriter, req *http.Request) {
 		records = append(records, uint64(record.Record))
 	}
 
-	s.renderJSON(map[string]interface{}{
+	web.RenderJSON(w, map[string]interface{}{
 		"x":      dates,
 		"y":      records,
 		"ylabel": yLabel,
-	}, resp)
+	})
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/jrick/logrotate/rotator"
 	"github.com/planetdecred/pdanalytics/attackcost"
 	"github.com/planetdecred/pdanalytics/chart"
+	"github.com/planetdecred/pdanalytics/commstats"
 	"github.com/planetdecred/pdanalytics/exchanges"
 	"github.com/planetdecred/pdanalytics/gov/politeia"
 	"github.com/planetdecred/pdanalytics/homepage"
@@ -62,6 +63,7 @@ var (
 	politeiaLog      = backendLog.Logger("POLI")
 	exchangeLog      = backendLog.Logger("EXCH")
 	webLogger        = backendLog.Logger("WEBL")
+	commLog          = backendLog.Logger("COMM")
 )
 
 // Initialize package-global logger variables.
@@ -78,6 +80,7 @@ func init() {
 	politeia.UseLogger(politeiaLog)
 	exchanges.UseLogger(exchangeLog)
 	web.UseLogger(webLogger)
+	commstats.UseLogger(commLog)
 }
 
 // subsystemLoggers maps each subsystem identifier to its associated logger.
@@ -94,6 +97,7 @@ var subsystemLoggers = map[string]slog.Logger{
 	"PSQL": psqlLog,
 	"POLI": politeiaLog,
 	"EXCH": exchangeLog,
+	"COMM": commLog,
 }
 
 // initLogRotator initializes the logging rotater to write logs to logFile and
