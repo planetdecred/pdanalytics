@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
-	cache "github.com/planetdecred/pdanalytics/chart"
 	"github.com/planetdecred/pdanalytics/app/helpers"
+	cache "github.com/planetdecred/pdanalytics/chart"
 	"github.com/planetdecred/pdanalytics/postgres/models"
 	"github.com/planetdecred/pdanalytics/pow"
 	"github.com/volatiletech/null/v8"
@@ -346,10 +346,11 @@ type powSet struct {
 
 func (pg *PgDb) FetchEncodePowChart(ctx context.Context, dataType,
 	binString string, pools ...string) ([]byte, error) {
+
 	switch binString {
 	case string(cache.DefaultBin):
 		data, err := pg.FetchPowChart(ctx, 0, 0)
-		if err != nil {
+		if err != nil && err != sql.ErrNoRows {
 			return nil, err
 		}
 		switch strings.ToLower(dataType) {
@@ -377,7 +378,7 @@ func (pg *PgDb) FetchEncodePowChart(ctx context.Context, dataType,
 				models.PowBinWhere.Bin.EQ(binString),
 				qm.OrderBy(models.PowBinColumns.Time),
 			).All(ctx, pg.db)
-			if err != nil && err == sql.ErrNoRows {
+			if err != nil && err != sql.ErrNoRows {
 				return nil, err
 			}
 			var deviation cache.ChartNullUints

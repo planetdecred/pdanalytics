@@ -164,8 +164,8 @@ var (
 		"twitter":                     createTwitterTable,
 		"github":                      createGithubTable,
 		"youtube":                     createYoutubeTable,
-		"pow_data": createPowDataTable,
-		"pow_bin": createPowBInTable,
+		"pow_data":                    createPowDataTable,
+		"pow_bin":                     createPowBInTable,
 	}
 
 	tableOrder = []string{

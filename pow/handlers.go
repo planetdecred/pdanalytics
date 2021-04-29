@@ -22,7 +22,7 @@ func (c *Collector) powPage(w http.ResponseWriter, r *http.Request) {
 	str, err := c.server.Templates.ExecTemplateToString("pow", struct {
 		*web.CommonPageData
 		BreadcrumbItems []web.BreadcrumbItem
-		Pow            map[string]interface{}
+		Pow             map[string]interface{}
 	}{
 		CommonPageData: c.server.CommonData(r),
 		BreadcrumbItems: []web.BreadcrumbItem{
@@ -160,8 +160,10 @@ func (c *Collector) fetchPoWData(req *http.Request) (map[string]interface{}, err
 func (c *Collector) chart(w http.ResponseWriter, r *http.Request) {
 	dataType := web.GetChartDataTypeCtx(r)
 	bin := r.URL.Query().Get("bin")
+	extras := r.URL.Query().Get("extras")
+	pools := strings.Split(extras, "|")
 
-	chartData, err := c.store.FetchEncodePowChart(r.Context(), dataType, bin)
+	chartData, err := c.store.FetchEncodePowChart(r.Context(), dataType, bin, pools...)
 	if err != nil {
 		web.RenderErrorfJSON(w, err.Error())
 		log.Warnf(`Error fetching mempool %s chart: %v`, dataType, err)

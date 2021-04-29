@@ -28,7 +28,7 @@ type PowDataStore interface {
 	AddPowData(context.Context, []PowData) error
 	LastPowEntryTime(source string) (time int64)
 	FetchPowDataForSync(ctx context.Context, date int64, skip, take int) ([]PowData, int64, error)
-	UpdateMempoolAggregateData(ctx context.Context) error
+	UpdatePowChart(ctx context.Context) error
 
 	FetchEncodePowChart(ctx context.Context, dataType,
 		binString string, pools ...string) ([]byte, error)
@@ -80,6 +80,9 @@ func Activate(ctx context.Context, disabledPows []string, period int64,
 
 	if dataMode {
 		go func() {
+			if err := c.store.UpdatePowChart(ctx); err != nil {
+				log.Error(err)
+			}
 			c.Run(ctx)
 		}()
 	}
@@ -165,7 +168,7 @@ func (pc *Collector) Collect(ctx context.Context) {
 			}
 		}
 	}
-	if err := pc.store.UpdateMempoolAggregateData(ctx); err != nil {
+	if err := pc.store.UpdatePowChart(ctx); err != nil {
 		log.Error(err)
 	}
 }

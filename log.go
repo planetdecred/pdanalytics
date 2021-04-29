@@ -65,7 +65,7 @@ var (
 	exchangeLog      = backendLog.Logger("EXCH")
 	webLogger        = backendLog.Logger("WEBL")
 	commLog          = backendLog.Logger("COMM")
-	powLog      = backendLog.Logger("POWL")
+	powLog           = backendLog.Logger("POWL")
 )
 
 // Initialize package-global logger variables.
