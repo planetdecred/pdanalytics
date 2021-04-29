@@ -67,6 +67,7 @@ var (
 
 	defaultMempoolInterval = 60.0
 	defaultPowInterval     = 300
+	defaultVSPInterval     = 300
 
 	// network snapshot
 	defaultSnapshotInterval  = 720
@@ -166,6 +167,8 @@ type config struct {
 	EnableExchangeHttp            bool `long:"exchange-http" description:"Enable/Disable the exchange historic http endpoint from running"`
 	EnablePow                     bool `long:"pow" description:"Enable/Disable PoW module from running"`
 	EnablePowHttp                 bool `long:"powhttp" description:"Enable/Disable PoW http endpoint from running"`
+	EnableVSP                     bool `long:"vsp" description:"Enable/Disable VSP module from running"`
+	EnableVSPHttp                 bool `long:"vsphttp" description:"Enable/Disable VSP http endpoint from running"`
 
 	// Mempool
 	MempoolInterval float64 `long:"mempoolinterval" description:"The duration of time between mempool collection"`
@@ -174,9 +177,11 @@ type config struct {
 	SyncDatabases []string `long:"syncdatabase" description:"Database with external block propagation entry for comparison. Must comatain block and vote tables"`
 
 	// pow
-	// PoW collector
 	DisabledPows []string `long:"disabledpow" description:"Disable data collection for this Pow"`
 	PowInterval  int64    `long:"powinterval" description:"Collection interval for Pow"`
+
+	// vsp
+	VSPInterval int64 `long:"vspinterval" description:"Collection interval for pool status collection"`
 
 	netsnapshot.NetworkSnapshotOptions
 	commstats.CommunityStatOptions
@@ -227,6 +232,7 @@ func defaultConfig() config {
 
 		MempoolInterval: defaultMempoolInterval,
 		PowInterval:     int64(defaultPowInterval),
+		VSPInterval:     int64(defaultVSPInterval),
 	}
 	cfg.EnableNetworkSnapshot = true
 	cfg.EnableNetworkSnapshotHTTP = true

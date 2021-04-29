@@ -468,8 +468,8 @@ type vspSet struct {
 	usersActive      map[string]cache.ChartNullUints
 }
 
-func (pg *PgDb) fetchEncodeVspChart(ctx context.Context,
-	dataType, _ string, binString string, vspSources ...string) ([]byte, error) {
+func (pg *PgDb) FetchEncodeVspChart(ctx context.Context,
+	dataType, binString string, vspSources ...string) ([]byte, error) {
 	if binString != string(cache.DefaultBin) {
 		return pg.FetchEncodeBinVspChart(ctx, binString, dataType, vspSources...)
 	}

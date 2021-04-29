@@ -20,6 +20,7 @@ import (
 	"github.com/planetdecred/pdanalytics/pow"
 	"github.com/planetdecred/pdanalytics/propagation"
 	"github.com/planetdecred/pdanalytics/stakingreward"
+	"github.com/planetdecred/pdanalytics/vsp"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
@@ -188,9 +189,20 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 			return err
 		}
 		if err := pow.Activate(ctx, cfg.DisabledPows, cfg.PowInterval, db, server, cfg.EnablePow, cfg.EnablePowHttp); err != nil {
-			return fmt.Errorf("Failed to ectivate the pow modules, %s", err.Error())
+			return fmt.Errorf("Failed to ectivate the PoW modules, %s", err.Error())
 		}
 		log.Info("PoW module enabled")
+	}
+
+	if cfg.EnableVSP || cfg.EnableVSPHttp {
+		db, err := dbInstance()
+		if err != nil {
+			return err
+		}
+		if err := vsp.Activate(ctx, cfg.VSPInterval, db, server, cfg.EnableVSP, cfg.EnableVSPHttp); err != nil {
+			return fmt.Errorf("Failed to ectivate the VSP modules, %s", err.Error())
+		}
+		log.Info("VSP module enabled")
 	}
 
 	_, err = homepage.New(server, homepage.Mods{
