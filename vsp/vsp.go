@@ -154,6 +154,26 @@ func (vsp *Collector) collectAndStore(ctx context.Context) error {
 	return nil
 }
 
-func (vsp *Collector) setupHttp() error {
+
+func (vsp *Collector) setupServer() error {
+	if err := vsp.server.Templates.AddTemplate("vsp"); err != nil {
+		log.Errorf("Unable to create new html template: %v", err)
+		return err
+	}
+
+	vsp.server.AddMenuItem(web.MenuItem{
+		Href:      "/vsp",
+		HyperText: "VSP",
+		Info:      "Voting Service Provider data",
+		Attributes: map[string]string{
+			"class": "menu-item",
+			"title": "Voting Service Provider data",
+		},
+	})
+	
+	vsp.server.AddRoute("/vsp", web.GET, vsp.vspPage)
+	vsp.server.AddRoute("/vsps", web.GET, vsp.getFilteredVspTicks)
+	vsp.server.AddRoute("/api/charts/vsp/{chartDataType}", web.GET, vsp.chart, web.ChartDataTypeCtx)
+
 	return nil
 }

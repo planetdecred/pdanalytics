@@ -65,6 +65,14 @@ type DataStore interface {
 	StoreVSPs(context.Context, Response) (int, []error)
 	LastVspTickEntryTime() (time time.Time)
 	UpdateVspChart(ctx context.Context) error
+
+	VspTickCount(ctx context.Context) (int64, error)
+	FetchVSPs(ctx context.Context) ([]VSPDto, error)
+	FilteredVSPTicks(ctx context.Context, vspName string, offset, limit int) ([]VSPTickDto, int64, error)
+	AllVSPTicks(ctx context.Context, offset, limit int) ([]VSPTickDto, int64, error)
+
+	FetchEncodeVspChart(ctx context.Context,
+		dataType, binString string, vspSources ...string) ([]byte, error)
 }
 
 type Collector struct {
