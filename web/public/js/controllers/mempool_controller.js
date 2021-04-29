@@ -15,6 +15,7 @@ import Zoom from '../helpers/zoom_helper'
 import { animationFrame } from '../helpers/animation_helper'
 
 const Dygraph = require('../vendor/dygraphs.min.js')
+let initialized = false
 
 export default class extends Controller {
   static get targets () {
@@ -29,6 +30,9 @@ export default class extends Controller {
   }
 
   initialize () {
+    if(initialized) {
+      return
+    }
     this.currentPage = parseInt(this.currentPageTarget.getAttribute('data-current-page'))
     if (this.currentPage < 1) {
       this.currentPage = 1

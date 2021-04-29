@@ -15,6 +15,7 @@ import { animationFrame } from '../helpers/animation_helper'
 import TurboQuery from '../helpers/turbolinks_helper'
 
 const Dygraph = require('../vendor/dygraphs.min.js')
+let initialized = false
 
 export default class extends Controller {
   static get targets () {
@@ -29,6 +30,9 @@ export default class extends Controller {
   }
 
   initialize () {
+    if(initialized) {
+      return
+    }
     this.query = new TurboQuery()
     this.settings = TurboQuery.nullTemplate(['chart', 'zoom', 'scale', 'bin', 'axis', 'dataType'])
     this.query.update(this.settings)

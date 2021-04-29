@@ -18,9 +18,10 @@ import {
 import Zoom from '../helpers/zoom_helper'
 import { animationFrame } from '../helpers/animation_helper'
 import TurboQuery from '../helpers/turbolinks_helper'
-import { getDefault } from '../helpers/module_helper'
 
-let Dygraph
+const Dygraph = require('../vendor/dygraphs.min.js')
+
+let initialized = false
 const redditPlatform = 'Reddit'
 const twitterPlatform = 'Twitter'
 const githubPlatform = 'GitHub'
@@ -47,9 +48,9 @@ export default class extends Controller {
   }
 
   async initialize () {
-    Dygraph = await getDefault(
-      import(/* webpackChunkName: "dygraphs" */ '../vendor/dygraphs.min.js')
-    )
+    if(initialized) {
+      return
+    }
 
     this.query = new TurboQuery()
     this.settings = TurboQuery.nullTemplate(['zoom', 'dataType'])
