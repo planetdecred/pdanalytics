@@ -544,7 +544,7 @@ func (pg *PgDb) FetchEncodeVspChart(ctx context.Context,
 	return nil, cache.UnknownChartErr
 }
 
-func (pg *PgDb) FetchEncodeBinVspChart(ctx context.Context, binString, dataType string, 
+func (pg *PgDb) FetchEncodeBinVspChart(ctx context.Context, binString, dataType string,
 	vspSources ...string) ([]byte, error) {
 	var dates cache.ChartUints
 	var dateMap = make(map[int64]bool)

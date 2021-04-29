@@ -171,7 +171,7 @@ func (vsp *Collector) fetchVSPData(req *http.Request) (map[string]interface{}, e
 	return data, nil
 }
 
-// /api/charts/pow/{dataType}
+// /api/charts/vsp/{dataType}
 func (c *Collector) chart(w http.ResponseWriter, r *http.Request) {
 	dataType := web.GetChartDataTypeCtx(r)
 	bin := r.URL.Query().Get("bin")
@@ -181,7 +181,7 @@ func (c *Collector) chart(w http.ResponseWriter, r *http.Request) {
 	chartData, err := c.dataStore.FetchEncodeVspChart(r.Context(), dataType, bin, sources...)
 	if err != nil {
 		web.RenderErrorfJSON(w, err.Error())
-		log.Warnf(`Error fetching mempool %s chart: %v`, dataType, err)
+		log.Warnf(`Error fetching vsp %s chart: %v`, dataType, err)
 		return
 	}
 	web.RenderJSONBytes(w, chartData)
