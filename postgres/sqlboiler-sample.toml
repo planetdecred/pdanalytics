@@ -26,5 +26,8 @@
         "github",
         "youtube",
         "pow_data",
-        "pow_bin"
+        "pow_bin",
+        "vsp",
+		"vsp_tick",
+		"vsp_tick_bin",
     ]

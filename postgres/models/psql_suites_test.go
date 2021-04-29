@@ -46,5 +46,11 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsUpsert)
 
+	t.Run("VSPS", testVSPSUpsert)
+
+	t.Run("VSPTicks", testVSPTicksUpsert)
+
+	t.Run("VSPTickBins", testVSPTickBinsUpsert)
+
 	t.Run("Youtubes", testYoutubesUpsert)
 }

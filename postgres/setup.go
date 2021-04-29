@@ -166,6 +166,9 @@ var (
 		"youtube":                     createYoutubeTable,
 		"pow_data":                    createPowDataTable,
 		"pow_bin":                     createPowBInTable,
+		"vsp":                         createVSPInfoTable,
+		"vsp_tick":                    createVSPTickTable,
+		"vsp_tick_bin":                createVSPTickBinTable,
 	}
 
 	tableOrder = []string{
@@ -192,6 +195,9 @@ var (
 		"youtube",
 		"pow_data",
 		"pow_bin",
+		"vsp",
+		"vsp_tick",
+		"vsp_tick_bin",
 	}
 
 	// createIndexScripts is a map of table name to a collection of index on the table
@@ -204,6 +210,9 @@ var (
 		},
 		"exchange_tick": {
 			createExchangeTickIndex,
+		},
+		"vsp_tick": {
+			createVSPTickIndex,
 		},
 	}
 )

@@ -24,6 +24,9 @@ var TableNames = struct {
 	Twitter                  string
 	Vote                     string
 	VoteReceiveTimeDeviation string
+	VSP                      string
+	VSPTick                  string
+	VSPTickBin               string
 	Youtube                  string
 }{
 	Block:                    "block",
@@ -46,5 +49,8 @@ var TableNames = struct {
 	Twitter:                  "twitter",
 	Vote:                     "vote",
 	VoteReceiveTimeDeviation: "vote_receive_time_deviation",
+	VSP:                      "vsp",
+	VSPTick:                  "vsp_tick",
+	VSPTickBin:               "vsp_tick_bin",
 	Youtube:                  "youtube",
 }

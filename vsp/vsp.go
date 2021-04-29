@@ -42,7 +42,7 @@ func Activate(ctx context.Context, period int64, store DataStore, server *web.Se
 	}
 
 	if httpMode {
-		if err := c.setupHttp(); err != nil {
+		if err := c.setupServer(); err != nil {
 			return err
 		}
 	}
@@ -154,7 +154,6 @@ func (vsp *Collector) collectAndStore(ctx context.Context) error {
 	return nil
 }
 
-
 func (vsp *Collector) setupServer() error {
 	if err := vsp.server.Templates.AddTemplate("vsp"); err != nil {
 		log.Errorf("Unable to create new html template: %v", err)
@@ -170,7 +169,7 @@ func (vsp *Collector) setupServer() error {
 			"title": "Voting Service Provider data",
 		},
 	})
-	
+
 	vsp.server.AddRoute("/vsp", web.GET, vsp.vspPage)
 	vsp.server.AddRoute("/vsps", web.GET, vsp.getFilteredVspTicks)
 	vsp.server.AddRoute("/api/charts/vsp/{chartDataType}", web.GET, vsp.chart, web.ChartDataTypeCtx)
