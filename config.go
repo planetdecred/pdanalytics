@@ -229,6 +229,8 @@ func defaultConfig() config {
 		EnableExchangeHttp:            true,
 		EnablePow:                     true,
 		EnablePowHttp:                 true,
+		EnableVSP:                     true,
+		EnableVSPHttp:                 true,
 
 		MempoolInterval: defaultMempoolInterval,
 		PowInterval:     int64(defaultPowInterval),

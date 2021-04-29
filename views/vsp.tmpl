@@ -1,0 +1,257 @@
+{{ define "vsp" }}
+<!DOCTYPE html>
+<html lang="en">
+{{ template "html-head" "VSP"}}
+
+<body>
+    <div class="body" data-controller="vsp">
+        {{ template "navbar" . }}
+        <div class="content">
+            <div class="container-fluid">
+                <div class="control-wrapper">
+                    <div class="d-flex flex-row bottom-ctl">
+                        <div class="chart-control-wrapper ml-auto mr-3 my-2">
+                            <div class="chart-control-label">View</div>
+                            <div class="chart-control" data-target="vsp.viewOptionControl" data-initial-value="{{ .Data.selectedViewOption }}">
+                                <ul class="nav nav-pills">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" href="javascript:void(0);" data-target="vsp.viewOption"
+                                        data-action="click->vsp#setChart" data-option="chart">Chart</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="javascript:void(0);" data-target="vsp.viewOption"
+                                        data-action="click->vsp#setTable" data-option="table">Table</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mr-auto d-flex my-2">
+                            <div class="chart-control-wrapper p-0 {{ if .Data.chartView }}d-none{{ end }}" data-target="vsp.vspSelectorWrapper">
+                                <div class="chart-control-label">VSP</div>
+                                <div class="chart-control control-div p-0">
+                                    <select data-target="vsp.selectedFilter" data-action="change->vsp#selectedFilterChanged"
+                                        class="form-control" style="width: 278px;">
+                                        {{$selectedFilter := .Data.selectedFilter}}
+                                        <option value="All">All</option>
+                                        {{ range $index, $filter := .Data.allVspData}}
+                                        <option value="{{$filter.Name}}" {{ if eq $filter.Name $selectedFilter}} selected
+                                        {{ end }}>{{$filter.Host}} ({{$filter.Name}})</option>
+                                        {{ end }}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="chart-control-wrapper p-0 d-none mr-3" data-target="vsp.graphTypeWrapper">
+                                <div class="chart-control-label">Data</div>
+                                <div class="chart-control control-div">
+                                    {{ $selectedDataType := .Data.dataType }}
+                                    <select data-target="vsp.dataType" data-action="change->vsp#dataTypeChanged" data-initial-value="{{ $selectedDataType }}"
+                                        class="form-control" style="width: 150px;">
+                                        {{ range $index, $dataType := .Data.allDataTypes}}
+                                        <option value="{{$dataType}}" {{ if eq $dataType $selectedDataType}}selected{{ end }}>{{ stringsReplace $dataType "_" " " }}</option>
+                                        {{ end }}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div data-target="vsp.graphIntervalWrapper" class="control-div p-0 chart-control-wrapper mr-3">
+                                <div class="chart-control-label">Group By</div>
+                                <div class="chart-control">
+                                    <ul class="nav nav-pills">
+                                        <li class="nav-item">
+                                            <a data-target="vsp.interval"
+                                               data-action="click->vsp#setInterval" class="nav-link active"
+                                               href="javascript:void(0);" data-option="day">Day</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a data-target="vsp.interval"
+                                               data-action="click->vsp#setInterval" class="nav-link"
+                                               href="javascript:void(0);" data-option="hour">Hour</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a data-target="vsp.interval"
+                                               data-action="click->vsp#setInterval" class="nav-link"
+                                               href="javascript:void(0);" data-option="default">None</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="chart-control-wrapper mr-2 mb-1 d-none" data-target="vsp.zoomSelector">
+                                <div class="chart-control-label">Zoom</div>
+                                <div class="chart-control">
+                                    <ul class="nav nav-pills">
+                                        <li class="nav-item">
+                                            <a
+                                                    class="nav-link active d-none"
+                                                    href="javascript:void(0);"
+                                                    data-target="vsp.zoomOption"
+                                                    data-action="click->vsp#setZoom"
+                                                    data-option="all"
+                                            >All</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a
+                                                    class="nav-link d-none"
+                                                    href="javascript:void(0);"
+                                                    data-target="vsp.zoomOption"
+                                                    data-action="click->vsp#setZoom"
+                                                    data-option="year"
+                                            >Year</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a
+                                                    class="nav-link d-none"
+                                                    href="javascript:void(0);"
+                                                    data-target="vsp.zoomOption"
+                                                    data-action="click->vsp#setZoom"
+                                                    data-option="month"
+                                            >Month</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a
+                                                    class="nav-link d-none"
+                                                    href="javascript:void(0);"
+                                                    data-target="vsp.zoomOption"
+                                                    data-action="click->vsp#setZoom"
+                                                    data-option="week"
+                                            >Week</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a
+                                                    class="nav-link d-none"
+                                                    href="javascript:void(0);"
+                                                    data-target="vsp.zoomOption"
+                                                    data-action="click->vsp#setZoom"
+                                                    data-option="day"
+                                            >Day</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="inner-content {{ if .Data.chartView }}d-none{{ end }}" data-target="vsp.vspTableWrapper">
+                    <div class="table-details">
+                        <h3>VSPs</h3>
+                        <div class="paginate">
+                            <div data-target="vsp.numPageWrapper" class="control-div p-0 ml-1 {{ if .Data.chartView }}d-none{{ end }}">
+                                <div class=" mb-2 float-md-right">
+                                    <div class="control-label">Page Size:</div>
+                                    <select data-target="vsp.selectedNum" data-action="change->vsp#numberOfRowsChanged" class="form-control" style="width: 70px;">
+                                        {{$selectedNum := .Data.selectedNum}}
+                                        {{ range $index, $filter := .Data.pageSizeSelector}}
+                                        <option value="{{$index}}" {{ if eq $index $selectedNum}} selected {{ end }}>{{$filter}}</option>
+                                        {{ end }}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div data-target="vsp.pageSizeWrapper" class="page-size d-flex mt-1 {{ if .Data.chartView }}d-none{{ end }}">
+                                <a href="javascript:void(0)" data-target="vsp.previousPageButton" data-action="click->vsp#loadPreviousPage" class="mr-2 {{ if lt .Data.previousPage 1 }}d-none{{ end }}">&lt;Previous </a>
+
+                                <p class="text-muted" style="white-space: nowrap;"> Page <span data-target="vsp.currentPage" class="text-muted" data-current-page="{{ .Data.currentPage }}"> {{ .Data.currentPage }}</span> of <span data-target="vsp.totalPageCount" class="text-muted">{{ .Data.totalPages }}</span>
+                                </p>
+
+                                <a href="javascript:void(0)"  data-target="vsp.nextPageButton"  data-action="click->vsp#loadNextPage" class="ml-2 {{ if not .Data.nextPage }}d-none{{ end }}"> Next&gt;</a>
+                            </div>
+                        </div>
+                    </div>
+                    <table class="table mx-auto">
+                        <thead>
+                            <tr style="white-space: nowrap;">
+                                <th>VSP</th>
+                                <th>Immature</th>
+                                <th>Live</th>
+                                <th>Voted</th>
+                                <th>Missed</th>
+                                <th>Pool Fees</th>
+                                <th>% Live</th>
+                                <th>% Missed</th>
+                                <th>User Count</th>
+                                <th>Users Active</th>
+                                <th>Time(UTC)</th>
+                            </tr>
+                        </thead>
+                        <tbody data-target="vsp.vspTicksTable">
+                            {{range $index, $vspticks := .Data.vspData}}
+                            <tr style="white-space: nowrap;">
+                                <td>{{$vspticks.VSP}}</td>
+                                <td>{{$vspticks.Immature}}</td>
+                                <td>{{$vspticks.Live}}</td>
+                                <td>{{$vspticks.Voted}}</td>
+                                <td>{{$vspticks.Missed}}</td>
+                                <td>{{$vspticks.PoolFees}}</td>
+                                <td>{{$vspticks.ProportionLive}}</td>
+                                <td>{{$vspticks.ProportionMissed}}</td>
+                                <td>{{$vspticks.UserCount}}</td>
+                                <td>{{$vspticks.UsersActive}}</td>
+                                <td>{{$vspticks.Time}}</td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+
+                    <template data-target="vsp.vspRowTemplate">
+                        <tr style="white-space: nowrap;">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </template>
+                </div>
+                <div data-target="vsp.chartWrapper" class="inner-content chart-wrapper pl-2 pr-2 mb-5">
+                    <div class="row">
+                        <div class="col-xs-10 col-xs-offset-1 col-md-2 col-md-offset-0 side-vsp-panel">
+                            <div class="p-0 d-none" data-target="vsp.chartSourceWrapper">
+                                {{ $selectedVsps := .Data.selectedVsps}}
+                                <div class="form-check d-none">
+                                    <input data-target="vsp.allChartSource" name="vspCheckbox-all" data-action="click->vsp#vspCheckboxCheckChanged"
+                                    class="form-check-input" type="checkbox" id="vspCheckbox-all">
+                                    <label class="form-check-label" for="vspCheckbox-all">Select All</label>
+                                </div>
+                                {{ range $index, $filter := .Data.allVspData}}
+                                <div class="form-check">
+                                    <input name="chartSource" data-target="vsp.chartSource" data-action="click->vsp#chartSourceCheckChanged"
+                                    class="form-check-input" type="checkbox" id="inlineCheckbox-{{$filter.Name}}"
+
+                                    value="{{$filter.Name}}" {{ if strListContains $selectedVsps $filter.Name }} checked {{ end }}>
+                                    <label class="form-check-label" for="inlineCheckbox-{{$filter.Name}}">{{$filter.Host}} ({{$filter.Name}})</label>
+                                </div>
+                                {{ end }}
+                            </div>
+                        </div>
+                        <div class="col-md-9 chart-panel">
+                            <div id="chart" data-target="vsp.chartsView"
+                            style="width:100%; height:73vh; margin:0 auto;">
+                        </div>
+                        <div class="d-flex justify-content-center legend-wrapper">
+                            <div class="legend d-flex" data-target="vsp.labels"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div data-target="vsp.messageView" class="d-hide mx-auto">
+            </div>
+            <div class="loading" data-target="vsp.loadingData"><div class="loader"></div></div>
+      </div>
+  </div>
+</div>
+</div>
+{{ template "footer" }}
+</body>
+</html>
+{{ end }}

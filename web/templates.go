@@ -449,6 +449,9 @@ func MakeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 			}
 			return pair
 		},
+		"stringsReplace": func(input string, old string, new string) string {
+			return strings.Replace(input, old, new, -1)
+		},
 	}
 }
 
