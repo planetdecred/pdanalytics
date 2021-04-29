@@ -29,7 +29,7 @@ export default class extends Controller {
     ]
   }
 
-  initialize () {
+  connect () {
     if (initialized) {
       return
     }
@@ -65,6 +65,12 @@ export default class extends Controller {
       this.setChart()
     } else {
       this.setTable()
+    }
+  }
+
+  disconnect () {
+    if (this.chartsView !== undefined) {
+      this.chartsView.destroy()
     }
   }
 
