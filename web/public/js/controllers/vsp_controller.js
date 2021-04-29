@@ -13,9 +13,8 @@ import {
 import TurboQuery from '../helpers/turbolinks_helper'
 import Zoom from '../helpers/zoom_helper'
 import { animationFrame } from '../helpers/animation_helper'
-import { getDefault } from '../helpers/module_helper'
 
-let Dygraph
+const Dygraph = require('../vendor/dygraphs.min.js')
 
 export default class extends Controller {
   static get targets () {
@@ -30,10 +29,7 @@ export default class extends Controller {
     ]
   }
 
-  async initialize () {
-    Dygraph = await getDefault(
-      import(/* webpackChunkName: "dygraphs" */ '../vendor/dygraphs.min.js')
-    )
+  initialize () {
     this.query = new TurboQuery()
     this.settings = TurboQuery.nullTemplate(['chart', 'zoom', 'scale', 'bin', 'axis', 'dataType'])
     this.query.update(this.settings)
@@ -226,8 +222,8 @@ export default class extends Controller {
       fields[3].innerHTML = vsp.voted
       fields[4].innerHTML = vsp.missed
       fields[5].innerHTML = vsp.pool_fees
-      fields[6].innerText = vsp.proportion_live
-      fields[7].innerHTML = vsp.proportion_missed
+      fields[6].innerText = parseFloat(vsp.proportion_live).toFixed(6)
+      fields[7].innerHTML = parseFloat(vsp.proportion_missed).toFixed(6)
       fields[8].innerHTML = vsp.user_count
       fields[9].innerHTML = vsp.users_active
       fields[10].innerHTML = vsp.time

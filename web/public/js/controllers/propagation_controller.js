@@ -10,13 +10,12 @@ import {
   setActiveRecordSetBtn,
   legendFormatter, insertOrUpdateQueryParam, updateQueryParam, trimUrl, zipXYZData, selectedOption, updateZoomSelector, isInViewport
 } from '../utils'
-import { getDefault } from '../helpers/module_helper'
 import TurboQuery from '../helpers/turbolinks_helper'
 import dompurify from 'dompurify'
 import Zoom from '../helpers/zoom_helper'
 import { animationFrame } from '../helpers/animation_helper'
 
-let Dygraph
+const Dygraph = require('../vendor/dygraphs.min.js')
 
 const voteLoadingHtml = '<tr><td colspan="7"><div class="h-loader">Loading...</div></td></tr>'
 
@@ -37,10 +36,7 @@ export default class extends Controller {
     ]
   }
 
-  async initialize () {
-    Dygraph = await getDefault(
-      import(/* webpackChunkName: "dygraphs" */ '../vendor/dygraphs.min.js')
-    )
+  initialize () {
     this.currentPage = parseInt(this.currentPageTarget.getAttribute('data-current-page'))
     if (this.currentPage < 1) {
       this.currentPage = 1
