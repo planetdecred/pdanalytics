@@ -38,7 +38,7 @@ export default class extends Controller {
   }
 
   initialize () {
-    if(initialized) {
+    if (initialized) {
       return
     }
     this.currentPage = parseInt(this.currentPageTarget.getAttribute('data-current-page'))

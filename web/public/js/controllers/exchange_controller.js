@@ -30,7 +30,7 @@ export default class extends Controller {
   }
 
   initialize () {
-    if(initialized) {
+    if (initialized) {
       return
     }
     initialized = true

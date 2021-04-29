@@ -48,7 +48,7 @@ export default class extends Controller {
   }
 
   async initialize () {
-    if(initialized) {
+    if (initialized) {
       return
     }
 
