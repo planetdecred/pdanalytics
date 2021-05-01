@@ -36,8 +36,7 @@
                                 <option data-target="exchange.hideOption" class="{{ if .Data.chartView }}d-none{{ end }}"
                                     value="All">All</option>
                                 {{ range $index, $filter := .Data.allExData}}
-                                <option value="{{$filter.Name}}" {{ if eq $filter.Name $selectedExchange}} selected {{ end
-                                    }}>{{$filter.Name}}</option>
+                                <option value="{{$filter.Name}}" {{ if eq $filter.Name $selectedExchange}} selected {{ end }}>{{$filter.Name}}</option>
                                 {{ end }}
                             </select>
                         </div>
