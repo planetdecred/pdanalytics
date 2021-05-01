@@ -183,28 +183,30 @@
                                 </div>
                             </div>
                         </div>
-                        <table class="table mx-auto">
-                            <thead>
-                                <tr>
-                                    <th style="width: 110px;">Pool</th>
-                                    <th style="text-align: right; width: 150px;">Pool Hashrate (Th/s)</th>
-                                    <th style="text-align: right;width: 150px;">Workers</th>
-                                    <th style="width: 50px;"></th>
-                                    <th style="width: 170px;">Time (UTC)</th>
-                                </tr>
-                            </thead>
-                            <tbody data-target="pow.powTable">
-                                {{range $index, $powdata := .Pow.powData}}
-                                <tr>
-                                    <td>{{$powdata.Source}}</td>
-                                    <td style="text-align: right;">{{$powdata.PoolHashrateTh}}</td>
-                                    <td style="text-align: right;">{{$powdata.Workers}}</td>
-                                    <td></td>
-                                    <td>{{$powdata.Time}}</td>
-                                </tr>
-                                {{end}}
-                            </tbody>
-                        </table>
+                        <div style="overflow: auto;">
+                            <table class="table mx-auto">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 110px;">Pool</th>
+                                        <th style="text-align: right; width: 150px;">Pool Hashrate (Th/s)</th>
+                                        <th style="text-align: right;width: 150px;">Workers</th>
+                                        <th style="width: 50px;"></th>
+                                        <th style="width: 170px;">Time (UTC)</th>
+                                    </tr>
+                                </thead>
+                                <tbody data-target="pow.powTable">
+                                    {{range $index, $powdata := .Pow.powData}}
+                                    <tr>
+                                        <td>{{$powdata.Source}}</td>
+                                        <td style="text-align: right;">{{$powdata.PoolHashrateTh}}</td>
+                                        <td style="text-align: right;">{{$powdata.Workers}}</td>
+                                        <td></td>
+                                        <td>{{$powdata.Time}}</td>
+                                    </tr>
+                                    {{end}}
+                                </tbody>
+                            </table>
+                        </div>
 
                         <template data-target="pow.powRowTemplate">
                             <tr>

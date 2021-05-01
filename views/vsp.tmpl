@@ -162,56 +162,58 @@
                             </div>
                         </div>
                     </div>
-                    <table class="table mx-auto">
-                        <thead>
-                            <tr style="white-space: nowrap;">
-                                <th>VSP</th>
-                                <th>Immature</th>
-                                <th>Live</th>
-                                <th>Voted</th>
-                                <th>Missed</th>
-                                <th>Pool Fees</th>
-                                <th>% Live</th>
-                                <th>% Missed</th>
-                                <th>User Count</th>
-                                <th>Users Active</th>
-                                <th>Time(UTC)</th>
-                            </tr>
-                        </thead>
-                        <tbody data-target="vsp.vspTicksTable">
-                            {{range $index, $vspticks := .Data.vspData}}
-                            <tr style="white-space: nowrap;">
-                                <td>{{$vspticks.VSP}}</td>
-                                <td>{{$vspticks.Immature}}</td>
-                                <td>{{$vspticks.Live}}</td>
-                                <td>{{$vspticks.Voted}}</td>
-                                <td>{{$vspticks.Missed}}</td>
-                                <td>{{$vspticks.PoolFees}}</td>
-                                <td>{{$vspticks.ProportionLive}}</td>
-                                <td>{{$vspticks.ProportionMissed}}</td>
-                                <td>{{$vspticks.UserCount}}</td>
-                                <td>{{$vspticks.UsersActive}}</td>
-                                <td>{{$vspticks.Time}}</td>
-                            </tr>
-                            {{end}}
-                        </tbody>
-                    </table>
+                    <div style="overflow: auto;">
+                        <table class="table mx-auto">
+                            <thead>
+                                <tr style="white-space: nowrap;">
+                                    <th>VSP</th>
+                                    <th>Immature</th>
+                                    <th>Live</th>
+                                    <th>Voted</th>
+                                    <th>Missed</th>
+                                    <th>Pool Fees</th>
+                                    <th>% Live</th>
+                                    <th>% Missed</th>
+                                    <th>User Count</th>
+                                    <th>Users Active</th>
+                                    <th>Time(UTC)</th>
+                                </tr>
+                            </thead>
+                            <tbody data-target="vsp.vspTicksTable">
+                                {{range $index, $vspticks := .Data.vspData}}
+                                <tr style="white-space: nowrap;">
+                                    <td>{{$vspticks.VSP}}</td>
+                                    <td>{{$vspticks.Immature}}</td>
+                                    <td>{{$vspticks.Live}}</td>
+                                    <td>{{$vspticks.Voted}}</td>
+                                    <td>{{$vspticks.Missed}}</td>
+                                    <td>{{$vspticks.PoolFees}}</td>
+                                    <td>{{$vspticks.ProportionLive}}</td>
+                                    <td>{{$vspticks.ProportionMissed}}</td>
+                                    <td>{{$vspticks.UserCount}}</td>
+                                    <td>{{$vspticks.UsersActive}}</td>
+                                    <td>{{$vspticks.Time}}</td>
+                                </tr>
+                                {{end}}
+                            </tbody>
+                        </table>
 
-                    <template data-target="vsp.vspRowTemplate">
-                        <tr style="white-space: nowrap;">
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                    </template>
+                        <template data-target="vsp.vspRowTemplate">
+                            <tr style="white-space: nowrap;">
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </template>
+                    </div>
                 </div>
                 <div data-target="vsp.chartWrapper" class="inner-content chart-wrapper pl-2 pr-2 mb-5">
                     <div class="row">
