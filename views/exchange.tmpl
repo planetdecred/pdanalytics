@@ -123,11 +123,12 @@
 
                 </div>
             </div>
-            <div class="inner-content {{ if .Data.chartView }}d-none{{ end }}"
+            <div style="max-width: fit-content; margin: 0 auto;"
+                class="inner-content {{ if .Data.chartView }}d-none{{ end }}"
                 data-target="exchange.exchangeTableWrapper">
                 <div class="table-details">
                     <h3>Exchanges</h3>
-                    <div class="paginate">
+                    <div class="paginate pagination ml-5-md">
                         <div data-target="exchange.numPageWrapper"
                             class="control-div p-0 ml-2 {{ if .Data.chartView }}d-none{{ end }}">
                             <div class="control-label">Page Size:</div>
@@ -159,50 +160,52 @@
                         </div>
                     </div>
                 </div>
-                <table class="table mx-auto">
-                    <thead>
+                <div style="overflow: auto;">
+                    <table class="table mx-auto">
+                        <thead>
+                            <tr style="white-space: nowrap;">
+                                <th>Time(UTC)</th>
+                                <th>Exchange</th>
+                                <th>High</th>
+                                <th>Low</th>
+                                <th>Open</th>
+                                <th>Close</th>
+                                <th>Volume</th>
+                                <th>Interval</th>
+                                <th>Currency Pair</th>
+                            </tr>
+                        </thead>
+                        <tbody data-target="exchange.exchangeTable">
+                            {{range $index, $exchange := .Data.exData}}
+                            <tr>
+                                <td>{{$exchange.Time}}</td>
+                                <td>{{$exchange.ExchangeName}}</td>
+                                <td>{{$exchange.High}}</td>
+                                <td>{{$exchange.Low}}</td>
+                                <td>{{$exchange.Open}}</td>
+                                <td>{{$exchange.Close}}</td>
+                                <td>{{$exchange.Volume}}</td>
+                                <td>{{$exchange.Interval}}</td>
+                                <td>{{$exchange.CurrencyPair}}</td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+    
+                    <template data-target="exchange.exRowTemplate">
                         <tr style="white-space: nowrap;">
-                            <th>Time(UTC)</th>
-                            <th>Exchange</th>
-                            <th>High</th>
-                            <th>Low</th>
-                            <th>Open</th>
-                            <th>Close</th>
-                            <th>Volume</th>
-                            <th>Interval</th>
-                            <th>Currency Pair</th>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
                         </tr>
-                    </thead>
-                    <tbody data-target="exchange.exchangeTable">
-                        {{range $index, $exchange := .Data.exData}}
-                        <tr>
-                            <td>{{$exchange.Time}}</td>
-                            <td>{{$exchange.ExchangeName}}</td>
-                            <td>{{$exchange.High}}</td>
-                            <td>{{$exchange.Low}}</td>
-                            <td>{{$exchange.Open}}</td>
-                            <td>{{$exchange.Close}}</td>
-                            <td>{{$exchange.Volume}}</td>
-                            <td>{{$exchange.Interval}}</td>
-                            <td>{{$exchange.CurrencyPair}}</td>
-                        </tr>
-                        {{end}}
-                    </tbody>
-                </table>
-
-                <template data-target="exchange.exRowTemplate">
-                    <tr style="white-space: nowrap;">
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                </template>
+                    </template>
+                </div>
             </div>
             <div data-target="exchange.chartWrapper" class="inner-content chart-wrapper pl-2 pr-2 mb-5">
                 <div id="chart" data-target="exchange.chartsView" style="width:100%; height:73vh; margin:0 auto;">
