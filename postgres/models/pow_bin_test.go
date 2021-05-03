@@ -21,24 +21,24 @@ var (
 	_ = queries.Equal
 )
 
-func testProposals(t *testing.T) {
+func testPowBins(t *testing.T) {
 	t.Parallel()
 
-	query := Proposals()
+	query := PowBins()
 
 	if query.Query == nil {
 		t.Error("expected a query, got nothing")
 	}
 }
 
-func testProposalsDelete(t *testing.T) {
+func testPowBinsDelete(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Proposal{}
-	if err = randomize.Struct(seed, o, proposalDBTypes, true, proposalColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	o := &PowBin{}
+	if err = randomize.Struct(seed, o, powBinDBTypes, true, powBinColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -54,7 +54,7 @@ func testProposalsDelete(t *testing.T) {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
 
-	count, err := Proposals().Count(ctx, tx)
+	count, err := PowBins().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -64,14 +64,14 @@ func testProposalsDelete(t *testing.T) {
 	}
 }
 
-func testProposalsQueryDeleteAll(t *testing.T) {
+func testPowBinsQueryDeleteAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Proposal{}
-	if err = randomize.Struct(seed, o, proposalDBTypes, true, proposalColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	o := &PowBin{}
+	if err = randomize.Struct(seed, o, powBinDBTypes, true, powBinColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -81,13 +81,13 @@ func testProposalsQueryDeleteAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	if rowsAff, err := Proposals().DeleteAll(ctx, tx); err != nil {
+	if rowsAff, err := PowBins().DeleteAll(ctx, tx); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
 
-	count, err := Proposals().Count(ctx, tx)
+	count, err := PowBins().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -97,14 +97,14 @@ func testProposalsQueryDeleteAll(t *testing.T) {
 	}
 }
 
-func testProposalsSliceDeleteAll(t *testing.T) {
+func testPowBinsSliceDeleteAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Proposal{}
-	if err = randomize.Struct(seed, o, proposalDBTypes, true, proposalColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	o := &PowBin{}
+	if err = randomize.Struct(seed, o, powBinDBTypes, true, powBinColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -114,7 +114,7 @@ func testProposalsSliceDeleteAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice := ProposalSlice{o}
+	slice := PowBinSlice{o}
 
 	if rowsAff, err := slice.DeleteAll(ctx, tx); err != nil {
 		t.Error(err)
@@ -122,7 +122,7 @@ func testProposalsSliceDeleteAll(t *testing.T) {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
 
-	count, err := Proposals().Count(ctx, tx)
+	count, err := PowBins().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -132,14 +132,14 @@ func testProposalsSliceDeleteAll(t *testing.T) {
 	}
 }
 
-func testProposalsExists(t *testing.T) {
+func testPowBinsExists(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Proposal{}
-	if err = randomize.Struct(seed, o, proposalDBTypes, true, proposalColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	o := &PowBin{}
+	if err = randomize.Struct(seed, o, powBinDBTypes, true, powBinColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -149,23 +149,23 @@ func testProposalsExists(t *testing.T) {
 		t.Error(err)
 	}
 
-	e, err := ProposalExists(ctx, tx, o.ID)
+	e, err := PowBinExists(ctx, tx, o.Time, o.Source, o.Bin)
 	if err != nil {
-		t.Errorf("Unable to check if Proposal exists: %s", err)
+		t.Errorf("Unable to check if PowBin exists: %s", err)
 	}
 	if !e {
-		t.Errorf("Expected ProposalExists to return true, but got false.")
+		t.Errorf("Expected PowBinExists to return true, but got false.")
 	}
 }
 
-func testProposalsFind(t *testing.T) {
+func testPowBinsFind(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Proposal{}
-	if err = randomize.Struct(seed, o, proposalDBTypes, true, proposalColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	o := &PowBin{}
+	if err = randomize.Struct(seed, o, powBinDBTypes, true, powBinColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -175,24 +175,24 @@ func testProposalsFind(t *testing.T) {
 		t.Error(err)
 	}
 
-	proposalFound, err := FindProposal(ctx, tx, o.ID)
+	powBinFound, err := FindPowBin(ctx, tx, o.Time, o.Source, o.Bin)
 	if err != nil {
 		t.Error(err)
 	}
 
-	if proposalFound == nil {
+	if powBinFound == nil {
 		t.Error("want a record, got nil")
 	}
 }
 
-func testProposalsBind(t *testing.T) {
+func testPowBinsBind(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Proposal{}
-	if err = randomize.Struct(seed, o, proposalDBTypes, true, proposalColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	o := &PowBin{}
+	if err = randomize.Struct(seed, o, powBinDBTypes, true, powBinColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -202,19 +202,19 @@ func testProposalsBind(t *testing.T) {
 		t.Error(err)
 	}
 
-	if err = Proposals().Bind(ctx, tx, o); err != nil {
+	if err = PowBins().Bind(ctx, tx, o); err != nil {
 		t.Error(err)
 	}
 }
 
-func testProposalsOne(t *testing.T) {
+func testPowBinsOne(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Proposal{}
-	if err = randomize.Struct(seed, o, proposalDBTypes, true, proposalColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	o := &PowBin{}
+	if err = randomize.Struct(seed, o, powBinDBTypes, true, powBinColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -224,38 +224,38 @@ func testProposalsOne(t *testing.T) {
 		t.Error(err)
 	}
 
-	if x, err := Proposals().One(ctx, tx); err != nil {
+	if x, err := PowBins().One(ctx, tx); err != nil {
 		t.Error(err)
 	} else if x == nil {
 		t.Error("expected to get a non nil record")
 	}
 }
 
-func testProposalsAll(t *testing.T) {
+func testPowBinsAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	proposalOne := &Proposal{}
-	proposalTwo := &Proposal{}
-	if err = randomize.Struct(seed, proposalOne, proposalDBTypes, false, proposalColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	powBinOne := &PowBin{}
+	powBinTwo := &PowBin{}
+	if err = randomize.Struct(seed, powBinOne, powBinDBTypes, false, powBinColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
-	if err = randomize.Struct(seed, proposalTwo, proposalDBTypes, false, proposalColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	if err = randomize.Struct(seed, powBinTwo, powBinDBTypes, false, powBinColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = proposalOne.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = powBinOne.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
-	if err = proposalTwo.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = powBinTwo.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
-	slice, err := Proposals().All(ctx, tx)
+	slice, err := PowBins().All(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -265,31 +265,31 @@ func testProposalsAll(t *testing.T) {
 	}
 }
 
-func testProposalsCount(t *testing.T) {
+func testPowBinsCount(t *testing.T) {
 	t.Parallel()
 
 	var err error
 	seed := randomize.NewSeed()
-	proposalOne := &Proposal{}
-	proposalTwo := &Proposal{}
-	if err = randomize.Struct(seed, proposalOne, proposalDBTypes, false, proposalColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	powBinOne := &PowBin{}
+	powBinTwo := &PowBin{}
+	if err = randomize.Struct(seed, powBinOne, powBinDBTypes, false, powBinColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
-	if err = randomize.Struct(seed, proposalTwo, proposalDBTypes, false, proposalColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	if err = randomize.Struct(seed, powBinTwo, powBinDBTypes, false, powBinColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = proposalOne.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = powBinOne.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
-	if err = proposalTwo.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = powBinTwo.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
-	count, err := Proposals().Count(ctx, tx)
+	count, err := PowBins().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -299,14 +299,14 @@ func testProposalsCount(t *testing.T) {
 	}
 }
 
-func testProposalsInsert(t *testing.T) {
+func testPowBinsInsert(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Proposal{}
-	if err = randomize.Struct(seed, o, proposalDBTypes, true, proposalColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	o := &PowBin{}
+	if err = randomize.Struct(seed, o, powBinDBTypes, true, powBinColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -316,7 +316,7 @@ func testProposalsInsert(t *testing.T) {
 		t.Error(err)
 	}
 
-	count, err := Proposals().Count(ctx, tx)
+	count, err := PowBins().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -326,24 +326,24 @@ func testProposalsInsert(t *testing.T) {
 	}
 }
 
-func testProposalsInsertWhitelist(t *testing.T) {
+func testPowBinsInsertWhitelist(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Proposal{}
-	if err = randomize.Struct(seed, o, proposalDBTypes, true); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	o := &PowBin{}
+	if err = randomize.Struct(seed, o, powBinDBTypes, true); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = o.Insert(ctx, tx, boil.Whitelist(proposalColumnsWithoutDefault...)); err != nil {
+	if err = o.Insert(ctx, tx, boil.Whitelist(powBinColumnsWithoutDefault...)); err != nil {
 		t.Error(err)
 	}
 
-	count, err := Proposals().Count(ctx, tx)
+	count, err := PowBins().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -353,14 +353,14 @@ func testProposalsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testProposalsReload(t *testing.T) {
+func testPowBinsReload(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Proposal{}
-	if err = randomize.Struct(seed, o, proposalDBTypes, true, proposalColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	o := &PowBin{}
+	if err = randomize.Struct(seed, o, powBinDBTypes, true, powBinColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -375,14 +375,14 @@ func testProposalsReload(t *testing.T) {
 	}
 }
 
-func testProposalsReloadAll(t *testing.T) {
+func testPowBinsReloadAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Proposal{}
-	if err = randomize.Struct(seed, o, proposalDBTypes, true, proposalColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	o := &PowBin{}
+	if err = randomize.Struct(seed, o, powBinDBTypes, true, powBinColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -392,21 +392,21 @@ func testProposalsReloadAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice := ProposalSlice{o}
+	slice := PowBinSlice{o}
 
 	if err = slice.ReloadAll(ctx, tx); err != nil {
 		t.Error(err)
 	}
 }
 
-func testProposalsSelect(t *testing.T) {
+func testPowBinsSelect(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Proposal{}
-	if err = randomize.Struct(seed, o, proposalDBTypes, true, proposalColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	o := &PowBin{}
+	if err = randomize.Struct(seed, o, powBinDBTypes, true, powBinColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -416,7 +416,7 @@ func testProposalsSelect(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice, err := Proposals().All(ctx, tx)
+	slice, err := PowBins().All(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -427,25 +427,25 @@ func testProposalsSelect(t *testing.T) {
 }
 
 var (
-	proposalDBTypes = map[string]string{`ID`: `integer`, `Token`: `text`, `Author`: `text`, `CommitSha`: `text`, `Time`: `timestamp with time zone`}
-	_               = bytes.MinRead
+	powBinDBTypes = map[string]string{`Time`: `bigint`, `PoolHashrate`: `character varying`, `Workers`: `integer`, `Bin`: `character varying`, `Source`: `character varying`}
+	_             = bytes.MinRead
 )
 
-func testProposalsUpdate(t *testing.T) {
+func testPowBinsUpdate(t *testing.T) {
 	t.Parallel()
 
-	if 0 == len(proposalPrimaryKeyColumns) {
+	if 0 == len(powBinPrimaryKeyColumns) {
 		t.Skip("Skipping table with no primary key columns")
 	}
-	if len(proposalAllColumns) == len(proposalPrimaryKeyColumns) {
+	if len(powBinAllColumns) == len(powBinPrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Proposal{}
-	if err = randomize.Struct(seed, o, proposalDBTypes, true, proposalColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	o := &PowBin{}
+	if err = randomize.Struct(seed, o, powBinDBTypes, true, powBinColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -455,7 +455,7 @@ func testProposalsUpdate(t *testing.T) {
 		t.Error(err)
 	}
 
-	count, err := Proposals().Count(ctx, tx)
+	count, err := PowBins().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -464,8 +464,8 @@ func testProposalsUpdate(t *testing.T) {
 		t.Error("want one record, got:", count)
 	}
 
-	if err = randomize.Struct(seed, o, proposalDBTypes, true, proposalPrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	if err = randomize.Struct(seed, o, powBinDBTypes, true, powBinPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
 
 	if rowsAff, err := o.Update(ctx, tx, boil.Infer()); err != nil {
@@ -475,18 +475,18 @@ func testProposalsUpdate(t *testing.T) {
 	}
 }
 
-func testProposalsSliceUpdateAll(t *testing.T) {
+func testPowBinsSliceUpdateAll(t *testing.T) {
 	t.Parallel()
 
-	if len(proposalAllColumns) == len(proposalPrimaryKeyColumns) {
+	if len(powBinAllColumns) == len(powBinPrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Proposal{}
-	if err = randomize.Struct(seed, o, proposalDBTypes, true, proposalColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	o := &PowBin{}
+	if err = randomize.Struct(seed, o, powBinDBTypes, true, powBinColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -496,7 +496,7 @@ func testProposalsSliceUpdateAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	count, err := Proposals().Count(ctx, tx)
+	count, err := PowBins().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -505,18 +505,18 @@ func testProposalsSliceUpdateAll(t *testing.T) {
 		t.Error("want one record, got:", count)
 	}
 
-	if err = randomize.Struct(seed, o, proposalDBTypes, true, proposalPrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	if err = randomize.Struct(seed, o, powBinDBTypes, true, powBinPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
 
 	// Remove Primary keys and unique columns from what we plan to update
 	var fields []string
-	if strmangle.StringSliceMatch(proposalAllColumns, proposalPrimaryKeyColumns) {
-		fields = proposalAllColumns
+	if strmangle.StringSliceMatch(powBinAllColumns, powBinPrimaryKeyColumns) {
+		fields = powBinAllColumns
 	} else {
 		fields = strmangle.SetComplement(
-			proposalAllColumns,
-			proposalPrimaryKeyColumns,
+			powBinAllColumns,
+			powBinPrimaryKeyColumns,
 		)
 	}
 
@@ -534,7 +534,7 @@ func testProposalsSliceUpdateAll(t *testing.T) {
 		}
 	}
 
-	slice := ProposalSlice{o}
+	slice := PowBinSlice{o}
 	if rowsAff, err := slice.UpdateAll(ctx, tx, updateMap); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
@@ -542,29 +542,29 @@ func testProposalsSliceUpdateAll(t *testing.T) {
 	}
 }
 
-func testProposalsUpsert(t *testing.T) {
+func testPowBinsUpsert(t *testing.T) {
 	t.Parallel()
 
-	if len(proposalAllColumns) == len(proposalPrimaryKeyColumns) {
+	if len(powBinAllColumns) == len(powBinPrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
 
 	seed := randomize.NewSeed()
 	var err error
 	// Attempt the INSERT side of an UPSERT
-	o := Proposal{}
-	if err = randomize.Struct(seed, &o, proposalDBTypes, true); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	o := PowBin{}
+	if err = randomize.Struct(seed, &o, powBinDBTypes, true); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 	if err = o.Upsert(ctx, tx, false, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Proposal: %s", err)
+		t.Errorf("Unable to upsert PowBin: %s", err)
 	}
 
-	count, err := Proposals().Count(ctx, tx)
+	count, err := PowBins().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -573,15 +573,15 @@ func testProposalsUpsert(t *testing.T) {
 	}
 
 	// Attempt the UPDATE side of an UPSERT
-	if err = randomize.Struct(seed, &o, proposalDBTypes, false, proposalPrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Proposal struct: %s", err)
+	if err = randomize.Struct(seed, &o, powBinDBTypes, false, powBinPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize PowBin struct: %s", err)
 	}
 
 	if err = o.Upsert(ctx, tx, true, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Proposal: %s", err)
+		t.Errorf("Unable to upsert PowBin: %s", err)
 	}
 
-	count, err = Proposals().Count(ctx, tx)
+	count, err = PowBins().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}

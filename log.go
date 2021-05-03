@@ -9,14 +9,18 @@ import (
 	"github.com/jrick/logrotate/rotator"
 	"github.com/planetdecred/pdanalytics/attackcost"
 	"github.com/planetdecred/pdanalytics/chart"
+	"github.com/planetdecred/pdanalytics/commstats"
+	"github.com/planetdecred/pdanalytics/exchanges"
 	"github.com/planetdecred/pdanalytics/gov/politeia"
 	"github.com/planetdecred/pdanalytics/homepage"
 	"github.com/planetdecred/pdanalytics/mempool"
 	"github.com/planetdecred/pdanalytics/netsnapshot"
 	"github.com/planetdecred/pdanalytics/parameters"
 	"github.com/planetdecred/pdanalytics/postgres"
+	"github.com/planetdecred/pdanalytics/pow"
 	"github.com/planetdecred/pdanalytics/propagation"
 	"github.com/planetdecred/pdanalytics/stakingreward"
+	"github.com/planetdecred/pdanalytics/vsp"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
@@ -59,7 +63,11 @@ var (
 	propLog          = backendLog.Logger("PROP")
 	snapshotLog      = backendLog.Logger("NETS")
 	politeiaLog      = backendLog.Logger("POLI")
+	exchangeLog      = backendLog.Logger("EXCH")
 	webLogger        = backendLog.Logger("WEBL")
+	commLog          = backendLog.Logger("COMM")
+	powLog           = backendLog.Logger("POWL")
+	vspLog           = backendLog.Logger("VSPL")
 )
 
 // Initialize package-global logger variables.
@@ -74,7 +82,11 @@ func init() {
 	propagation.UseLogger(propLog)
 	netsnapshot.UseLogger(snapshotLog)
 	politeia.UseLogger(politeiaLog)
+	exchanges.UseLogger(exchangeLog)
 	web.UseLogger(webLogger)
+	commstats.UseLogger(commLog)
+	pow.UseLogger(powLog)
+	vsp.UseLogger(vspLog)
 }
 
 // subsystemLoggers maps each subsystem identifier to its associated logger.
@@ -90,6 +102,10 @@ var subsystemLoggers = map[string]slog.Logger{
 	"MEMP": mempoolLog,
 	"PSQL": psqlLog,
 	"POLI": politeiaLog,
+	"EXCH": exchangeLog,
+	"COMM": commLog,
+	"POWL": powLog,
+	"VSPL": vspLog,
 }
 
 // initLogRotator initializes the logging rotater to write logs to logFile and

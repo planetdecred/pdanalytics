@@ -27,6 +27,19 @@ const (
 	HeightAxis axisType = "height"
 	TimeAxis   axisType = "time"
 
+	HashrateAxis axisType = "hashrate"
+	WorkerAxis   axisType = "workers"
+
+	ImmatureAxis         axisType = "immature"
+	LiveAxis             axisType = "live"
+	VotedAxis            axisType = "voted"
+	MissedAxis           axisType = "missed"
+	PoolFeesAxis         axisType = "pool-fees"
+	ProportionLiveAxis   axisType = "proportion-live"
+	ProportionMissedAxis axisType = "proportion-missed"
+	UserCountAxis        axisType = "user-count"
+	UsersActiveAxis      axisType = "users-active"
+
 	DefaultBin binLevel = "default"
 	HourBin    binLevel = "hour"
 	DayBin     binLevel = "day"
@@ -825,4 +838,34 @@ func Trim(sets ...Lengther) []Lengther {
 		return setsCopy
 	}
 	return sets
+}
+
+func MakePowChart(dates ChartUints, deviations []ChartNullUints, pools []string) ([]byte, error) {
+
+	var recs = []Lengther{dates}
+	for _, d := range deviations {
+		recs = append(recs, d)
+	}
+	var recCopy = make([]Lengther, len(recs))
+	copy(recCopy, recs)
+	recs = Trim(recs...)
+	if recs[0].Length() == 0 {
+		recs = recCopy
+	}
+	return Encode(nil, recs...)
+}
+
+func MakeVspChart(dates ChartUints, deviations []ChartNullData, vsps []string) ([]byte, error) {
+	var recs = []Lengther{dates}
+	for _, d := range deviations {
+		recs = append(recs, d)
+	}
+
+	var recCopy = make([]Lengther, len(recs))
+	copy(recCopy, recs)
+	recs = Trim(recs...)
+	if recs[0].Length() == 0 {
+		recs = recCopy
+	}
+	return Encode(nil, recs...)
 }

@@ -16,6 +16,7 @@ import (
 	"github.com/decred/dcrdata/v5/netparams"
 	"github.com/decred/slog"
 	flags "github.com/jessevdk/go-flags"
+	"github.com/planetdecred/pdanalytics/commstats"
 	"github.com/planetdecred/pdanalytics/netsnapshot"
 	"github.com/planetdecred/pdanalytics/version"
 )
@@ -65,6 +66,8 @@ var (
 	defaultOnionAddress = ""
 
 	defaultMempoolInterval = 60.0
+	defaultPowInterval     = 300
+	defaultVSPInterval     = 300
 
 	// network snapshot
 	defaultSnapshotInterval  = 720
@@ -72,12 +75,23 @@ var (
 	defaultSeederPort        = 9108
 	maxPeerConnectionFailure = 3
 
-	// giv
+	// gov
 	defaultAgendasDBFileName  = "agendas.db"
 	defaultProposalsFileName  = "proposals.db"
 	defaultPoliteiaAPIURl     = "https://proposals.decred.org"
 	defaultPiPropoalRepoOwner = "decred-proposals"
 	defaultPiProposalRepo     = "mainnet"
+
+	// community
+	defaultRedditInterval      = 60
+	defaultTwitterStatInterval = 60 * 24
+	defaultGithubStatInterval  = 60 * 24
+	defaultYoutubeInterval     = 60 * 24
+	defaultSubreddits          = []string{"decred"}
+	defaultTwitterHandles      = []string{"decredproject"}
+	defaultGithubRepositories  = []string{"decred/dcrd", "decred/dcrdata", "decred/dcrwallet", "decred/politeia", "decred/decrediton"}
+	defaultYoutubeChannelNames = []string{"Decred"}
+	defaultYoutubeChannelId    = []string{"UCJ2bYDaPYHpSmJPh_M5dNSg"}
 )
 
 type config struct {
@@ -134,7 +148,7 @@ type config struct {
 
 	// ExchangeBot settings
 	EnableExchangeBot bool   `long:"exchange-monitor" description:"Enable the exchange monitor" env:"DCRDATA_MONITOR_EXCHANGES"`
-	DisabledExchanges string `long:"disable-exchange" description:"Exchanges to disable. See /exchanges/exchanges.go for available exchanges. Use a comma to separate multiple exchanges" env:"DCRDATA_DISABLE_EXCHANGES"`
+	DisabledExchanges string `long:"disabled-exchanges" description:"Exchanges to disable. See /exchanges/exchanges.go for available exchanges. Use a comma to separate multiple exchanges" env:"DCRDATA_DISABLE_EXCHANGES"`
 	ExchangeCurrency  string `long:"exchange-currency" description:"The default bitcoin price index. A 3-letter currency code" env:"DCRDATA_EXCHANGE_INDEX"`
 	RateMaster        string `long:"ratemaster" description:"The address of a DCRRates instance. Exchange monitoring will get all data from a DCRRates subscription." env:"DCRDATA_RATE_MASTER"`
 	RateCertificate   string `long:"ratecert" description:"File containing DCRRates TLS certificate file." env:"DCRDATA_RATE_MASTER"`
@@ -149,6 +163,12 @@ type config struct {
 	EnableProposalsHttp           bool `long:"proposalshttp" description:"Enable/Disable the proposals http module from running"`
 	EnableAgendas                 bool `long:"agendas" description:"Enable/Disable the agendas module from running"`
 	EnableAgendasHttp             bool `long:"agendashttp" description:"Enable/Disable the agendas http module from running"`
+	EnableExchange                bool `long:"exchange" description:"Enable/Disable the exchange historic data collector from running"`
+	EnableExchangeHttp            bool `long:"exchange-http" description:"Enable/Disable the exchange historic http endpoint from running"`
+	EnablePow                     bool `long:"pow" description:"Enable/Disable PoW module from running"`
+	EnablePowHttp                 bool `long:"powhttp" description:"Enable/Disable PoW http endpoint from running"`
+	EnableVSP                     bool `long:"vsp" description:"Enable/Disable VSP module from running"`
+	EnableVSPHttp                 bool `long:"vsphttp" description:"Enable/Disable VSP http endpoint from running"`
 
 	// Mempool
 	MempoolInterval float64 `long:"mempoolinterval" description:"The duration of time between mempool collection"`
@@ -156,7 +176,15 @@ type config struct {
 	// sync
 	SyncDatabases []string `long:"syncdatabase" description:"Database with external block propagation entry for comparison. Must comatain block and vote tables"`
 
+	// pow
+	DisabledPows []string `long:"disabledpow" description:"Disable data collection for this Pow"`
+	PowInterval  int64    `long:"powinterval" description:"Collection interval for Pow"`
+
+	// vsp
+	VSPInterval int64 `long:"vspinterval" description:"Collection interval for pool status collection"`
+
 	netsnapshot.NetworkSnapshotOptions
+	commstats.CommunityStatOptions
 }
 
 func defaultConfig() config {
@@ -197,8 +225,16 @@ func defaultConfig() config {
 		EnableProposalsHttp:           true,
 		EnableAgendas:                 true,
 		EnableAgendasHttp:             true,
+		EnableExchange:                true,
+		EnableExchangeHttp:            true,
+		EnablePow:                     true,
+		EnablePowHttp:                 true,
+		EnableVSP:                     true,
+		EnableVSPHttp:                 true,
 
 		MempoolInterval: defaultMempoolInterval,
+		PowInterval:     int64(defaultPowInterval),
+		VSPInterval:     int64(defaultVSPInterval),
 	}
 	cfg.EnableNetworkSnapshot = true
 	cfg.EnableNetworkSnapshotHTTP = true
@@ -206,6 +242,18 @@ func defaultConfig() config {
 	cfg.Seeder = defaultSeeder
 	cfg.SeederPort = uint16(defaultSeederPort)
 	cfg.MaxPeerConnectionFailure = maxPeerConnectionFailure
+
+	cfg.CommunityStat = true
+	cfg.CommunityStatHttp = true
+	cfg.RedditStatInterval = defaultRedditInterval
+	cfg.Subreddit = defaultSubreddits
+	cfg.TwitterStatInterval = defaultTwitterStatInterval
+	cfg.TwitterHandles = defaultTwitterHandles
+	cfg.GithubStatInterval = defaultGithubStatInterval
+	cfg.GithubRepositories = defaultGithubRepositories
+	cfg.YoutubeStatInterval = defaultYoutubeInterval
+	cfg.YoutubeChannelName = defaultYoutubeChannelNames
+	cfg.YoutubeChannelId = defaultYoutubeChannelId
 
 	return cfg
 }

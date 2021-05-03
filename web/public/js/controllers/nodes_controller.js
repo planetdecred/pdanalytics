@@ -17,13 +17,13 @@ import {
 } from '../utils'
 
 import TurboQuery from '../helpers/turbolinks_helper'
-import { getDefault } from '../helpers/module_helper'
 import { animationFrame } from '../helpers/animation_helper'
 import Zoom from '../helpers/zoom_helper'
 import humanize from '../helpers/humanize_helper'
 
-let Dygraph
+const Dygraph = require('../vendor/dygraphs.min.js')
 
+let initialized = false
 const dataTypeNodes = 'nodes'
 const dataTypeVersion = 'version'
 const dataTypeLocation = 'location'
@@ -50,10 +50,10 @@ export default class extends Controller {
     ]
   }
 
-  async initialize () {
-    Dygraph = await getDefault(
-      import(/* webpackChunkName: "dygraphs" */ '../vendor/dygraphs.min.js')
-    )
+  initialize () {
+    if (initialized) {
+      return
+    }
     this.currentPage = parseInt(this.data.get('page')) || 1
     this.pageSize = parseInt(this.data.get('pageSize')) || 20
     this.selectedViewOption = this.data.get('viewOption')
