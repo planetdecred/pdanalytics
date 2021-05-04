@@ -15,7 +15,6 @@ import { animationFrame } from '../helpers/animation_helper'
 import TurboQuery from '../helpers/turbolinks_helper'
 
 const Dygraph = require('../vendor/dygraphs.min.js')
-let initialized = false
 
 export default class extends Controller {
   static get targets () {
@@ -30,10 +29,12 @@ export default class extends Controller {
   }
 
   connect () {
-    if (initialized) {
-      return
-    }
-    initialized = true
+    // Turbolinks' cache control causes the initialize method to be fired multiple time
+    // because the preview is loaded first before the actual content is gotten from the
+    // server. If this is a preview, do nothing
+    if (this.data.get('cached') === '1') return
+    this.data.set('cached', '1')
+
     this.selectedFilter = this.selectedFilterTarget.value
     this.selectedCurrencyPair = this.selectedCurrencyPairTarget.value
     this.numberOfRows = this.selectedNumTarget.value

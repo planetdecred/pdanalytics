@@ -23,7 +23,6 @@ import humanize from '../helpers/humanize_helper'
 
 const Dygraph = require('../vendor/dygraphs.min.js')
 
-let initialized = false
 const dataTypeNodes = 'nodes'
 const dataTypeVersion = 'version'
 const dataTypeLocation = 'location'
@@ -51,9 +50,12 @@ export default class extends Controller {
   }
 
   initialize () {
-    if (initialized) {
-      return
-    }
+    // Turbolinks' cache control causes the initialize method to be fired multiple time
+    // because the preview is loaded first before the actual content is gotten from the
+    // server. If this is a preview, do nothing
+    if (this.data.get('cached') === '1') return
+    this.data.set('cached', '1')
+
     this.currentPage = parseInt(this.data.get('page')) || 1
     this.pageSize = parseInt(this.data.get('pageSize')) || 20
     this.selectedViewOption = this.data.get('viewOption')
