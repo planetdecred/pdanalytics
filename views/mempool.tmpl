@@ -4,7 +4,7 @@
 {{ template "html-head" "Mempool"}}
 
 <body data-controller="receive" class="{{ theme }}">
-<div class="body" data-controller="mempool" data-mempool-block-time="{{.BlockTime}}">
+<div class="body" data-controller="mempool" data-mempool-cached="0" data-mempool-block-time="{{.BlockTime}}">
     {{ template "navbar" . }}
     <div class="content">
         <div class="container-fluid">

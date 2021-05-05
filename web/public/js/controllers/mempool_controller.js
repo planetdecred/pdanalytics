@@ -15,7 +15,6 @@ import Zoom from '../helpers/zoom_helper'
 import { animationFrame } from '../helpers/animation_helper'
 
 const Dygraph = require('../vendor/dygraphs.min.js')
-let initialized = false
 
 export default class extends Controller {
   static get targets () {
@@ -30,9 +29,11 @@ export default class extends Controller {
   }
 
   initialize () {
-    if (initialized) {
-      return
-    }
+    // Turbolinks' cache control causes the initialize method to be fired multiple time
+    // because the preview is loaded first before the actual content is gotten from the
+    // server. If this is a preview, do nothing
+    if (this.data.get('cached') === '1') return
+    this.data.set('cached', '1')
     this.currentPage = parseInt(this.currentPageTarget.getAttribute('data-current-page'))
     if (this.currentPage < 1) {
       this.currentPage = 1
@@ -64,12 +65,6 @@ export default class extends Controller {
       this.setChart()
     } else {
       this.setTable()
-    }
-  }
-
-  disconnect () {
-    if (this.chartsView !== undefined) {
-      this.chartsView.destroy()
     }
   }
 

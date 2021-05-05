@@ -21,7 +21,6 @@ import TurboQuery from '../helpers/turbolinks_helper'
 
 const Dygraph = require('../vendor/dygraphs.min.js')
 
-let initialized = false
 const redditPlatform = 'Reddit'
 const twitterPlatform = 'Twitter'
 const githubPlatform = 'GitHub'
@@ -48,9 +47,11 @@ export default class extends Controller {
   }
 
   async initialize () {
-    if (initialized) {
-      return
-    }
+    // Turbolinks' cache control causes the initialize method to be fired multiple time
+    // because the preview is loaded first before the actual content is gotten from the
+    // server. If this is a preview, do nothing
+    if (this.data.get('cached') === '1') return
+    this.data.set('cached', '1')
 
     this.query = new TurboQuery()
     this.settings = TurboQuery.nullTemplate(['zoom', 'dataType'])
