@@ -9,6 +9,7 @@ import (
 	"github.com/jrick/logrotate/rotator"
 	"github.com/planetdecred/pdanalytics/attackcost"
 	"github.com/planetdecred/pdanalytics/chart"
+	"github.com/planetdecred/pdanalytics/charts"
 	"github.com/planetdecred/pdanalytics/gov/politeia"
 	"github.com/planetdecred/pdanalytics/homepage"
 	"github.com/planetdecred/pdanalytics/mempool"
@@ -60,6 +61,7 @@ var (
 	snapshotLog      = backendLog.Logger("NETS")
 	politeiaLog      = backendLog.Logger("POLI")
 	webLogger        = backendLog.Logger("WEBL")
+	chartsLog        = backendLog.Logger("CHRTS")
 )
 
 // Initialize package-global logger variables.
@@ -75,21 +77,23 @@ func init() {
 	netsnapshot.UseLogger(snapshotLog)
 	politeia.UseLogger(politeiaLog)
 	web.UseLogger(webLogger)
+	charts.UseLogger(chartsLog)
 }
 
 // subsystemLoggers maps each subsystem identifier to its associated logger.
 var subsystemLoggers = map[string]slog.Logger{
-	"PDAN": log,
-	"PARA": paramLog,
-	"ATCK": attackcostLog,
-	"STCK": stakingrewardLog,
-	"HOME": homeLog,
-	"PROP": propLog,
-	"NETS": snapshotLog,
-	"WEBL": webLogger,
-	"MEMP": mempoolLog,
-	"PSQL": psqlLog,
-	"POLI": politeiaLog,
+	"PDAN":  log,
+	"PARA":  paramLog,
+	"ATCK":  attackcostLog,
+	"STCK":  stakingrewardLog,
+	"HOME":  homeLog,
+	"PROP":  propLog,
+	"NETS":  snapshotLog,
+	"WEBL":  webLogger,
+	"MEMP":  mempoolLog,
+	"PSQL":  psqlLog,
+	"POLI":  politeiaLog,
+	"CHRTS": chartsLog,
 }
 
 // initLogRotator initializes the logging rotater to write logs to logFile and
