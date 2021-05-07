@@ -8,30 +8,22 @@ import (
 	"sync"
 
 	"github.com/decred/dcrd/chaincfg/v2"
-	"github.com/decred/dcrdata/exchanges/v2"
 
-	"github.com/planetdecred/pdanalytics/dcrd"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
 type Charts struct {
-	client   *dcrd.Dcrd
-	server   *web.Server
-	xcBot    *exchanges.ExchangeBot
-	pageData *web.PageData
-
-	ChainParams    *chaincfg.Params
-	targetPoolSize int64
-	premine        int64
+	server      *web.Server
+	pageData    *web.PageData
+	ChainParams *chaincfg.Params
+	premine     int64
 
 	reorgLock sync.Mutex
 }
 
-func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot) (*Charts, error) {
+func New(webServer *web.Server) (*Charts, error) {
 	chrt := &Charts{
 		server: webServer,
-		xcBot:  xcBot,
-		client: client,
 	}
 
 	chrt.server.AddMenuItem(web.MenuItem{
@@ -44,11 +36,12 @@ func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot)
 		},
 	})
 
-	chrt.server.Templates.AddTemplate("charts")
+	if err := chrt.server.Templates.AddTemplate("charts"); err != nil {
+		log.Errorf("Unable to create new html template: %v", err)
+		return nil, err
+	}
 
 	webServer.AddRoute("/charts", web.GET, chrt.charts)
-
-	//TODO: Review this
 	webServer.AddRoute("/api/chart/{chartDataType}", web.GET, chrt.ChartTypeData, web.ChartDataTypeCtx)
 
 	return chrt, nil
@@ -86,7 +79,7 @@ func (ch *Charts) charts(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
 	if _, err = io.WriteString(w, str); err != nil {
-		log.Error(err)
+		log.Errorf(err.Error())
 	}
 }
 
@@ -96,7 +89,10 @@ func (c *Charts) ChartTypeData(w http.ResponseWriter, r *http.Request) {
 
 	axis := r.URL.Query().Get("axis")
 
-	client := &http.Client{}
+	//specify timeouts of
+	client := &http.Client{
+		Timeout: 20,
+	}
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://dcrdata.decred.org/api/chart/%s?bin=%s&axis=%s", chartType, bin, axis), nil)
 
 	// chartData, err := c.charts.Chart(chartType, bin, axis)
@@ -105,23 +101,20 @@ func (c *Charts) ChartTypeData(w http.ResponseWriter, r *http.Request) {
 		log.Warnf(`Error fetching chart %s at bin level '%s': %v`, chartType, bin, err)
 		return
 	}
-
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/json")
 	resp, err := client.Do(req)
-
+	if err != nil {
+		http.NotFound(w, r)
+		log.Warnf(`Error fetching chart %s at bin level '%s': %v`, chartType, bin, err)
+		return
+	}
 	defer resp.Body.Close()
 	chartData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Print(err.Error())
+		log.Warnf(`Error fetching chart %s at bin level '%s': %v`, chartType, bin, err)
 	}
 
 	web.RenderJSONBytes(w, chartData)
 }
-
-/* func (chrt *Charts) ConnectBlock(w *wire.BlockHeader) error {
-	chrt.reorgLock.Lock()
-	defer chrt.reorgLock.Unlock()
-
-}
-*/
