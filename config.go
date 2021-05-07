@@ -171,7 +171,6 @@ type config struct {
 	EnableVSPHttp                 bool `long:"vsphttp" description:"Enable/Disable VSP http endpoint from running"`
 	EnableStats                   bool `long:"stats" description:"Enable/Disable Stats endpoint from running"`
 	EnableCharts                  bool `long:"charts" description: "Enable/Disable Charts"`
-
 	// Mempool
 	MempoolInterval float64 `long:"mempoolinterval" description:"The duration of time between mempool collection"`
 
