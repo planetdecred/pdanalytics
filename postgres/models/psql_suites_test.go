@@ -10,6 +10,12 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("BlockBins", testBlockBinsUpsert)
 
+	t.Run("Exchanges", testExchangesUpsert)
+
+	t.Run("ExchangeTicks", testExchangeTicksUpsert)
+
+	t.Run("Githubs", testGithubsUpsert)
+
 	t.Run("Heartbeats", testHeartbeatsUpsert)
 
 	t.Run("Mempools", testMempoolsUpsert)
@@ -26,11 +32,25 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("NodeVersions", testNodeVersionsUpsert)
 
+	t.Run("PowBins", testPowBinsUpsert)
+
+	t.Run("PowData", testPowDataUpsert)
+
 	t.Run("Propagations", testPropagationsUpsert)
 
-	t.Run("Proposals", testProposalsUpsert)
+	t.Run("Reddits", testRedditsUpsert)
+
+	t.Run("Twitters", testTwittersUpsert)
 
 	t.Run("Votes", testVotesUpsert)
 
 	t.Run("VoteReceiveTimeDeviations", testVoteReceiveTimeDeviationsUpsert)
+
+	t.Run("VSPS", testVSPSUpsert)
+
+	t.Run("VSPTicks", testVSPTicksUpsert)
+
+	t.Run("VSPTickBins", testVSPTickBinsUpsert)
+
+	t.Run("Youtubes", testYoutubesUpsert)
 }

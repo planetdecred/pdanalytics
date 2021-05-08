@@ -265,6 +265,11 @@ func formattedDuration(duration time.Duration, str *periodMap) string {
 	return i(durationsec) + pl(str.s, durationsec)
 }
 
+var pairMap = map[string]string{
+	"BTC/DCR": "DCR/BTC",
+	"USD/BTC": "BTC/USD",
+}
+
 // MakeTemplateFuncMap defines common template functions that are shered
 // accross all the modules. Individual modules can extend this and add
 // functions that are specific to the module
@@ -334,6 +339,14 @@ func MakeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 		"redirectToTestnet": func(netName string, message string) bool {
 			if netName != TestnetNetName && strings.Contains(message, "testnet") {
 				return true
+			}
+			return false
+		},
+		"strListContains": func(stringList []string, needle string) bool {
+			for _, value := range stringList {
+				if value == needle {
+					return true
+				}
 			}
 			return false
 		},
@@ -430,6 +443,15 @@ func MakeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 			return dateTime.Format("2006-01-02 15:04:05")
 		},
 		"floor": math.Floor,
+		"commonPair": func(pair string) string {
+			if v, f := pairMap[pair]; f {
+				return v
+			}
+			return pair
+		},
+		"stringsReplace": func(input string, old string, new string) string {
+			return strings.Replace(input, old, new, -1)
+		},
 	}
 }
 

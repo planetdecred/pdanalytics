@@ -18,5 +18,16 @@
         "block_bin",
         "vote",
         "vote_receive_time_deviation",
-        "proposal"
+        "proposal",
+        "exchange",
+        "exchange_tick",
+        "reddit",
+        "twitter",
+        "github",
+        "youtube",
+        "pow_data",
+        "pow_bin",
+        "vsp",
+		"vsp_tick",
+		"vsp_tick_bin",
     ]
