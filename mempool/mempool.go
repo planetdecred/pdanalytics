@@ -37,7 +37,7 @@ func NewCollector(ctx context.Context, client *dcrd.Dcrd, interval float64,
 			"class": "menu-item",
 			"title": "Historic mempool data",
 		},
-	})
+	}, web.HistoricNavGroup)
 
 	webServer.AddRoute("/mempool", web.GET, c.mempoolPage)
 	webServer.AddRoute("/getmempool", web.GET, c.getMempool)

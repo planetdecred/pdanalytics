@@ -11,16 +11,21 @@
             {{else}}
                 
             <div class="items ml-auto mr-auto mt-5" style="width: fit-content;">
-                {{ range $menuItem := .MenuItems }}
-                    {{ if neq $menuItem.Href "/" }}
-                    <div class="item-info pl-3 pr-3">
-                        <p>
-                            <a href="{{$menuItem.Href}}" class="header">{{$menuItem.HyperText}} -</a> {{$menuItem.Info}}
-                        </p>
-                    </div>
+                {{ range $group := .NavGroups }}
+                    <h6>{{ $group.Label }}</h6>
+                    <hr>
+
+                    {{ range $menuItem := $group.MenuItems }}
+                        {{ if neq $menuItem.Href "/" }}
+                        <div class="item-info">
+                            <p>
+                                <a href="{{$menuItem.Href}}" class="header">{{$menuItem.HyperText}} -</a> {{$menuItem.Info}}
+                            </p>
+                        </div>
+                        {{ end }}
                     {{ end }}
+
                 {{ end }}
-                
             </div>
 
             {{end}}

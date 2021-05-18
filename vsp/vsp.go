@@ -168,7 +168,7 @@ func (vsp *Collector) setupServer() error {
 			"class": "menu-item",
 			"title": "Voting Service Provider data",
 		},
-	})
+	}, web.HistoricNavGroup)
 
 	vsp.server.AddRoute("/vsp", web.GET, vsp.vspPage)
 	vsp.server.AddRoute("/vsps", web.GET, vsp.getFilteredVspTicks)

@@ -71,7 +71,7 @@ func (c *Collector) setupServer() error {
 			"class": "menu-item",
 			"title": "Historical data points for twitter, reddit, github, etc",
 		},
-	})
+	}, web.HistoricNavGroup)
 
 	if err := c.server.Templates.AddTemplate("community"); err != nil {
 		return err

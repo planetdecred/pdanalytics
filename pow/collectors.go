@@ -187,7 +187,7 @@ func (c *Collector) setupServer() error {
 			"class": "menu-item",
 			"title": "Proof of Work mining pool data",
 		},
-	})
+	}, web.HistoricNavGroup)
 	c.server.AddRoute("/pow", web.GET, c.powPage)
 	c.server.AddRoute("/filteredpow", web.GET, c.getFilteredPowData)
 	c.server.AddRoute("/api/charts/pow/{chartDataType}", web.GET, c.chart, web.ChartDataTypeCtx)

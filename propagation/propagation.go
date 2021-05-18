@@ -47,7 +47,7 @@ func New(ctx context.Context, client *dcrd.Dcrd, dataStore Store, externalDBs ma
 			"class": "menu-item",
 			"title": "Block Propagation",
 		},
-	})
+	}, web.HistoricNavGroup)
 
 	prop.server.AddRoute("/propagation", web.GET, prop.propagationPage)
 	prop.server.AddRoute("/getpropagationdata", web.GET, prop.getPropagationData)
