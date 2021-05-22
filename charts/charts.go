@@ -6,24 +6,41 @@ import (
 	"io/ioutil"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/decred/dcrd/chaincfg/v2"
+	"github.com/decred/dcrd/wire"
 
+	"github.com/planetdecred/pdanalytics/dcrd"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
 type Charts struct {
-	server      *web.Server
-	pageData    *web.PageData
-	ChainParams *chaincfg.Params
-	premine     int64
-
-	reorgLock sync.Mutex
+	client         *dcrd.Dcrd
+	server         *web.Server
+	ChainParams    *chaincfg.Params
+	premine        int64
+	targetPoolSize int64
+	reorgLock      sync.Mutex
 }
 
-func New(webServer *web.Server) (*Charts, error) {
+func New(client *dcrd.Dcrd, webServer *web.Server) (*Charts, error) {
 	chrt := &Charts{
 		server: webServer,
+		client: client,
+	}
+
+	hash, err := client.Rpc.GetBestBlockHash()
+	if err != nil {
+		return nil, err
+	}
+	blockHeader, err := client.Rpc.GetBlockHeader(hash)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = chrt.ConnectBlock(blockHeader); err != nil {
+		return nil, err
 	}
 
 	chrt.server.AddMenuItem(web.MenuItem{
@@ -41,26 +58,40 @@ func New(webServer *web.Server) (*Charts, error) {
 		return nil, err
 	}
 
-	webServer.AddRoute("/charts", web.GET, chrt.charts)
-	webServer.AddRoute("/api/chart/{chartDataType}", web.GET, chrt.ChartTypeData, web.ChartDataTypeCtx)
+	chrt.client.Notif.RegisterBlockHandlerGroup(chrt.ConnectBlock)
+
+	chrt.server.AddRoute("/charts", web.GET, chrt.charts)
+	chrt.server.AddRoute("/api/charts/{chartDataType}", web.GET, chrt.ChartTypeData, web.ChartDataTypeCtx)
 
 	return chrt, nil
+}
+
+func (ch *Charts) ConnectBlock(w *wire.BlockHeader) error {
+	ch.reorgLock.Lock()
+	defer ch.reorgLock.Unlock()
+
+	hashes, err := ch.client.Rpc.LiveTickets()
+	if err != nil {
+		return err
+	}
+	ch.targetPoolSize = int64(len(hashes))
+
+	return nil
 }
 
 //charts is the page handler for the "/charts" path
 func (ch *Charts) charts(w http.ResponseWriter, r *http.Request) {
 	ch.reorgLock.Lock()
-	tpSize := ch.pageData.HomeInfo.PoolInfo.Target
 
 	str, err := ch.server.Templates.ExecTemplateToString("charts", struct {
 		*web.CommonPageData
-		TargetPoolSize  uint32
+		TargetPoolSize  int64
 		Premine         int64
 		BreadcrumbItems []web.BreadcrumbItem
 	}{
 		CommonPageData: ch.server.CommonData(r),
 		Premine:        ch.premine,
-		TargetPoolSize: tpSize,
+		TargetPoolSize: ch.targetPoolSize,
 		BreadcrumbItems: []web.BreadcrumbItem{
 			{
 				HyperText: "Charts",
@@ -85,17 +116,21 @@ func (ch *Charts) charts(w http.ResponseWriter, r *http.Request) {
 
 func (c *Charts) ChartTypeData(w http.ResponseWriter, r *http.Request) {
 	chartType := web.GetChartDataTypeCtx(r)
+
 	bin := r.URL.Query().Get("bin")
 
+	// Support the deprecated URL parameter "zoom".
+	if bin == "" {
+		bin = r.URL.Query().Get("zoom")
+	}
 	axis := r.URL.Query().Get("axis")
 
 	//specify timeouts of
 	client := &http.Client{
-		Timeout: 20,
+		Timeout: 5 * time.Second,
 	}
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://dcrdata.decred.org/api/chart/%s?bin=%s&axis=%s", chartType, bin, axis), nil)
 
-	// chartData, err := c.charts.Chart(chartType, bin, axis)
 	if err != nil {
 		http.NotFound(w, r)
 		log.Warnf(`Error fetching chart %s at bin level '%s': %v`, chartType, bin, err)

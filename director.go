@@ -83,7 +83,7 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 
 	var chrts *charts.Charts
 	if cfg.EnableCharts {
-		chrts, err = charts.New(server)
+		chrts, err = charts.New(client, server)
 		if err != nil {
 			log.Error(err)
 			return fmt.Errorf("Failed to create Charts component, %s", err.Error())

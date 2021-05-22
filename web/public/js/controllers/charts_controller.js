@@ -19,24 +19,24 @@ const aMonth = 30 // in days
 const atomsToDCR = 1e-8
 const windowScales = ['ticket-price', 'pow-difficulty', 'missed-votes']
 const hybridScales = ['privacy-participation']
-const lineScales = ['ticket-price', 'privacy-participation']
-const modeScales = ['ticket-price']
-const multiYAxisChart = ['ticket-price', 'coin-supply', 'privacy-participation']
+const lineScales = ['ticket-price', 'privacy-participation'];
+const modeScales = ['ticket-price'];
+const multiYAxisChart = ['ticket-price', 'coin-supply', 'privacy-participation'];
 // index 0 represents y1 and 1 represents y2 axes.
 const yValueRanges = { 'ticket-price': [1] }
-var chainworkUnits = ['exahash', 'zettahash', 'yottahash']
-var hashrateUnits = ['Th/s', 'Ph/s', 'Eh/s']
-var ticketPoolSizeTarget, premine, stakeValHeight, stakeShare
-var baseSubsidy, subsidyInterval, subsidyExponent, windowSize, avgBlockTime
-var rawCoinSupply, rawPoolValue
-var yFormatter, legendEntry, legendMarker, legendElement
+var chainworkUnits = ['exahash', 'zettahash', 'yottahash'];
+var hashrateUnits = ['Th/s', 'Ph/s', 'Eh/s'];
+var ticketPoolSizeTarget, premine, stakeValHeight, stakeShare;
+var baseSubsidy, subsidyInterval, subsidyExponent, windowSize, avgBlockTime;
+var rawCoinSupply, rawPoolValue;
+var yFormatter, legendEntry, legendMarker, legendElement;
 
 function usesWindowUnits (chart) {
-  return windowScales.indexOf(chart) > -1
+  return windowScales.indexOf(chart) > -1;
 }
 
 function usesHybridUnits (chart) {
-  return hybridScales.indexOf(chart) > -1
+  return hybridScales.indexOf(chart) > -1;
 }
 
 function isScaleDisabled (chart) {
@@ -669,7 +669,7 @@ export default class extends Controller {
     }
     if (selectedChart !== selection || this.settings.bin !== this.selectedBin() ||
       this.settings.axis !== this.selectedAxis()) {
-      let url = '/api/chart/' + selection
+      let url = '/api/charts/' + selection
       if (usesWindowUnits(selection) && !usesHybridUnits(selection)) {
         this.binSelectorTarget.classList.add('d-hide')
         this.settings.bin = 'window'

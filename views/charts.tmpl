@@ -4,6 +4,7 @@
 {{template "html-head" "Charts"}}
     {{template "navbar" . }}
 
+<div class="content">
     <div data-controller="charts"
          data-charts-tps="{{.TargetPoolSize}}"
          data-charts-svh="{{.ChainParams.StakeValidationHeight}}"
@@ -278,7 +279,8 @@
         </div>
 
     </div>
-    {{ template "footer" . }}
+</div>
+{{ template "footer" . }}
 
 </body>
 </html>
