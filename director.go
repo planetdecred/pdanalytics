@@ -95,9 +95,9 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 	if cfg.EnablePropagation {
 		var syncDbs = map[string]propagation.Store{}
 		//register instances
-		for i := 0; i < len(cfg.SyncDatabases); i++ {
-			databaseName := cfg.SyncDatabases[i]
-			syncDb, err := postgres.NewPgDb(cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPass,
+		for i := 0; i < len(cfg.PropDBName); i++ {
+			databaseName := cfg.PropDBName[i]
+			syncDb, err := postgres.NewPgDb(cfg.PropDBHost[i], cfg.PropDBPort[i], cfg.PropDBUser[i], cfg.PropDBPass[i],
 				databaseName, cfg.DebugLevel == "debug")
 			if err != nil {
 				return err
