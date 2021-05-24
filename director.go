@@ -4,19 +4,26 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/decred/dcrdata/exchanges/v2"
 	"github.com/planetdecred/pdanalytics/attackcost"
+
 	"github.com/planetdecred/pdanalytics/charts"
+	"github.com/planetdecred/pdanalytics/commstats"
+
 	"github.com/planetdecred/pdanalytics/dcrd"
+	exchangesModule "github.com/planetdecred/pdanalytics/exchanges"
 	"github.com/planetdecred/pdanalytics/gov/politeia"
 	"github.com/planetdecred/pdanalytics/homepage"
 	"github.com/planetdecred/pdanalytics/mempool"
 	"github.com/planetdecred/pdanalytics/netsnapshot"
 	"github.com/planetdecred/pdanalytics/parameters"
 	"github.com/planetdecred/pdanalytics/postgres"
+	"github.com/planetdecred/pdanalytics/pow"
 	"github.com/planetdecred/pdanalytics/propagation"
 	"github.com/planetdecred/pdanalytics/stakingreward"
+	"github.com/planetdecred/pdanalytics/vsp"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
@@ -165,6 +172,51 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 			return fmt.Errorf("Failed to activate network snapshot component, %s", err.Error())
 		}
 		log.Info("Network nodes module Enabled")
+	}
+
+	if cfg.EnableExchange || cfg.EnableExchangeHttp {
+		db, err := dbInstance()
+		if err != nil {
+			return err
+		}
+		if err := exchangesModule.Activate(ctx, strings.Split(cfg.DisabledExchanges, ","), db, server,
+			cfg.EnableExchange, cfg.EnableExchangeHttp); err != nil {
+			return fmt.Errorf("Failed to ectivate the exchanges modules, %s", err.Error())
+		}
+		log.Info("Exchange module enabled")
+	}
+
+	if cfg.CommunityStat || cfg.CommunityStatHttp {
+		db, err := dbInstance()
+		if err != nil {
+			return err
+		}
+		if err := commstats.Activate(ctx, db, server, &cfg.CommunityStatOptions); err != nil {
+			return fmt.Errorf("Failed to ectivate the exchanges modules, %s", err.Error())
+		}
+		log.Info("Community stat module enabled")
+	}
+
+	if cfg.EnablePow || cfg.EnablePowHttp {
+		db, err := dbInstance()
+		if err != nil {
+			return err
+		}
+		if err := pow.Activate(ctx, cfg.DisabledPows, cfg.PowInterval, db, server, cfg.EnablePow, cfg.EnablePowHttp); err != nil {
+			return fmt.Errorf("Failed to ectivate the PoW modules, %s", err.Error())
+		}
+		log.Info("PoW module enabled")
+	}
+
+	if cfg.EnableVSP || cfg.EnableVSPHttp {
+		db, err := dbInstance()
+		if err != nil {
+			return err
+		}
+		if err := vsp.Activate(ctx, cfg.VSPInterval, db, server, cfg.EnableVSP, cfg.EnableVSPHttp); err != nil {
+			return fmt.Errorf("Failed to ectivate the VSP modules, %s", err.Error())
+		}
+		log.Info("VSP module enabled")
 	}
 
 	_, err = homepage.New(server, homepage.Mods{

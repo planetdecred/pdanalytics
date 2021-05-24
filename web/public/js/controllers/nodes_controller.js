@@ -17,12 +17,11 @@ import {
 } from '../utils'
 
 import TurboQuery from '../helpers/turbolinks_helper'
-import { getDefault } from '../helpers/module_helper'
 import { animationFrame } from '../helpers/animation_helper'
 import Zoom from '../helpers/zoom_helper'
 import humanize from '../helpers/humanize_helper'
 
-let Dygraph
+const Dygraph = require('../vendor/dygraphs.min.js')
 
 const dataTypeNodes = 'nodes'
 const dataTypeVersion = 'version'
@@ -50,10 +49,13 @@ export default class extends Controller {
     ]
   }
 
-  async initialize () {
-    Dygraph = await getDefault(
-      import(/* webpackChunkName: "dygraphs" */ '../vendor/dygraphs.min.js')
-    )
+  initialize () {
+    // Turbolinks' cache control causes the initialize method to be fired multiple time
+    // because the preview is loaded first before the actual content is gotten from the
+    // server. If this is a preview, do nothing
+    if (this.data.get('cached') === '1') return
+    this.data.set('cached', '1')
+
     this.currentPage = parseInt(this.data.get('page')) || 1
     this.pageSize = parseInt(this.data.get('pageSize')) || 20
     this.selectedViewOption = this.data.get('viewOption')

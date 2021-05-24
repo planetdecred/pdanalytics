@@ -158,6 +158,17 @@ var (
 		"vote_receive_time_deviation": createVoteReceiveTimeDeviationTableScript,
 		"proposals":                   createProposalTableScript,
 		"proposal_votes":              createProposalVotesTableScript,
+		"exchange":                    createExchangeTable,
+		"exchange_tick":               createExchangeTickTable,
+		"reddit":                      createRedditTable,
+		"twitter":                     createTwitterTable,
+		"github":                      createGithubTable,
+		"youtube":                     createYoutubeTable,
+		"pow_data":                    createPowDataTable,
+		"pow_bin":                     createPowBInTable,
+		"vsp":                         createVSPInfoTable,
+		"vsp_tick":                    createVSPTickTable,
+		"vsp_tick_bin":                createVSPTickBinTable,
 	}
 
 	tableOrder = []string{
@@ -176,6 +187,17 @@ var (
 		"vote_receive_time_deviation",
 		"proposals",
 		"proposal_votes",
+		"exchange",
+		"exchange_tick",
+		"reddit",
+		"twitter",
+		"github",
+		"youtube",
+		"pow_data",
+		"pow_bin",
+		"vsp",
+		"vsp_tick",
+		"vsp_tick_bin",
 	}
 
 	// createIndexScripts is a map of table name to a collection of index on the table
@@ -185,6 +207,12 @@ var (
 		},
 		"proposal_votes": {
 			IndexProposalVotesTableOnProposalsID,
+		},
+		"exchange_tick": {
+			createExchangeTickIndex,
+		},
+		"vsp_tick": {
+			createVSPTickIndex,
 		},
 	}
 )
@@ -212,10 +240,9 @@ func (pg *PgDb) CreateTables(ctx context.Context) error {
 				return err
 			}
 		}
-
-		return tx.Commit()
+		log.Infof("Created %s table", tableName)
 	}
-	return nil
+	return tx.Commit()
 }
 
 func (pg *PgDb) TableExists(name string) bool {

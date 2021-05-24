@@ -1,14 +1,12 @@
 package mempool
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"math"
 	"net/http"
 	"strconv"
 
-	"github.com/go-chi/chi"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
@@ -153,25 +151,4 @@ func (c *Collector) chart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	web.RenderJSONBytes(w, chartData)
-}
-
-// chartDataTypeCtx returns a http.HandlerFunc that embeds the value at the url
-// part {chartAxisType} into the request context.
-func chartDataTypeCtx(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), web.CtxChartDataType,
-			chi.URLParam(r, "chartDataType"))
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
-
-// getChartDataTypeCtx retrieves the ctxChartAxisType data from the request context.
-// If not set, the return value is an empty string.
-func getChartDataTypeCtx(r *http.Request) string {
-	chartAxisType, ok := r.Context().Value(web.CtxChartDataType).(string)
-	if !ok {
-		log.Trace("chart axis type not set")
-		return ""
-	}
-	return chartAxisType
 }
