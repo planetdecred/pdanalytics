@@ -174,12 +174,12 @@ type config struct {
 	MempoolInterval float64 `long:"mempoolinterval" description:"The duration of time between mempool collection"`
 
 	// Propagation
-	PropDBHost    []string `long:"propdbhost" description:"Propagation database host"`
-	PropDBPort    []string `long:"propdbport" description:"Propagation database port"`
-	PropDBUser    []string `long:"propdbuser" description:"Propagation database username"`
-	PropDBPass    []string `long:"propdbpass" description:"Propagation database password"`
-	PropDBName    []string `long:"propdbname" description:"Database with external block propagation entry for comparison. Must comatain block and vote tables"`
-	
+	PropDBHost []string `long:"propdbhost" description:"Propagation database host"`
+	PropDBPort []string `long:"propdbport" description:"Propagation database port"`
+	PropDBUser []string `long:"propdbuser" description:"Propagation database username"`
+	PropDBPass []string `long:"propdbpass" description:"Propagation database password"`
+	PropDBName []string `long:"propdbname" description:"Database with external block propagation entry for comparison. Must comatain block and vote tables"`
+
 	// pow
 	DisabledPows []string `long:"disabledpow" description:"Disable data collection for this Pow"`
 	PowInterval  int64    `long:"powinterval" description:"Collection interval for Pow"`
