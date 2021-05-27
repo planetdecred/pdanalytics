@@ -47,6 +47,16 @@ type MenuItem struct {
 	Attributes map[string]string
 }
 
+const (
+	MainNavGroup = iota
+	HistoricNavGroup
+)
+
+type NavGroup struct {
+	Label string
+	MenuItems []MenuItem
+}
+
 type BreadcrumbItem struct {
 	Href      string
 	HyperText string
@@ -271,7 +281,7 @@ type CommonPageData struct {
 	BlockTimeUnix int64
 	DevAddress    string
 	Links         *Links
-	MenuItems     []MenuItem
+	NavGroups     []NavGroup
 	NetName       string
 	Cookies       Cookies
 	RequestURI    string

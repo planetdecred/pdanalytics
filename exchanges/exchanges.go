@@ -236,7 +236,7 @@ func (hub *TickHub) setupHttp() error {
 			"class": "menu-item",
 			"title": "Historical exchange rate information",
 		},
-	})
+	}, web.HistoricNavGroup)
 
 	if err := hub.server.Templates.AddTemplate("exchange"); err != nil {
 		return err

@@ -96,6 +96,14 @@ export default class extends Controller {
     let startDate = moment(this.startDateTarget.value)
     let endDate = moment(this.endDateTarget.value)
 
+    if (startDate > endDate) {
+      console.log('Invalid date range')
+      if (showAlert) {
+        window.alert('Invalid date range')
+      }
+      return
+    }
+
     const days = moment.duration(endDate.diff(startDate)).asDays()
     if (days < this.rewardPeriod) {
       if (showAlert) {

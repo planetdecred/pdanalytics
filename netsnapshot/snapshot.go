@@ -271,7 +271,7 @@ func (t *taker) configHTTPHandlers() error {
 			"class": "menu-item",
 			"title": "Network nodes",
 		},
-	})
+	}, web.HistoricNavGroup)
 
 	t.server.AddRoute("/nodes", web.GET, t.nodesPage)
 	t.server.AddRoute("/api/charts/snapshot/{chartDataType}", web.GET, t.chart, web.ChartDataTypeCtx)

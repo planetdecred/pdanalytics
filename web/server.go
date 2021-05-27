@@ -90,10 +90,22 @@ func NewServer(cfg Config, mux *chi.Mux, params *chaincfg.Params) (*Server, erro
 			BlockTimeUnix: int64(params.TargetTimePerBlock.Seconds()),
 			//DevAddress:    exp.pageData.HomeInfo.DevAddress,
 			//NetName:       exp.NetName,
-			MenuItems: make([]MenuItem, 0),
+			NavGroups: make([]NavGroup, 0),
 			Links:     ExplorerLinks,
 		},
 	}
+
+	// default nav group
+	s.common.NavGroups = append(s.common.NavGroups, 
+		NavGroup{
+			Label: "Main Nav",
+			MenuItems: make([]MenuItem, 0),
+		},
+		NavGroup{
+			Label: "Historic Data",
+			MenuItems: make([]MenuItem, 0),
+		},
+	)
 
 	return s, nil
 }
@@ -118,8 +130,12 @@ func (s *Server) MountAssetPaths(pathPrefix string, publicFolder string) {
 	FileServer(s.webMux, pathPrefix+"dist", publicFolder+"dist", s.cfg.CacheControlMaxAge)
 }
 
-func (s *Server) AddMenuItem(menuItem MenuItem) {
-	s.common.MenuItems = append(s.common.MenuItems, menuItem)
+func (s *Server) AddMenuItem(menuItem MenuItem, groupKey ...int) {
+	group := MainNavGroup
+	if len(groupKey) > 0 {
+		group = groupKey[0]
+	}
+	s.common.NavGroups[group].MenuItems = append(s.common.NavGroups[group].MenuItems, menuItem)
 }
 
 // FileServer conveniently sets up a http.FileServer handler to serve static
