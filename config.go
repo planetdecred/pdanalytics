@@ -230,6 +230,7 @@ func defaultConfig() config {
 		EnableProposalsHttp:           true,
 		EnableAgendas:                 true,
 		EnableAgendasHttp:             true,
+<<<<<<< HEAD
 		EnableExchange:                true,
 		EnableExchangeHttp:            true,
 		EnablePow:                     true,
@@ -242,6 +243,20 @@ func defaultConfig() config {
 		MempoolInterval: defaultMempoolInterval,
 		PowInterval:     int64(defaultPowInterval),
 		VSPInterval:     int64(defaultVSPInterval),
+=======
+		EnableCharts:                  true,
+		MempoolInterval:               defaultMempoolInterval,
+
+		EnableExchange:     true,
+		EnableExchangeHttp: true,
+		EnablePow:          true,
+		EnablePowHttp:      true,
+		EnableVSP:          true,
+		EnableVSPHttp:      true,
+
+		PowInterval: int64(defaultPowInterval),
+		VSPInterval: int64(defaultVSPInterval),
+>>>>>>> 52e24e1 (Update config.go)
 	}
 	cfg.EnableNetworkSnapshot = true
 	cfg.EnableNetworkSnapshotHTTP = true
