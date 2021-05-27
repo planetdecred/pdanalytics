@@ -65,7 +65,9 @@ func New(client *dcrd.Dcrd, webServer *web.Server, xcBot *exchanges.ExchangeBot)
 		},
 	})
 
-	ac.server.Templates.AddTemplate("attackcost")
+	if err := ac.server.Templates.AddTemplate("attackcost"); err != nil {
+		return nil, err
+	}
 
 	ac.client.Notif.RegisterBlockHandlerGroup(ac.ConnectBlock)
 

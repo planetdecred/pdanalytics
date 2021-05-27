@@ -20,12 +20,43 @@ import (
 	"github.com/planetdecred/pdanalytics/pow"
 	"github.com/planetdecred/pdanalytics/propagation"
 	"github.com/planetdecred/pdanalytics/stakingreward"
+	"github.com/planetdecred/pdanalytics/stats"
 	"github.com/planetdecred/pdanalytics/vsp"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
 func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *web.Server, xcBot *exchanges.ExchangeBot) error {
 	var err error
+
+	var pgDb *postgres.PgDb
+	var dbInstance = func() (*postgres.PgDb, error) {
+		if pgDb == nil {
+			pgDb, err = postgres.NewPgDb(cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DebugLevel == "debug")
+			if err != nil {
+				return nil, err
+			}
+			if err = pgDb.CreateTables(ctx); err != nil {
+				log.Error("Error creating tables: ", err)
+				return nil, err
+			}
+		}
+		return pgDb, nil
+	}
+
+	if cfg.EnableStats {
+		db, err := dbInstance()
+		if err != nil {
+			return err
+		}
+
+		err = stats.Activate(server, db)
+		if err != nil {
+			log.Error(err)
+			return fmt.Errorf("Failed to create staking reward component, %s", err.Error())
+		}
+
+		log.Info("Staking Reward Calculator Enabled")
+	}
 
 	var stk *stakingreward.Calculator
 	if cfg.EnableStakingRewardCalculator {
@@ -58,21 +89,6 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 		}
 
 		log.Info("Attack Cost Calculator Enabled")
-	}
-
-	var pgDb *postgres.PgDb
-	var dbInstance = func() (*postgres.PgDb, error) {
-		if pgDb == nil {
-			pgDb, err = postgres.NewPgDb(cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DebugLevel == "debug")
-			if err != nil {
-				return nil, err
-			}
-			if err = pgDb.CreateTables(ctx); err != nil {
-				log.Error("Error creating tables: ", err)
-				return nil, err
-			}
-		}
-		return pgDb, nil
 	}
 
 	var mp *mempool.Collector

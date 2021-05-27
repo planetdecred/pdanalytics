@@ -333,7 +333,7 @@ func MakeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 			}
 			return false
 		},
-		"neq": func (a, b interface{}) bool {
+		"neq": func(a, b interface{}) bool {
 			return a != b
 		},
 		"redirectToTestnet": func(netName string, message string) bool {
@@ -402,10 +402,10 @@ func MakeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 		"normalizeBalance": func(balance float64) string {
 			return fmt.Sprintf("%010.8f DCR", balance)
 		},
-		"timestamp": func () int64 {
+		"timestamp": func() int64 {
 			return time.Now().Unix()
 		},
-		"removeStartingSlash": func (url string) string {
+		"removeStartingSlash": func(url string) string {
 			if strings.HasPrefix(url, "/") {
 				url = url[1:]
 			}
@@ -451,6 +451,28 @@ func MakeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 		},
 		"stringsReplace": func(input string, old string, new string) string {
 			return strings.Replace(input, old, new, -1)
+		},
+		"humanizeInt": func(number int64) string {
+			s := strconv.Itoa(int(number))
+			r1 := ""
+			idx := 0
+
+			// Reverse and interleave the separator.
+			for i := len(s) - 1; i >= 0; i-- {
+				idx++
+				if idx == 4 {
+					idx = 1
+					r1 = r1 + ","
+				}
+				r1 = r1 + string(s[i])
+			}
+
+			// Reverse back and return.
+			r2 := ""
+			for i := len(r1) - 1; i >= 0; i-- {
+				r2 = r2 + string(r1[i])
+			}
+			return r2
 		},
 	}
 }

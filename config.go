@@ -169,6 +169,7 @@ type config struct {
 	EnablePowHttp                 bool `long:"powhttp" description:"Enable/Disable PoW http endpoint from running"`
 	EnableVSP                     bool `long:"vsp" description:"Enable/Disable VSP module from running"`
 	EnableVSPHttp                 bool `long:"vsphttp" description:"Enable/Disable VSP http endpoint from running"`
+	EnableStats                   bool `long:"stats" description:"Enable/Disable Stats endpoint from running"`
 
 	// Mempool
 	MempoolInterval float64 `long:"mempoolinterval" description:"The duration of time between mempool collection"`
@@ -235,6 +236,7 @@ func defaultConfig() config {
 		EnablePowHttp:                 true,
 		EnableVSP:                     true,
 		EnableVSPHttp:                 true,
+		EnableStats:                   true,
 
 		MempoolInterval: defaultMempoolInterval,
 		PowInterval:     int64(defaultPowInterval),
