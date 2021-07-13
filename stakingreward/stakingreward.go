@@ -220,11 +220,11 @@ func (calc *Calculator) simulateStakingReward(numberOfDays float64, startingDCRB
 		daysPassed := blocksPassed / blocksPerDay
 		day := simulationTable[len(simulationTable)-1].SimDay + int(daysPassed)
 		simulationTable = append(simulationTable, simulationRow{
-			SimBlock:     simblock,
-			SimDay:       day,
-			DCRBalance:   DCRBalance,
-			Reward:       (StakeRewardAtBlock(simblock) * ticketsPurchased),
-			TicketPrice:  TheoreticalTicketPrice(simblock) * TicketAdjustmentFactor,
+			SimBlock:    simblock,
+			SimDay:      day,
+			DCRBalance:  DCRBalance,
+			Reward:      (StakeRewardAtBlock(simblock) * ticketsPurchased),
+			TicketPrice: TheoreticalTicketPrice(simblock) * TicketAdjustmentFactor,
 		})
 
 		// Move forward to coinbase maturity
