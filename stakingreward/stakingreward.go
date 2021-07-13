@@ -203,6 +203,7 @@ func (calc *Calculator) simulateStakingReward(numberOfDays float64, startingDCRB
 
 		simulationTable[len(simulationTable)-1].TicketPrice = TicketPrice
 		simulationTable[len(simulationTable)-1].TicketsPurchased = ticketsPurchased
+		simulationTable[len(simulationTable)-1].LockedFund = ticketsPurchased * TicketPrice
 
 		DCRBalance -= (TicketPrice * ticketsPurchased)
 
@@ -223,7 +224,6 @@ func (calc *Calculator) simulateStakingReward(numberOfDays float64, startingDCRB
 			SimDay:       day,
 			DCRBalance:   DCRBalance,
 			Reward:       (StakeRewardAtBlock(simblock) * ticketsPurchased),
-			ReturnedFund: (TicketPrice * ticketsPurchased),
 			TicketPrice:  TheoreticalTicketPrice(simblock) * TicketAdjustmentFactor,
 		})
 
