@@ -33,5 +33,5 @@ type simulationRow struct {
 	DCRBalance       float64 `json:"dcr_balance"`
 	TicketsPurchased float64 `json:"tickets_purchased"`
 	Reward           float64 `json:"reward"`
-	ReturnedFund     float64 `json:"returned_fund"`
+	LockedFund       float64 `json:"locked_fund"`
 }
