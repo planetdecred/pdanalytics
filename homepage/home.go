@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/planetdecred/pdanalytics/attackcost"
+	"github.com/planetdecred/pdanalytics/charts"
 	"github.com/planetdecred/pdanalytics/parameters"
 	"github.com/planetdecred/pdanalytics/stakingreward"
 	"github.com/planetdecred/pdanalytics/web"
@@ -16,9 +17,10 @@ type Home struct {
 }
 
 type Mods struct {
-	Ac  *attackcost.Attackcost
-	Stk *stakingreward.Calculator
-	Prm *parameters.Parameters
+	Ac    *attackcost.Attackcost
+	Stk   *stakingreward.Calculator
+	Prm   *parameters.Parameters
+	Chrts *charts.Charts
 }
 
 func New(server *web.Server, mods Mods) (*Home, error) {
@@ -40,19 +42,22 @@ func (hm *Home) homepage(w http.ResponseWriter, r *http.Request) {
 	stk := hm.mods.Stk != nil
 	ac := hm.mods.Ac != nil
 	prm := hm.mods.Prm != nil
+	chrts := hm.mods.Chrts != nil
 	str, err := hm.server.Templates.ExecTemplateToString("home", struct {
 		*web.CommonPageData
 		NoModEnabled         bool
 		StakingRewardEnabled bool
 		ParametersEnabled    bool
 		AttackCostEnabled    bool
+		ChartsEnabled        bool
 		BreadcrumbItems      []web.BreadcrumbItem
 	}{
-		NoModEnabled:         !(stk || prm || ac),
+		NoModEnabled:         !(stk || prm || ac || chrts),
 		CommonPageData:       hm.server.CommonData(r),
 		StakingRewardEnabled: stk,
 		ParametersEnabled:    prm,
 		AttackCostEnabled:    ac,
+		ChartsEnabled:        chrts,
 		BreadcrumbItems: []web.BreadcrumbItem{
 			{
 				HyperText: "Home",

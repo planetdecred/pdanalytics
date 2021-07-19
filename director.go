@@ -8,6 +8,7 @@ import (
 
 	"github.com/decred/dcrdata/exchanges/v2"
 	"github.com/planetdecred/pdanalytics/attackcost"
+	"github.com/planetdecred/pdanalytics/charts"
 	"github.com/planetdecred/pdanalytics/commstats"
 	"github.com/planetdecred/pdanalytics/dcrd"
 	exchangesModule "github.com/planetdecred/pdanalytics/exchanges"
@@ -78,6 +79,17 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 		}
 
 		log.Info("Chain Parameters Enabled")
+	}
+
+	var chrts *charts.Charts
+	if cfg.EnableCharts {
+		chrts, err = charts.New(client, server)
+		if err != nil {
+			log.Error(err)
+			return fmt.Errorf("Failed to create Charts component, %s", err.Error())
+		}
+
+		log.Info("Charts parameters Enabled")
 	}
 
 	var ac *attackcost.Attackcost
@@ -222,9 +234,10 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 	}
 
 	_, err = homepage.New(server, homepage.Mods{
-		Stk: stk,
-		Prm: prms,
-		Ac:  ac,
+		Stk:   stk,
+		Prm:   prms,
+		Ac:    ac,
+		Chrts: chrts,
 	})
 	if err != nil {
 		log.Error(err)
