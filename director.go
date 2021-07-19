@@ -8,8 +8,8 @@ import (
 
 	"github.com/decred/dcrdata/exchanges/v2"
 	"github.com/planetdecred/pdanalytics/attackcost"
-	"github.com/planetdecred/pdanalytics/commstats"
 	"github.com/planetdecred/pdanalytics/charts"
+	"github.com/planetdecred/pdanalytics/commstats"
 	"github.com/planetdecred/pdanalytics/dcrd"
 	exchangesModule "github.com/planetdecred/pdanalytics/exchanges"
 	"github.com/planetdecred/pdanalytics/gov/politeia"

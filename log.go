@@ -9,9 +9,9 @@ import (
 	"github.com/jrick/logrotate/rotator"
 	"github.com/planetdecred/pdanalytics/attackcost"
 	"github.com/planetdecred/pdanalytics/chart"
+	"github.com/planetdecred/pdanalytics/charts"
 	"github.com/planetdecred/pdanalytics/commstats"
 	"github.com/planetdecred/pdanalytics/exchanges"
-	"github.com/planetdecred/pdanalytics/charts"
 	"github.com/planetdecred/pdanalytics/gov/politeia"
 	"github.com/planetdecred/pdanalytics/homepage"
 	"github.com/planetdecred/pdanalytics/mempool"
@@ -97,22 +97,22 @@ func init() {
 
 // subsystemLoggers maps each subsystem identifier to its associated logger.
 var subsystemLoggers = map[string]slog.Logger{
-	"PDAN": log,
-	"PARA": paramLog,
-	"ATCK": attackcostLog,
-	"STCK": stakingrewardLog,
-	"HOME": homeLog,
-	"PROP": propLog,
-	"NETS": snapshotLog,
-	"WEBL": webLogger,
-	"MEMP": mempoolLog,
-	"PSQL": psqlLog,
-	"POLI": politeiaLog,
-	"EXCH": exchangeLog,
-	"COMM": commLog,
-	"POWL": powLog,
-	"VSPL": vspLog,
-	"STAT": statsLog,
+	"PDAN":  log,
+	"PARA":  paramLog,
+	"ATCK":  attackcostLog,
+	"STCK":  stakingrewardLog,
+	"HOME":  homeLog,
+	"PROP":  propLog,
+	"NETS":  snapshotLog,
+	"WEBL":  webLogger,
+	"MEMP":  mempoolLog,
+	"PSQL":  psqlLog,
+	"POLI":  politeiaLog,
+	"EXCH":  exchangeLog,
+	"COMM":  commLog,
+	"POWL":  powLog,
+	"VSPL":  vspLog,
+	"STAT":  statsLog,
 	"CHRTS": chartsLog,
 }
 
