@@ -4,12 +4,12 @@ import Zoom from '../helpers/zoom_helper'
 import { darkEnabled } from '../services/theme_service'
 import { animationFrame } from '../helpers/animation_helper'
 import { getDefault } from '../helpers/module_helper'
-import axios from 'axios'
 import TurboQuery from '../helpers/turbolinks_helper'
 import globalEventBus from '../services/event_bus_service'
 import { isEqual } from '../helpers/chart_helper'
 import dompurify from 'dompurify'
 import humanize from '../helpers/humanize_helper'
+import axios from 'axios'
 
 var selectedChart
 let Dygraph // lazy loaded on connect
