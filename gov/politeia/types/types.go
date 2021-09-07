@@ -4,6 +4,11 @@
 package types
 
 import (
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
+	"time"
+
 	recordsv1 "github.com/decred/politeia/politeiawww/api/records/v1"
 	ticketvotev1 "github.com/decred/politeia/politeiawww/api/ticketvote/v1"
 )
