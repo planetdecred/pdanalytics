@@ -2,15 +2,14 @@ package politeia
 
 import (
 	"context"
-	"database/sql"
-	"errors"
-	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
+	"fmt"
+	"database/sql"
 
 	"github.com/decred/dcrd/wire"
-	piproposals "github.com/dmigwi/go-piparser/proposals"
+	//piproposals "github.com/dmigwi/go-piparser/proposals"
 	pitypes "github.com/dmigwi/go-piparser/proposals/types"
 	"github.com/planetdecred/pdanalytics/dcrd"
 	dbtypes "github.com/planetdecred/pdanalytics/gov/politeia/types"
@@ -28,8 +27,8 @@ type dataSource interface {
 	RetrieveLastCommitTime() (time.Time, error)
 	InsertProposal(tokenHash, author, commit string, timestamp time.Time, checked bool) (uint64, error)
 	InsertProposalVote(proposalRowID uint64, ticket, choice string, checked bool) (uint64, error)
-	RetrieveProposalVotesData(ctx context.Context, proposalToken string) (*dbtypes.ProposalChartsData, error)
-	ProposalVotes(ctx context.Context, proposalToken string) (*dbtypes.ProposalChartsData, error)
+	RetrieveProposalVotesData(ctx context.Context, proposalToken string) (*dbtypes.ProposalChartData, error)
+	ProposalVotes(ctx context.Context, proposalToken string) (*dbtypes.ProposalChartData, error)
 }
 
 // ProposalsFetcher defines the interface of the proposals plug-n-play data source.
@@ -49,7 +48,7 @@ type proposals struct {
 	ctx           context.Context
 	client        *dcrd.Dcrd
 	server        *web.Server
-	db            *ProposalDB
+	db            *ProposalsDB
 	politeiaURL   string
 	dataSource    dataSource
 	piparser      ProposalsFetcher
@@ -91,7 +90,7 @@ func Activate(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource,
 
 	if httpMode {
 		prop.server.AddRoute("/proposals", web.GET, prop.ProposalsPage)
-		prop.server.AddRoute("/proposal/{proposalrefid}", web.GET, prop.ProposalPage, proposalPathCtx)
+		prop.server.AddRoute("/proposal/{token}", web.GET, prop.ProposalPage, proposalTokenCtx)
 		prop.server.AddRoute("/api/proposal/{token}", web.GET, prop.getProposalChartData, proposalTokenCtx)
 
 		if err := prop.server.Templates.AddTemplate("proposals"); err != nil {
@@ -112,13 +111,15 @@ func Activate(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource,
 		})
 	}
 
-	db, err := newProposalsDB(politeiaURL, dbPath)
+	db, err := NewProposalsDB(politeiaURL, dbPath)
 	if err != nil {
 		return err
 	}
 	prop.db = db
 
-	if dataMode {
+	prop.start(ctx)
+
+	/*if dataMode {
 		log.Info("Creating proposal perser. This may take some time")
 		parser, err := piproposals.NewParser(piPropRepoOwner, piPropRepoName, dataDir)
 		if err != nil {
@@ -131,37 +132,34 @@ func Activate(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource,
 		prop.piparser = parser
 
 		log.Info("Proposal perser created. Starting handler...")
-		prop.start(ctx)
-	}
+		
+	}*/
 
 	return nil
 }
 
 func (prop *proposals) start(ctx context.Context) {
-
-	// Initiate the piparser handler here.
-	prop.startPiparserHandler(ctx)
 	// Retrieve newly added proposals and add them to the proposals db(storm).
 	// Proposal db update is made asynchronously to ensure that the system works
 	// even when the Politeia API endpoint set is down.
 	go func() {
-		if err := prop.db.CheckProposalsUpdates(); err != nil {
+		if err := prop.db.ProposalsSync(); err != nil {
 			log.Errorf("updating proposals db failed: %v", err)
 		}
 	}()
 
 	// An error in fetching the updates should not stop the system
 	// functionality since it could be attributed to the external systems used.
-	log.Info("Running updates retrieval for Politeia's Proposals. Please wait...")
+	// log.Info("Running updates retrieval for Politeia's Proposals. Please wait...")
 
 	// Fetch updates for Politiea's Proposal history(votes) data via the parser.
-	commitsCount, err := prop.PiProposalsHistory(ctx)
+	/*commitsCount, err := prop.PiProposalsHistory(ctx)
 	if err != nil {
 		log.Errorf("proposals.PiProposalsHistory failed : %v", err)
 	} else {
 		log.Infof("%d politeia's proposal (auxiliary db) commits were processed",
 			commitsCount)
-	}
+	}*/
 }
 
 func (prop *proposals) connectBlock(w *wire.BlockHeader) error {
@@ -207,12 +205,12 @@ func (prop *proposals) proposalsUpdateHandler(ctx context.Context) {
 			}
 		}()
 		for range prop.piparser.UpdateSignal() {
-			count, err := prop.PiProposalsHistory(ctx)
+			/*count, err := prop.PiProposalsHistory(ctx)
 			if err != nil {
 				log.Error("pgb.PiProposalsHistory failed : %v", err)
 			} else {
 				log.Infof("%d politeia's proposal commits were processed", count)
-			}
+			}*/
 		}
 	}()
 }
@@ -293,9 +291,4 @@ func (prop *proposals) PiProposalsHistory(ctx context.Context) (int64, error) {
 	}
 
 	return commitsCount, err
-}
-
-// ProposalVotes retrieves all the votes data associated with the provided token.
-func (prop *proposals) ProposalVotes(ctx context.Context, proposalToken string) (*dbtypes.ProposalChartsData, error) {
-	return prop.dataSource.RetrieveProposalVotesData(ctx, proposalToken)
 }
