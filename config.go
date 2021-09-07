@@ -78,7 +78,7 @@ var (
 	// gov
 	defaultAgendasDBFileName  = "agendas.db"
 	defaultProposalsFileName  = "proposals.db"
-	defaultPoliteiaAPIURl     = "https://proposals.decred.org"
+	defaultPoliteiaAPIURl     = "https://proposals.decred.org/"
 	defaultPiPropoalRepoOwner = "decred-proposals"
 	defaultPiProposalRepo     = "mainnet"
 
