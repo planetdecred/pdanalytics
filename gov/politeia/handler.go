@@ -7,9 +7,10 @@ import (
 	"strconv"
 	"time"
 
+	pitypes "github.com/decred/dcrdata/gov/v4/politeia/types"
+	ticketvotev1 "github.com/decred/politeia/politeiawww/api/ticketvote/v1"
 	"github.com/go-chi/chi"
 	"github.com/planetdecred/pdanalytics/dbhelper"
-	pitypes "github.com/planetdecred/pdanalytics/gov/politeia/types"
 	"github.com/planetdecred/pdanalytics/web"
 )
 
@@ -36,7 +37,7 @@ func (prop *proposals) ProposalsPage(w http.ResponseWriter, r *http.Request) {
 		offset = val
 	}
 	var filterBy uint64
-	if filterByStr := r.URL.Query().Get("byvotestatus"); filterByStr != "" && filterByStr != "all" {
+	if filterByStr := r.URL.Query().Get("byvotestatus"); filterByStr != "" {
 		val, err := strconv.ParseUint(filterByStr, 10, 64)
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -47,14 +48,14 @@ func (prop *proposals) ProposalsPage(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 	var count int
-	var proposals []*pitypes.ProposalInfo
+	var proposals []*pitypes.ProposalRecord
 
 	// Check if filter by votes status query parameter was passed.
 	if filterBy > 0 {
-		proposals, count, err = prop.db.AllProposals(int(offset),
+		proposals, count, err = prop.db.ProposalsAll(int(offset),
 			int(rowsCount), int(filterBy))
 	} else {
-		proposals, count, err = prop.db.AllProposals(int(offset),
+		proposals, count, err = prop.db.ProposalsAll(int(offset),
 			int(rowsCount))
 	}
 
@@ -64,14 +65,36 @@ func (prop *proposals) ProposalsPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	lastOffsetRows := uint64(count) % rowsCount
+	var lastOffset uint64
+
+	if lastOffsetRows == 0 && uint64(count) > rowsCount {
+		lastOffset = uint64(count) - rowsCount
+	} else if lastOffsetRows > 0 && uint64(count) > rowsCount {
+		lastOffset = uint64(count) - lastOffsetRows
+	}
+
+	// Parse vote statuses map with only used status by the UI. Also
+	// capitalizes first letter of the string status format.
+	votesStatus := map[ticketvotev1.VoteStatusT]string{
+		ticketvotev1.VoteStatusUnauthorized: "Unauthorized",
+		ticketvotev1.VoteStatusAuthorized:   "Authorized",
+		ticketvotev1.VoteStatusStarted:      "Started",
+		ticketvotev1.VoteStatusFinished:     "Finished",
+		ticketvotev1.VoteStatusApproved:     "Approved",
+		ticketvotev1.VoteStatusRejected:     "Rejected",
+		ticketvotev1.VoteStatusIneligible:   "Ineligible",
+	}
+
 	str, err := prop.server.Templates.ExecTemplateToString("proposals", struct {
 		*web.CommonPageData
-		Proposals       []*pitypes.ProposalInfo
-		VotesStatus     map[pitypes.VoteStatusType]string
+		Proposals       []*pitypes.ProposalRecord
+		VotesStatus     map[ticketvotev1.VoteStatusT]string
 		VStatusFilter   int
 		Offset          int64
 		Limit           int64
 		TotalCount      int64
+		LastOffset      int64
 		PoliteiaURL     string
 		LastVotesSync   int64
 		LastPropSync    int64
@@ -81,14 +104,15 @@ func (prop *proposals) ProposalsPage(w http.ResponseWriter, r *http.Request) {
 	}{
 		CommonPageData: prop.server.CommonData(r),
 		Proposals:      proposals,
-		VotesStatus:    pitypes.VotesStatuses(),
+		VotesStatus:    votesStatus,
 		Offset:         int64(offset),
 		Limit:          int64(rowsCount),
 		VStatusFilter:  int(filterBy),
 		TotalCount:     int64(count),
+		LastOffset:     int64(lastOffset),
 		PoliteiaURL:    prop.politeiaURL,
 		LastVotesSync:  prop.LastPiParserSync().UTC().Unix(),
-		LastPropSync:   prop.db.LastProposalsSync(),
+		LastPropSync:   prop.db.ProposalsLastSync(),
 		TimePerBlock:   int64(prop.client.Params.TargetTimePerBlock.Seconds()),
 		Height:         prop.height,
 		BreadcrumbItems: []web.BreadcrumbItem{
@@ -112,8 +136,8 @@ func (prop *proposals) ProposalsPage(w http.ResponseWriter, r *http.Request) {
 // ProposalPage is the page handler for the "/proposal" path.
 func (prop *proposals) ProposalPage(w http.ResponseWriter, r *http.Request) {
 	// Attempts to retrieve a proposal refID from the URL path.
-	param := getProposalPathCtx(r)
-	proposalInfo, err := prop.db.ProposalByRefID(param)
+	param := getProposalTokenCtx(r)
+	/*proposalInfo, err := prop.db.ProposalByRefID(param)
 	if err != nil {
 		// Check if the URL parameter passed is a proposal token and attempt to
 		// fetch its data.
@@ -127,19 +151,28 @@ func (prop *proposals) ProposalPage(w http.ResponseWriter, r *http.Request) {
 		log.Errorf("Template execute failure: %v", err)
 		prop.server.StatusPage(w, r, web.DefaultErrorCode, "the proposal token or RefID does not exist", "", web.ExpStatusNotFound)
 		return
+	}*/
+
+	proposalInfo, err := prop.db.ProposalByToken(param)
+	if err != nil {
+		log.Errorf("Template execute failure: %v", err)
+		prop.server.StatusPage(w, r, web.DefaultErrorCode, "the proposal token or RefID does not exist", "", web.ExpStatusNotFound)
+		return
 	}
 
 	commonData := prop.server.CommonData(r)
 	str, err := prop.server.Templates.ExecTemplateToString("proposal", struct {
 		*web.CommonPageData
-		Data            *pitypes.ProposalInfo
+		Data            *pitypes.ProposalRecord
 		PoliteiaURL     string
+		ShortToken      string
 		Metadata        *pitypes.ProposalMetadata
 		BreadcrumbItems []web.BreadcrumbItem
 	}{
 		CommonPageData: commonData,
 		Data:           proposalInfo,
 		PoliteiaURL:    prop.politeiaURL,
+		ShortToken:     proposalInfo.Token[0:7],
 		Metadata: proposalInfo.Metadata(int64(commonData.Tip.Height),
 			int64(prop.client.Params.TargetTimePerBlock/time.Second)),
 		BreadcrumbItems: []web.BreadcrumbItem{
@@ -184,7 +217,7 @@ func (prop *proposals) getProposalChartData(w http.ResponseWriter, r *http.Reque
 }
 
 func getProposalPathCtx(r *http.Request) string {
-	hash, ok := r.Context().Value(web.CtxProposalRefID).(string)
+	hash, ok := r.Context().Value(web.CtxProposalToken).(string)
 	if !ok {
 		log.Trace("Proposal ref ID not set")
 		return ""
@@ -192,11 +225,11 @@ func getProposalPathCtx(r *http.Request) string {
 	return hash
 }
 
-// proposalPathCtx embeds "proposalrefID" into the request context
+// proposalPathCtx embeds "proposaltoken" into the request context
 func proposalPathCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		proposalRefID := chi.URLParam(r, "proposalrefid")
-		ctx := context.WithValue(r.Context(), web.CtxProposalRefID, proposalRefID)
+		proposalToken := chi.URLParam(r, "proposaltoke")
+		ctx := context.WithValue(r.Context(), web.CtxProposalToken, proposalToken)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
