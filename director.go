@@ -150,16 +150,14 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 			return err
 		}
 
-		go func() {
-			err = politeia.Activate(ctx, client, db, cfg.PoliteiaAPIURL,
-				cfg.ProposalsFileName, cfg.PiPropRepoOwner, cfg.PiPropRepoName, cfg.DataDir, server,
-				cfg.EnableProposals, cfg.EnableProposalsHttp)
-			if err != nil {
-				log.Error(err)
-				requestShutdown()
-			}
-			log.Info("Proposals module Enabled")
-		}()
+		err = politeia.Activate(ctx, client, db, cfg.PoliteiaAPIURL,
+			cfg.ProposalsFileName, cfg.PiPropRepoOwner, cfg.PiPropRepoName, cfg.DataDir, server,
+			cfg.EnableProposals, cfg.EnableProposalsHttp)
+		if err != nil {
+			log.Error(err)
+			requestShutdown()
+		}
+		log.Info("Proposals module Enabled")
 	}
 
 	if cfg.EnableNetworkSnapshot || cfg.EnableNetworkSnapshotHTTP {
