@@ -111,6 +111,24 @@ func (prop *proposals) start(ctx context.Context) {
 			log.Errorf("updating proposals db failed: %v", err)
 		}
 	}()
+
+	// Retrieve newly added proposals and add them to the proposals db(storm),
+	// Every 5 minutes.
+	ticker := time.NewTicker(5 * time.Minute)
+	go func() {
+	    for {
+	       select {
+	        case <- ticker.C:
+	          if err := prop.db.ProposalsSync(); err != nil {
+	          	log.Errorf("updating proposals db failed: %v", err)
+	          }  
+	        case <- ctx.Done():
+	        	 log.Info("Shutting down Proposal Syncer")
+	            ticker.Stop()
+	            return
+	        }
+	    }
+	 }()
 }
 
 func (prop *proposals) connectBlock(w *wire.BlockHeader) error {
