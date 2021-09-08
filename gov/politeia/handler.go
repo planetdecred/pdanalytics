@@ -96,7 +96,6 @@ func (prop *proposals) ProposalsPage(w http.ResponseWriter, r *http.Request) {
 		TotalCount      int64
 		LastOffset      int64
 		PoliteiaURL     string
-		LastVotesSync   int64
 		LastPropSync    int64
 		TimePerBlock    int64
 		Height          uint32
@@ -111,7 +110,6 @@ func (prop *proposals) ProposalsPage(w http.ResponseWriter, r *http.Request) {
 		TotalCount:     int64(count),
 		LastOffset:     int64(lastOffset),
 		PoliteiaURL:    prop.politeiaURL,
-		LastVotesSync:  prop.LastPiParserSync().UTC().Unix(),
 		LastPropSync:   prop.db.ProposalsLastSync(),
 		TimePerBlock:   int64(prop.client.Params.TargetTimePerBlock.Seconds()),
 		Height:         prop.height,
@@ -135,24 +133,8 @@ func (prop *proposals) ProposalsPage(w http.ResponseWriter, r *http.Request) {
 
 // ProposalPage is the page handler for the "/proposal" path.
 func (prop *proposals) ProposalPage(w http.ResponseWriter, r *http.Request) {
-	// Attempts to retrieve a proposal refID from the URL path.
+	// Attempts to retrieve a proposal tonken from the URL path.
 	param := getProposalTokenCtx(r)
-	/*proposalInfo, err := prop.db.ProposalByRefID(param)
-	if err != nil {
-		// Check if the URL parameter passed is a proposal token and attempt to
-		// fetch its data.
-		proposalInfo, newErr := prop.db.ProposalByToken(param)
-		if newErr == nil && proposalInfo != nil && proposalInfo.RefID != "" {
-			// redirect to a human readable url (replace the token with the RefID)
-			http.Redirect(w, r, "/proposal/"+proposalInfo.RefID, http.StatusPermanentRedirect)
-			return
-		}
-
-		log.Errorf("Template execute failure: %v", err)
-		prop.server.StatusPage(w, r, web.DefaultErrorCode, "the proposal token or RefID does not exist", "", web.ExpStatusNotFound)
-		return
-	}*/
-
 	proposalInfo, err := prop.db.ProposalByToken(param)
 	if err != nil {
 		log.Errorf("Template execute failure: %v", err)
@@ -200,26 +182,27 @@ func (prop *proposals) ProposalPage(w http.ResponseWriter, r *http.Request) {
 
 func (prop *proposals) getProposalChartData(w http.ResponseWriter, r *http.Request) {
 	token := getProposalTokenCtx(r)
-	votesData, err := prop.dataSource.ProposalVotes(r.Context(), token)
+
+	proposal, err := prop.db.ProposalByToken(token)
 	if dbhelper.IsTimeoutErr(err) {
 		log.Errorf("ProposalVotes: %v", err)
 		http.Error(w, "Database timeout.", http.StatusServiceUnavailable)
 		return
 	}
 	if err != nil {
-		log.Errorf("Unable to get proposals votes for token %s : %v", token, err)
+		log.Errorf("Unable to get proposals chart data for token %s : %v", token, err)
 		http.Error(w, http.StatusText(http.StatusUnprocessableEntity),
 			http.StatusUnprocessableEntity)
 		return
 	}
 
-	web.RenderJSON(w, votesData)
+	web.RenderJSON(w, proposal.ChartData)
 }
 
 func getProposalPathCtx(r *http.Request) string {
 	hash, ok := r.Context().Value(web.CtxProposalToken).(string)
 	if !ok {
-		log.Trace("Proposal ref ID not set")
+		log.Trace("Proposal token not set")
 		return ""
 	}
 	return hash
