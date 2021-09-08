@@ -114,7 +114,7 @@ func (pg *PgDb) InsertProposalVote(proposalRowID uint64, ticket, choice string, 
 // retrieveProposalVotesData returns the vote data associated with the provided
 // proposal token.
 func (pg *PgDb) RetrieveProposalVotesData(ctx context.Context,
-	proposalToken string) (*dbtypes.ProposalChartsData, error) {
+	proposalToken string) (*dbtypes.ProposalChartData, error) {
 	rows, err := pg.db.QueryContext(ctx, SelectProposalVotesChartData, proposalToken)
 	if err != nil {
 		return nil, err
@@ -122,7 +122,7 @@ func (pg *PgDb) RetrieveProposalVotesData(ctx context.Context,
 
 	defer closeRows(rows)
 
-	data := new(dbtypes.ProposalChartsData)
+	data := new(dbtypes.ProposalChartData)
 	for rows.Next() {
 		var yes, no uint64
 		var timestamp time.Time
@@ -133,7 +133,7 @@ func (pg *PgDb) RetrieveProposalVotesData(ctx context.Context,
 
 		data.No = append(data.No, no)
 		data.Yes = append(data.Yes, yes)
-		data.Time = append(data.Time, dbtypes.NewTimeDef(timestamp))
+		data.Time = append(data.Time, timestamp.Unix())
 	}
 	err = rows.Err()
 
@@ -141,7 +141,7 @@ func (pg *PgDb) RetrieveProposalVotesData(ctx context.Context,
 }
 
 // ProposalVotes retrieves all the votes data associated with the provided token.
-func (pg *PgDb) ProposalVotes(ctx context.Context, proposalToken string) (*dbtypes.ProposalChartsData, error) {
+func (pg *PgDb) ProposalVotes(ctx context.Context, proposalToken string) (*dbtypes.ProposalChartData, error) {
 	ctx, cancel := context.WithTimeout(ctx, pg.queryTimeout)
 	defer cancel()
 	chartsData, err := pg.RetrieveProposalVotesData(ctx, proposalToken)
