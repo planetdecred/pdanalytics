@@ -1,14 +1,14 @@
 import { Controller } from 'stimulus'
 import { MiniMeter } from '../helpers/meters.js'
-// import { darkEnabled } from '../services/theme_service'
+import { darkEnabled } from '../services/theme_service'
 import globalEventBus from '../services/event_bus_service'
 import { getDefault } from '../helpers/module_helper'
 import { multiColumnBarPlotter, synchronize } from '../helpers/chart_helper'
 import dompurify from 'dompurify'
-import axios from 'axios'
 import humanize from '../helpers/humanize_helper'
+import { requestJSON } from '../helpers/http'
 
-let common = {
+const common = {
   labelsKMB: true,
   legend: 'always',
   fillGraph: true,
@@ -18,16 +18,16 @@ let common = {
   legendFormatter: legendFormatter
 }
 
-let percentConfig = {
+const percentConfig = {
   ...common,
   labels: ['Date', 'Percent Yes'],
   ylabel: 'Approval (%)',
   colors: ['#2971FF'],
   labelsSeparateLines: true,
   underlayCallback: function (context, area, g) {
-    let xVals = g.xAxisExtremes()
-    let xl = g.toDomCoords(xVals[0], 60)
-    let xr = g.toDomCoords(xVals[1], 60)
+    const xVals = g.xAxisExtremes()
+    const xl = g.toDomCoords(xVals[0], 60)
+    const xr = g.toDomCoords(xVals[1], 60)
 
     context.beginPath()
     context.strokeStyle = '#ED6D47'
@@ -40,15 +40,15 @@ let percentConfig = {
   }
 }
 
-let cumulativeConfig = {
+const cumulativeConfig = {
   ...common,
   labels: ['Date', 'Total Votes'],
   ylabel: 'Vote Count',
   colors: ['#2971FF'],
   underlayCallback: function (context, area, g) {
-    let xVals = g.xAxisExtremes()
-    let xl = g.toDomCoords(xVals[0], 8269)
-    let xr = g.toDomCoords(xVals[1], 8269)
+    const xVals = g.xAxisExtremes()
+    const xl = g.toDomCoords(xVals[0], 8269)
+    const xr = g.toDomCoords(xVals[1], 8269)
 
     context.beginPath()
     context.strokeStyle = '#ED6D47'
@@ -73,7 +73,7 @@ function legendFormatter (data) {
     data.series.forEach(function (series, index) {
       if (!series.isVisible) return
 
-      var symbol = ''
+      let symbol = ''
       if (series.labelHTML.includes('Percent')) {
         series.labelHTML = 'Yes'
         symbol = '%'
@@ -83,7 +83,7 @@ function legendFormatter (data) {
         // html += ' <br> '
       }
 
-      var labeledData = '<span style="color:' + series.color + ';">' +
+      const labeledData = '<span style="color:' + series.color + ';">' +
         series.labelHTML + ' </span> : ' + Math.abs(series.y)
       html += series.dashHTML + ' ' + labeledData + '' + symbol + ' &nbsp;'
     })
@@ -92,7 +92,7 @@ function legendFormatter (data) {
   return html
 }
 
-var hourlyVotesConfig = {
+const hourlyVotesConfig = {
   ...common,
   plotter: multiColumnBarPlotter,
   showRangeSelector: true,
@@ -104,7 +104,7 @@ var hourlyVotesConfig = {
 }
 
 let gs = []
-let Dygraph // lazy loaded on connect
+let Dygraph
 let chartData = {}
 
 let percentData
@@ -119,9 +119,9 @@ export default class extends Controller {
 
   async connect () {
     if (this.hasApprovalMeterTarget) {
-      let d = this.approvalMeterTarget.dataset
-      var opts = {
-        darkMode: false, // darkEnabled(),
+      const d = this.approvalMeterTarget.dataset
+      const opts = {
+        darkMode: darkEnabled(),
         segments: [
           { end: d.threshold, color: '#ed6d47' },
           { end: 1, color: '#2dd8a3' }
@@ -130,12 +130,7 @@ export default class extends Controller {
       this.approvalMeter = new MiniMeter(this.approvalMeterTarget, opts)
     }
 
-    if (!this.hasTokenTarget) {
-      return
-    }
-
-    let response = await axios.get('/api/proposal/' + this.tokenTarget.dataset.hash)
-    chartData = response.data
+    chartData = await requestJSON('/api/proposal/' + this.tokenTarget.dataset.hash)
 
     Dygraph = await getDefault(
       import(/* webpackChunkName: "dygraphs" */ '../vendor/dygraphs.min.js')
@@ -153,30 +148,45 @@ export default class extends Controller {
   }
 
   setChartsData () {
-    var total = 0
-    var yes = 0
+    let total = 0
+    let yes = 0
+    let hourlyYes = 0
+    let hourlyNo = 0
+    let currentDate = new Date(chartData?.time[0] * 1000)
+    let currentHour = currentDate.getHours()
 
     percentData = []
     cumulativeData = []
     hourlyVotesData = []
 
     chartData.time.map((n, i) => {
-      let formatedDate = new Date(n)
+      const formatedDate = new Date(n * 1000)
       yes += chartData.yes[i]
       total += (chartData.no[i] + chartData.yes[i])
 
-      let percent = ((yes * 100) / total).toFixed(2)
+      const percent = ((yes * 100) / total).toFixed(2)
 
-      percentData.push([formatedDate, parseFloat(percent)])
-      cumulativeData.push([formatedDate, total])
-      hourlyVotesData.push([formatedDate, chartData.yes[i], chartData.no[i] * -1])
+      // accumulate hourly vote data. currentDate keeps track
+      // of the hour of such date we are parsing data for
+      hourlyYes += chartData.yes[i]
+      hourlyNo += chartData.no[i]
+      if (formatedDate.getHours() !== currentHour) {
+        currentDate.setMinutes(0)
+        percentData.push([currentDate, parseFloat(percent)])
+        cumulativeData.push([currentDate, total])
+        hourlyVotesData.push([currentDate, hourlyYes, hourlyNo * -1])
+        currentDate = formatedDate
+        currentHour = formatedDate.getHours()
+        hourlyYes = 0
+        hourlyNo = 0
+      }
     })
 
     // add empty data at the beginning and end of hourlyVotesData
     // to pad the bar chart data on both ends
-    var firstDate = new Date(chartData.time[0])
+    const firstDate = new Date(chartData.time[0] * 1000)
     firstDate.setHours(firstDate.getHours() - 1)
-    var lastDate = new Date(chartData.time[chartData.time.length - 1])
+    const lastDate = new Date(chartData.time[chartData.time.length - 1] * 1000)
     lastDate.setHours(lastDate.getHours() + 1)
     hourlyVotesData.unshift([firstDate, 0, 0])
     hourlyVotesData.push([lastDate, 0, 0])
@@ -204,7 +214,7 @@ export default class extends Controller {
       )
     ]
 
-    var options = {
+    const options = {
       zoom: true,
       selection: true
     }
