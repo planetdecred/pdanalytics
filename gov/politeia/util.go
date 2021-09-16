@@ -2,10 +2,13 @@ package politeia
 
 import (
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"net/http"
 	"strings"
 
 	"github.com/decred/politeia/politeiad/plugins/usermd"
@@ -140,4 +143,23 @@ func voteBitVerify(options []ticketvotev1.VoteOption, mask, bit uint64) error {
 	}
 
 	return fmt.Errorf("bit %#x not found in vote options", bit)
+}
+
+// getBestBlock fetches the best block height from dcrdata http API.
+func getBestBlock() (uint32, error) {
+	client := &http.Client{}
+	resp, err := client.Get("https://mainnet.dcrdata.org/api/block/best/height")
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return 0, errors.New("Error Fetching block height")
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	height := binary.BigEndian.Uint32(body)
+
+	return height, nil
 }

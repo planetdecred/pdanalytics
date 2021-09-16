@@ -73,7 +73,6 @@ func (prop *proposals) ProposalsPage(w http.ResponseWriter, r *http.Request) {
 	} else if lastOffsetRows > 0 && uint64(count) > rowsCount {
 		lastOffset = uint64(count) - lastOffsetRows
 	}
-
 	// Parse vote statuses map with only used status by the UI. Also
 	// capitalizes first letter of the string status format.
 	votesStatus := map[ticketvotev1.VoteStatusT]string{
@@ -85,6 +84,15 @@ func (prop *proposals) ProposalsPage(w http.ResponseWriter, r *http.Request) {
 		ticketvotev1.VoteStatusRejected:     "Rejected",
 		ticketvotev1.VoteStatusIneligible:   "Ineligible",
 	}
+
+	// Fetch bestblock height
+	height, err := getBestBlock()
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	commonData := prop.server.CommonData(r)
+	commonData.Tip.Height = height
 
 	str, err := prop.server.Templates.ExecTemplateToString("proposals", struct {
 		*web.CommonPageData
@@ -101,7 +109,7 @@ func (prop *proposals) ProposalsPage(w http.ResponseWriter, r *http.Request) {
 		Height          uint32
 		BreadcrumbItems []web.BreadcrumbItem
 	}{
-		CommonPageData: prop.server.CommonData(r),
+		CommonPageData: commonData,
 		Proposals:      proposals,
 		VotesStatus:    votesStatus,
 		Offset:         int64(offset),
