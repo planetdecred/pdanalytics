@@ -159,6 +159,10 @@ func getBestBlock() (uint32, error) {
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, err
+	}
+	
 	height := binary.BigEndian.Uint32(body)
 
 	return height, nil
