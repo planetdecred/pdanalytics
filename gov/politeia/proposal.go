@@ -7,17 +7,8 @@ import (
 
 	"github.com/decred/dcrd/wire"
 	"github.com/planetdecred/pdanalytics/dcrd"
-	dbtypes "github.com/planetdecred/pdanalytics/gov/politeia/types"
 	"github.com/planetdecred/pdanalytics/web"
 )
-
-type dataSource interface {
-	RetrieveLastCommitTime() (time.Time, error)
-	InsertProposal(tokenHash, author, commit string, timestamp time.Time, checked bool) (uint64, error)
-	InsertProposalVote(proposalRowID uint64, ticket, choice string, checked bool) (uint64, error)
-	RetrieveProposalVotesData(ctx context.Context, proposalToken string) (*dbtypes.ProposalChartData, error)
-	ProposalVotes(ctx context.Context, proposalToken string) (*dbtypes.ProposalChartData, error)
-}
 
 // lastSync defines the latest sync time for the proposal votes sync.
 type lastSync struct {
@@ -31,7 +22,6 @@ type proposals struct {
 	server        *web.Server
 	db            *ProposalsDB
 	politeiaURL   string
-	dataSource    dataSource
 	proposalsSync lastSync
 	reorgLock     sync.Mutex
 	height        uint32
@@ -39,14 +29,13 @@ type proposals struct {
 
 // Activate activates the proposal module.
 // This may take some time and should be ran in a goroutine
-func Activate(ctx context.Context, client *dcrd.Dcrd, dataSource dataSource,
+func Activate(ctx context.Context, client *dcrd.Dcrd,
 	politeiaURL, dbPath, piPropRepoOwner, piPropRepoName, dataDir string,
 	webServer *web.Server, dataMode, httpMode bool) error {
 
 	prop := &proposals{
 		client:      client,
 		server:      webServer,
-		dataSource:  dataSource,
 		politeiaURL: politeiaURL,
 	}
 

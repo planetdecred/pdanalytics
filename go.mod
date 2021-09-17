@@ -25,7 +25,10 @@ require (
 	github.com/decred/politeia v1.1.0
 	github.com/decred/slog v1.1.0
 	github.com/dmigwi/go-piparser/proposals v0.0.0-20191219171828-ae8cbf4067e1
+	github.com/elazarl/go-bindata-assetfs v1.0.1 // indirect
+	github.com/evnix/boltdbweb v0.0.0-20191029203843-5b16e6623bd9 // indirect
 	github.com/friendsofgo/errors v0.9.2
+	github.com/gin-gonic/gin v1.7.4 // indirect
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/google/gops v0.3.13

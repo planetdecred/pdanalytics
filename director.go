@@ -145,12 +145,7 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 	}
 
 	if cfg.EnableProposals || cfg.EnableProposalsHttp {
-		db, err := dbInstance()
-		if err != nil {
-			return err
-		}
-
-		err = politeia.Activate(ctx, client, db, cfg.PoliteiaAPIURL,
+		err = politeia.Activate(ctx, client, cfg.PoliteiaAPIURL,
 			cfg.ProposalsFileName, cfg.PiPropRepoOwner, cfg.PiPropRepoName, cfg.DataDir, server,
 			cfg.EnableProposals, cfg.EnableProposalsHttp)
 		if err != nil {

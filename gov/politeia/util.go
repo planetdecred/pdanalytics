@@ -148,7 +148,7 @@ func voteBitVerify(options []ticketvotev1.VoteOption, mask, bit uint64) error {
 // getBestBlock fetches the best block height from dcrdata http API.
 func getBestBlock() (uint32, error) {
 	client := &http.Client{}
-	resp, err := client.Get("https://mainnet.dcrdata.org/api/block/best/height")
+	resp, err := client.Get("https://explorer.planetdecred.org/api/block/best/height")
 	if err != nil {
 		return 0, err
 	}
