@@ -77,7 +77,7 @@ var (
 
 	// gov
 	defaultAgendasDBFileName  = "agendas.db"
-	defaultProposalsFileName  = "proposals.db"
+	defaultProposalsFileName  = filepath.Join(defaultDataDir, "proposals.db")
 	defaultPoliteiaAPIURl     = "https://proposals.decred.org/"
 	defaultPiPropoalRepoOwner = "decred-proposals"
 	defaultPiProposalRepo     = "mainnet"
