@@ -221,6 +221,13 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 		log.Info("VSP module enabled")
 	}
 
+	if cfg.EnableTreasuryChart {
+		if err := treasury.Activate(ctx, server); err != nil {
+			return fmt.Errorf("Failed to activate treasury chart module, %s", err.Error())
+		}
+		log.Info("Treasury chart activated")
+	}
+
 	_, err = homepage.New(server, homepage.Mods{
 		Stk: stk,
 		Prm: prms,
