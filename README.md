@@ -19,7 +19,7 @@ To run **pdanalytics** on your machine you will need the following to be setup.
 * Minimum supported version is 1.13. Installation instructions can be found [here](https://golang.org/doc/install).
 
 **Install Postgrsql**
-* Postgrsql is a relational DBMS used for data storage. Download and installation guide can be found [here](postgresql.org/download)
+* Postgrsql is a relational DBMS used for data storage. Download and installation guide can be found [here](https://www.postgresql.org/download/)
 * *Quick start for  Postgresql*
 
     If you have a new postgresql install and you want a quick setup for pdanalytics, you can start `postgresql command-line client`(It comes with the installation) with...
