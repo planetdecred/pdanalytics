@@ -219,7 +219,7 @@ func getProposalPathCtx(r *http.Request) string {
 // proposalPathCtx embeds "proposaltoken" into the request context
 func proposalPathCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		proposalToken := chi.URLParam(r, "proposaltoke")
+		proposalToken := chi.URLParam(r, "proposaltoken")
 		ctx := context.WithValue(r.Context(), web.CtxProposalToken, proposalToken)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
