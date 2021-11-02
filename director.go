@@ -22,9 +22,9 @@ import (
 	"github.com/planetdecred/pdanalytics/propagation"
 	"github.com/planetdecred/pdanalytics/stakingreward"
 	"github.com/planetdecred/pdanalytics/stats"
+	"github.com/planetdecred/pdanalytics/treasury"
 	"github.com/planetdecred/pdanalytics/vsp"
 	"github.com/planetdecred/pdanalytics/web"
-	"github.com/planetdecred/pdanalytics/treasury"
 )
 
 func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *web.Server, xcBot *exchanges.ExchangeBot) error {
