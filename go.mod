@@ -1,6 +1,6 @@
 module github.com/planetdecred/pdanalytics
 
-go 1.13
+go 1.16
 
 require (
 	github.com/asdine/storm/v3 v3.2.1
