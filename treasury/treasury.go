@@ -20,5 +20,6 @@ func Activate(webServer *web.Server, xcBot *exchanges.ExchangeBot) error {
 	}
 
 	treasury.server.AddRoute("/treasury", web.GET, treasury.TreasuryPage)
+	treasury.server.AddRoute("/treasurytable", web.GET, treasury.TreasuryTable)
 	return nil
 }
