@@ -23,6 +23,7 @@ import (
 	"github.com/planetdecred/pdanalytics/stats"
 	"github.com/planetdecred/pdanalytics/vsp"
 	"github.com/planetdecred/pdanalytics/web"
+	"github.com/planetdecred/pdanalytics/treasury"
 )
 
 func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *web.Server, xcBot *exchanges.ExchangeBot) error {
@@ -222,7 +223,7 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 	}
 
 	if cfg.EnableTreasuryChart {
-		if err := treasury.Activate(ctx, server); err != nil {
+		if err := treasury.Activate(server, xcBot); err != nil {
 			return fmt.Errorf("Failed to activate treasury chart module, %s", err.Error())
 		}
 		log.Info("Treasury chart activated")
