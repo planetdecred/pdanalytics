@@ -22,6 +22,7 @@ import (
 const (
 	defaultAddressRows int64  = 20
 	MaxTreasuryRows    int64  = 200
+	MaxAddressRows     int64  = 1000
 	txURL              string = "https://explorer.planetdecred.org/treasury/tx"
 	balURL             string = "https://explorer.planetdecred.org/treasury/balance"
 	ellipsisHTML       string = "…"
@@ -73,7 +74,6 @@ func (trs *Treasury) TreasuryPage(w http.ResponseWriter, r *http.Request) {
 	})
 
 	txns := txTemp.Txns
-
 	if err != nil {
 		trs.server.StatusPage(w, r, web.DefaultErrorCode, err.Error(), "", web.ExpStatusError)
 		return
@@ -126,6 +126,72 @@ func (trs *Treasury) TreasuryPage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Turbolinks-Location", r.URL.RequestURI())
 	w.WriteHeader(http.StatusOK)
 	io.WriteString(w, str)
+}
+
+// TreasuryTable is the handler for the "/treasurytable" path.
+func (trs *Treasury) TreasuryTable(w http.ResponseWriter, r *http.Request) {
+	// Grab the URL query parameters
+	txType, limitN, offset, err := parseTreasuryParams(r)
+	if err != nil {
+		log.Errorf("TreasuryTable request error: %v", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	tx, err := trs.TreasuryTxns(TxParams{
+		Limit:  limitN,
+		Offset: offset,
+		TxType: txType,
+	})
+
+	txns := tx.Txns
+	if err != nil {
+		trs.server.StatusPage(w, r, web.DefaultErrorCode, err.Error(), "", web.ExpStatusError)
+		return
+	}
+
+	b, _ := trs.TreasuryBalance()
+	bal := b.Balance
+
+	linkTemplate := "/treasury" + "?start=%d&n=" + strconv.FormatInt(limitN, 10) + "&txntype=" + fmt.Sprintf("%v", txType)
+
+	response := struct {
+		TxnCount int64        `json:"tx_count"`
+		HTML     string       `json:"html"`
+		Pages    []PageNumber `json:"pages"`
+	}{
+		TxnCount: bal.TxCount, // + addrData.ImmatureCount,
+		Pages:    calcPages(int(treasuryTypeCount(bal, txType)), int(limitN), int(offset), linkTemplate),
+	}
+
+	type txData struct {
+		Transactions []*dbtypes.TreasuryTx
+	}
+
+	response.HTML, err = trs.server.Templates.Exec("treasurytable", struct {
+		Data txData
+	}{
+		Data: txData{
+			Transactions: txns,
+		},
+	})
+	if err != nil {
+		log.Errorf("Template execute failure: %v", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError)
+		return
+	}
+
+	log.Tracef(`"treasurytable" template HTML size: %.2f kiB (%v, %d)`,
+		float64(len(response.HTML))/1024.0, txType, len(txns))
+
+	w.Header().Set("Content-Type", "application/json")
+	enc := json.NewEncoder(w)
+	//enc.SetEscapeHTML(false)
+	err = enc.Encode(response)
+	if err != nil {
+		log.Debug(err)
+	}
 }
 
 func (trs *Treasury) TreasuryTxns(params TxParams) (Txns, error) {
@@ -277,4 +343,57 @@ func makePageNumber(active bool, link, str string) PageNumber {
 		Link:   link,
 		Str:    str,
 	}
+}
+
+// parseTreasuryParams parses the tx filters for the treasury page. Used by both
+// TreasuryPage and TreasuryTable.
+func parseTreasuryParams(r *http.Request) (txType stake.TxType, limitN, offsetAddrOuts int64, err error) {
+	tType, limitN, offsetAddrOuts, err := parsePaginationParams(r)
+	txType = parseTreasuryTransactionType(tType)
+	return
+}
+
+// parsePaginationParams parses the pagination parameters from the query. The
+// txnType string is returned as-is. The caller must decipher the string.
+func parsePaginationParams(r *http.Request) (txnType string, limitN, offset int64, err error) {
+	// Number of outputs for the address to query the database for. The URL
+	// query parameter "n" is used to specify the limit (e.g. "?n=20").
+	limitN = defaultAddressRows
+
+	if nParam := r.URL.Query().Get("n"); nParam != "" {
+
+		var val uint64
+		val, err = strconv.ParseUint(nParam, 10, 64)
+		if err != nil {
+			err = fmt.Errorf("invalid n value")
+			return
+		}
+		if int64(val) > MaxAddressRows {
+			log.Warnf("addressPage: requested up to %d address rows, "+
+				"limiting to %d", limitN, MaxAddressRows)
+			limitN = MaxAddressRows
+		} else {
+			limitN = int64(val)
+		}
+	}
+
+	// Number of outputs to skip (OFFSET in database query). For UX reasons, the
+	// "start" URL query parameter is used.
+	if startParam := r.URL.Query().Get("start"); startParam != "" {
+		var val uint64
+		val, err = strconv.ParseUint(startParam, 10, 64)
+		if err != nil {
+			err = fmt.Errorf("invalid start value")
+			return
+		}
+		offset = int64(val)
+	}
+
+	// Transaction types to show.
+	txnType = r.URL.Query().Get("txntype")
+	if txnType == "" {
+		txnType = "all"
+	}
+
+	return
 }
