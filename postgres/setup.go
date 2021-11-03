@@ -156,8 +156,6 @@ var (
 		"block_bin":                   createBlockBinTableScript,
 		"vote":                        createVoteTableScript,
 		"vote_receive_time_deviation": createVoteReceiveTimeDeviationTableScript,
-		"proposals":                   createProposalTableScript,
-		"proposal_votes":              createProposalVotesTableScript,
 		"exchange":                    createExchangeTable,
 		"exchange_tick":               createExchangeTickTable,
 		"reddit":                      createRedditTable,
@@ -202,12 +200,6 @@ var (
 
 	// createIndexScripts is a map of table name to a collection of index on the table
 	createIndexScripts = map[string][]string{
-		"proposals": {
-			IndexProposalsTableOnToken,
-		},
-		"proposal_votes": {
-			IndexProposalVotesTableOnProposalsID,
-		},
 		"exchange_tick": {
 			createExchangeTickIndex,
 		},
