@@ -22,6 +22,7 @@ import (
 	"github.com/planetdecred/pdanalytics/propagation"
 	"github.com/planetdecred/pdanalytics/stakingreward"
 	"github.com/planetdecred/pdanalytics/stats"
+	"github.com/planetdecred/pdanalytics/treasury"
 	"github.com/planetdecred/pdanalytics/vsp"
 	"github.com/planetdecred/pdanalytics/web"
 )
@@ -72,6 +73,7 @@ var (
 	vspLog           = backendLog.Logger("VSPL")
 	statsLog         = backendLog.Logger("STAT")
 	chartsLog        = backendLog.Logger("CHRTS")
+	treasuryLog      = backendLog.Logger("TRS")
 )
 
 // Initialize package-global logger variables.
@@ -93,6 +95,7 @@ func init() {
 	vsp.UseLogger(vspLog)
 	stats.UseLogger(statsLog)
 	charts.UseLogger(chartsLog)
+	treasury.UseLogger(treasuryLog)
 }
 
 // subsystemLoggers maps each subsystem identifier to its associated logger.
@@ -114,6 +117,7 @@ var subsystemLoggers = map[string]slog.Logger{
 	"VSPL":  vspLog,
 	"STAT":  statsLog,
 	"CHRTS": chartsLog,
+	"TRS":   treasuryLog,
 }
 
 // initLogRotator initializes the logging rotater to write logs to logFile and
