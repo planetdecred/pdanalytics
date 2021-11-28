@@ -50,7 +50,6 @@ func (trs *Treasury) TreasuryPage(w http.ResponseWriter, r *http.Request) {
 			limitN = int64(val)
 		}
 	}
-
 	// Number of txns to skip (OFFSET in database query). For UX reasons, the
 	// "start" URL query parameter is used.
 	var offset int64
@@ -106,14 +105,25 @@ func (trs *Treasury) TreasuryPage(w http.ResponseWriter, r *http.Request) {
 	linkTemplate := fmt.Sprintf("/treasury?start=%%d&n=%d&txntype=%v", limitN, txType)
 	pageData := struct {
 		*web.CommonPageData
-		Data        *TreasuryInfo
-		FiatBalance *exchanges.Conversion
-		Pages       []PageNumber
+		Data            *TreasuryInfo
+		FiatBalance     *exchanges.Conversion
+		Pages           []PageNumber
+		BreadcrumbItems []web.BreadcrumbItem
 	}{
 		CommonPageData: trs.server.CommonData(r),
 		Data:           treasuryData,
 		FiatBalance:    trs.xcBot.Conversion(dcrutil.Amount(treasuryBalance.Balance).ToCoin()),
 		Pages:          calcPages(int(typeCount), int(limitN), int(offset), linkTemplate),
+		BreadcrumbItems: []web.BreadcrumbItem{
+			{
+				HyperText: "Treasury",
+				Href:      "/treasury",
+			},
+			{
+				HyperText: "treasury",
+				Active:    true,
+			},
+		},
 	}
 	str, err := trs.server.Templates.Exec("treasury", pageData)
 	if err != nil {
@@ -165,7 +175,7 @@ func (trs *Treasury) TreasuryTable(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type txData struct {
-		Transactions []*dbtypes.TreasuryTx
+		Transactions []*TreasuryTx
 	}
 
 	response.HTML, err = trs.server.Templates.Exec("treasurytable", struct {

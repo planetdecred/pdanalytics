@@ -19,7 +19,27 @@ func Activate(webServer *web.Server, xcBot *exchanges.ExchangeBot) error {
 		xcBot:  xcBot,
 	}
 
+	treasury.server.AddMenuItem(web.MenuItem{
+		Href:      "/treasury",
+		HyperText: "Treasury",
+		Info:      "Treasury transaction data.",
+		Attributes: map[string]string{
+			"class": "menu-item",
+			"title": "Treasury transaction data",
+		},
+	})
+
 	treasury.server.AddRoute("/treasury", web.GET, treasury.TreasuryPage)
 	treasury.server.AddRoute("/treasurytable", web.GET, treasury.TreasuryTable)
+
+	err := treasury.server.Templates.AddTemplate("treasury")
+	if err != nil {
+		return err
+	}
+	err = treasury.server.Templates.AddTemplate("treasurytable")
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
