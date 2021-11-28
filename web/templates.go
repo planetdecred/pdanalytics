@@ -18,6 +18,7 @@ import (
 	"github.com/decred/dcrd/chaincfg/v2"
 	"github.com/decred/dcrd/dcrec"
 	"github.com/decred/dcrd/dcrutil/v2"
+	"github.com/decred/dcrdata/v7/txhelpers"
 	"github.com/dustin/go-humanize"
 )
 
@@ -374,6 +375,13 @@ func MakeTemplateFuncMap(params *chaincfg.Params) template.FuncMap {
 		"amountAsDecimalParts": func(v int64, useCommas bool) []string {
 			return Float64Formatting(dcrutil.Amount(v).ToCoin(), 8, useCommas)
 		},
+		"toFloat64Amount": func(intAmount int64) float64 {
+			return dcrutil.Amount(intAmount).ToCoin()
+		},
+		"txtypeStr": func(txtype int) string {
+			return txhelpers.TxTypeToString(txtype)
+		},
+		"threeSigFigs": threeSigFigs,
 		"durationToShortDurationString": func(d time.Duration) string {
 			return FormattedDuration(d, shortPeriods)
 		},
@@ -549,4 +557,48 @@ func FormattedDuration(duration time.Duration, str *periodMap) string {
 		return i(durationmin) + pl(str.min, durationmin) + str.sep + i(durationsec) + pl(str.s, durationsec)
 	}
 	return i(durationsec) + pl(str.s, durationsec)
+}
+
+// threeSigFigs returns a representation of the float formatted to three
+// significant figures, with an appropriate magnitude prefix (k, M, B).
+// For (k, M, G) prefixes for file/memory sizes, use humanize.Bytes.
+func threeSigFigs(v float64) string {
+	if v >= 1e11 {
+		return fmt.Sprintf("%dB", int(math.Round(v/1e9)))
+	} else if v >= 1e10 {
+		return fmt.Sprintf("%.1fB", math.Round(v/1e8)/10)
+	} else if v >= 1e9 {
+		return fmt.Sprintf("%.2fB", math.Round(v/1e7)/1e2)
+	} else if v >= 1e8 {
+		return fmt.Sprintf("%dM", int(math.Round(v/1e6)))
+	} else if v >= 1e7 {
+		return fmt.Sprintf("%.1fM", math.Round(v/1e5)/10)
+	} else if v >= 1e6 {
+		return fmt.Sprintf("%.2fM", math.Round(v/1e4)/1e2)
+	} else if v >= 1e5 {
+		return fmt.Sprintf("%dk", int(math.Round(v/1e3)))
+	} else if v >= 1e4 {
+		return fmt.Sprintf("%.1fk", math.Round(v/100)/10)
+	} else if v >= 1e3 {
+		return fmt.Sprintf("%.2fk", math.Round(v/10)/1e2)
+	} else if v >= 100 {
+		return fmt.Sprintf("%d", int(math.Round(v)))
+	} else if v >= 10 {
+		return fmt.Sprintf("%.1f", math.Round(v*10)/10)
+	} else if v >= 1 {
+		return fmt.Sprintf("%.2f", math.Round(v*1e2)/1e2)
+	} else if v >= 0.1 {
+		return fmt.Sprintf("%.3f", math.Round(v*1e3)/1e3)
+	} else if v >= 0.01 {
+		return fmt.Sprintf("%.4f", math.Round(v*1e4)/1e4)
+	} else if v >= 0.001 {
+		return fmt.Sprintf("%.5f", math.Round(v*1e5)/1e5)
+	} else if v >= 0.0001 {
+		return fmt.Sprintf("%.6f", math.Round(v*1e6)/1e6)
+	} else if v >= 0.00001 {
+		return fmt.Sprintf("%.7f", math.Round(v*1e7)/1e7)
+	} else if v == 0 {
+		return "0"
+	}
+	return fmt.Sprintf("%.8f", math.Round(v*1e8)/1e8)
 }
