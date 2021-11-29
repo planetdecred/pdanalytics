@@ -24,29 +24,28 @@
 {{ end }}
 
 {{ define "navbar" }}
-<header data-controller="layout">
-   
-	<nav class="navbar navbar-expand-lg navbar-light bg-light  mobile-show">
-		<a class="navbar-brand" href="/">
-			<img src="/images/logo.png" class="logo" /></a>
+<header class="top-nav d-flex align-items-center" id="navBar" data-controller="layout" data-blocktime="{{.BlockTimeUnix}}">
+	<div class="container d-flex justify-content-between align-items-center">
+		<a class="pdanalytics-logo" href="/"></a>
 		
-			
-		<div class="collapse navbar-collapse float-right mt-2" id="navbarNav">
-			<ol class="breadcrumb ml-auto" 
-				style="background-color: inherit !important; 
-				padding: 0 !important; font-size: 1.1rem;">
-				<li class="breadcrumb-item"><a href="/">Analytics</a></li>
-				{{ range $menuItem := .BreadcrumbItems }}
-					{{ if $menuItem.Active }}
-					<li class="breadcrumb-item active" aria-current="page">{{ $menuItem.HyperText }}</li>
-					{{ else }}
-					<li class="breadcrumb-item"><a href="{{$menuItem.Href}}">{{$menuItem.HyperText}}</a></li>
+		<nav class="navbar navbar-expand-lg">
+			<div class="collapse navbar-collapse float-right mt-2" id="navbarNav">
+				<ol class="breadcrumb ml-auto" 
+					style="background-color: inherit !important; 
+					padding: 0 !important; font-size: 1.1rem;">
+					<li class="breadcrumb-item"><a href="/">Analytics</a></li>
+					{{ range $menuItem := .BreadcrumbItems }}
+						{{ if $menuItem.Active }}
+						<li class="breadcrumb-item active" aria-current="page">{{ $menuItem.HyperText }}</li>
+						{{ else }}
+						<li class="breadcrumb-item"><a href="{{$menuItem.Href}}">{{$menuItem.HyperText}}</a></li>
+						{{ end }}
 					{{ end }}
-				{{ end }}
-			</ol>
-		</div>
-		
-	  </nav>
+				</ol>
+			</div>
+		</nav>
+	</div>
+</header>
 </header>
 {{ end }}
 
