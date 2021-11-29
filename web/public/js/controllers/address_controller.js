@@ -191,6 +191,7 @@ export default class extends Controller {
       count: parseInt(cdata.get('txnCount'))
     }
     ctrl.balance = cdata.get('balance')
+    ctrl.apiurl = cdata.get('apiurl')
 
     // Get initial view settings from the url
     ctrl.query.update(settings)
@@ -470,7 +471,7 @@ export default class extends Controller {
       return
     }
 
-    let url = `/api/treasury/io/${bin}`
+    let url = ctrl.apiurl + `treasury/io/${bin}`
     if (this.dcrAddress !== 'treasury') {
       const chartKey = chart === 'balance' ? 'amountflow' : chart
       url = '/api/address/' + ctrl.dcrAddress + '/' + chartKey + '/' + bin

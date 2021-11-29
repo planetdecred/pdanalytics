@@ -64,6 +64,7 @@ var (
 	defaultMainnetLink  = "https://explorer.planetdecred.org/"
 	defaultTestnetLink  = "https://testnet.planetdecred.org/"
 	defaultOnionAddress = ""
+	defaultAPIURL       = "https://explorer.planetdecred.org/api/"
 
 	defaultMempoolInterval = 60.0
 	defaultPowInterval     = 300
@@ -120,6 +121,7 @@ type config struct {
 	UseGops      bool   `short:"g" long:"gops" description:"Run with gops diagnostics agent listening. See github.com/google/gops for more information." env:"PDANALYTICS_USE_GOPS"`
 	ReloadHTML   bool   `long:"reload-html" description:"Reload HTML templates on every request" env:"DCRDATA_RELOAD_HTML"`
 	NoHttp       bool   `long:"nohttp" description:"Disables http server from running"`
+	APIURL       string `long:"apiurl" description:"Base API URL where pdanalytics will pull data from"`
 
 	// Postgresql Configuration
 	DBHost string `long:"dbhost" description:"Database host"`
@@ -214,6 +216,7 @@ func defaultConfig() config {
 		PiPropRepoName:                defaultPiProposalRepo,
 		HTTPProfPath:                  defaultHTTPProfPath,
 		APIProto:                      defaultAPIProto,
+		APIURL:                        defaultAPIURL,
 		CacheControlMaxAge:            defaultCacheControlMaxAge,
 		ServerHeader:                  defaultServerHeader,
 		DcrdCert:                      defaultDaemonRPCCertFile,

@@ -68,6 +68,7 @@ type TreasuryInfo struct {
 	Balance          *dbtypes.TreasuryBalance
 	ConvertedBalance *exchanges.Conversion
 	TypeCount        int64
+	APIURL           string
 }
 
 // TimeDef is time.Time wrapper that formats time by default as a string without

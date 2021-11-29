@@ -228,7 +228,7 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 	}
 
 	if cfg.EnableTreasuryChart {
-		if err := treasury.Activate(server, xcBot); err != nil {
+		if err := treasury.Activate(server, xcBot, cfg.APIURL); err != nil {
 			return fmt.Errorf("Failed to activate treasury chart module, %s", err.Error())
 		}
 		log.Info("Treasury chart activated")

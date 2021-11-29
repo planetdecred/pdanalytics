@@ -23,8 +23,8 @@ const (
 	defaultAddressRows int64  = 20
 	MaxTreasuryRows    int64  = 200
 	MaxAddressRows     int64  = 1000
-	txURL              string = "https://explorer.planetdecred.org/treasury/tx"
-	balURL             string = "https://explorer.planetdecred.org/treasury/balance"
+	txURL              string = "treasury/tx"
+	balURL             string = "treasury/balance"
 	ellipsisHTML       string = "…"
 )
 
@@ -94,6 +94,7 @@ func (trs *Treasury) TreasuryPage(w http.ResponseWriter, r *http.Request) {
 		Transactions:    txns,
 		Balance:         treasuryBalance,
 		TypeCount:       typeCount,
+		APIURL:          trs.aPIURL,
 	}
 
 	xcBot := trs.xcBot
@@ -212,7 +213,7 @@ func (trs *Treasury) TreasuryTxns(params TxParams) (Txns, error) {
 		return txns, err
 	}
 
-	req, err := http.NewRequest("POST", txURL, bytes.NewBuffer(paramJson))
+	req, err := http.NewRequest("POST", trs.aPIURL+txURL, bytes.NewBuffer(paramJson))
 	if err != nil {
 		return txns, err
 	}
@@ -241,7 +242,7 @@ func (trs *Treasury) TreasuryBalance() (Balance, error) {
 	client := trs.client
 	bal := Balance{}
 
-	req, err := http.NewRequest("GET", balURL, nil)
+	req, err := http.NewRequest("GET", trs.aPIURL+balURL, nil)
 	if err != nil {
 		return bal, err
 	}

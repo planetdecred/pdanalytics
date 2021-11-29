@@ -13,6 +13,7 @@
     data-address-offset="{{.Offset}}"
     data-address-txn-count="{{ $bal.TxCount}}"
     data-address-balance="{{toFloat64Amount $bal.Balance}}"
+    data-address-apiurl="{{.APIURL}}"
   >
     <div class="fullscreen d-none" data-target="address.fullscreen" data-action="click->address#exitFullscreen">
       <div class="secondary-card d-inline-block w-100 h-100 p-4" data-target="address.bigchart"></div>
