@@ -1,0 +1,31 @@
+.control-div {
+  padding: 0, 0, 0, 1rem !important;
+  white-space: nowrap;
+  margin-right: 1rem;
+}
+
+.nextPage {
+  float: right;
+}
+
+.inner-content {
+  padding: 15px;
+  padding-bottom: 50px;
+
+  .table-details {
+    display: flex;
+
+    h3 {
+      width: 100%;
+    }
+
+    .paginate {
+      margin-top: auto;
+      display: flex;
+
+      .page-size {
+        margin-top: 5px;
+      }
+    }
+  }
+}
