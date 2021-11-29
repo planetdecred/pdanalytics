@@ -13,9 +13,11 @@
   }
 
   .date {
-    display: inline-block !important;
-    width: 130px;
-    height: 25px;
+    width: -moz-fit-content;
+    width: fit-content;
+    font-size: 0.9rem !important;
+    height: calc(1.5em + 0.5rem + 2px) !important;
+    line-height: 1;
   }
 
   p.desc {
