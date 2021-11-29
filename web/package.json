@@ -63,6 +63,7 @@
     "bootstrap": "^4.4.1",
     "dompurify": "^2.0.8",
     "lodash-es": "^4.17.15",
-    "moment": "2.29.1"
+    "moment": "2.29.1",
+    "qrcode": "^1.5.0"
   }
 }
