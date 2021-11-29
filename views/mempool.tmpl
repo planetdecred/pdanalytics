@@ -211,8 +211,10 @@
             <div data-target="mempool.chartWrapper" class="inner-content chart-wrapper pl-2 pr-2 mb-5">
                 <div id="chart" data-target="mempool.chartsView"
                         style="width:100%; height:73vh; margin:0 auto;"></div>
-                <div class="d-flex justify-content-center legend-wrapper d-none">
-                    <div class="legend d-flex" data-target="mempool.labels"></div>
+                <div class="d-flex justify-content-center legend-wrapper">
+                    <div class="legend d-flex align-items-center" data-target="mempool.labels">
+                        <div class="pr-3" data-target="charts.legendEntry"><div class="dygraph-legend-line" data-target="charts.legendMarker"></div></div>
+                    </div>
                 </div>
             </div>
             <div data-target="mempool.messageView" class="d-hide mx-auto">
