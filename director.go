@@ -23,6 +23,7 @@ import (
 	"github.com/planetdecred/pdanalytics/stakingreward"
 	"github.com/planetdecred/pdanalytics/stats"
 	"github.com/planetdecred/pdanalytics/treasury"
+	"github.com/planetdecred/pdanalytics/tx"
 	"github.com/planetdecred/pdanalytics/vsp"
 	"github.com/planetdecred/pdanalytics/web"
 )
@@ -232,6 +233,14 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 			return fmt.Errorf("Failed to activate treasury chart module, %s", err.Error())
 		}
 		log.Info("Treasury chart activated")
+	}
+
+	// Enable Tx module.
+	// This module is enabled irrespective of configuration.
+	// Since it is needed by other modules and activation only registers /tx route.
+	// It is more efficient to activate by default during startup.
+	if err := tx.Activate(server); err != nil {
+		return fmt.Errorf("Failed to ectivate the VSP modules, %s", err.Error())
 	}
 
 	_, err = homepage.New(server, homepage.Mods{
