@@ -20,8 +20,8 @@ require (
 	github.com/decred/dcrdata/gov/v4 v4.0.0
 	github.com/decred/dcrdata/v5 v5.2.2
 	github.com/decred/dcrdata/v6 v6.0.0
-	github.com/decred/dcrdata/v7 v7.0.0-20211005214036-90e57d284420
-	github.com/decred/politeia v1.2.0
+	github.com/decred/dcrdata/v7 v7.0.0-20211124233451-cdad9b4cb825
+	github.com/decred/politeia v1.1.0
 	github.com/decred/slog v1.2.0
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-chi/chi v4.1.2+incompatible

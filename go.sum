@@ -432,8 +432,8 @@ github.com/decred/dcrdata/v5 v5.2.2/go.mod h1:q4KKI/dl3G9Dc9CE8e86B3Fa4cJQIKtIbn
 github.com/decred/dcrdata/v6 v6.0.0-20210510222533-6a2ca18d4382/go.mod h1:CWT5trkQ+8KUSBeyuI5/V1TQMleYyCh1vo/Ry6PiFWU=
 github.com/decred/dcrdata/v6 v6.0.0 h1:eNe2h7XCITLBM4FfBVd57VwqGYpCLJrnev38YzwJ9qw=
 github.com/decred/dcrdata/v6 v6.0.0/go.mod h1:3dzYsjv4i8/H7jAWRmIq3yXW5Wa/1Hv3xJV1oGDIgfk=
-github.com/decred/dcrdata/v7 v7.0.0-20211005214036-90e57d284420 h1:iDWyHEw51GQ+uwYkdaSU9ApOtUabRvEq7+5pa4bSDXs=
-github.com/decred/dcrdata/v7 v7.0.0-20211005214036-90e57d284420/go.mod h1:neDQncR16L03hwt4ZX41d8hno0RL3gVkNp+omLBoX9M=
+github.com/decred/dcrdata/v7 v7.0.0-20211124233451-cdad9b4cb825 h1:tou5UWkavM6kdhX0gX4A4p6Cde34rirgTKUQpS4BZRc=
+github.com/decred/dcrdata/v7 v7.0.0-20211124233451-cdad9b4cb825/go.mod h1:neDQncR16L03hwt4ZX41d8hno0RL3gVkNp+omLBoX9M=
 github.com/decred/dcrtime v0.0.0-20191018193024-8d8b4ef0458e h1:sNDR7vx6gaA3WD+WoEofTvtdjfwHAiogtjB3kt8iFco=
 github.com/decred/dcrtime v0.0.0-20191018193024-8d8b4ef0458e/go.mod h1:IyZnyBE3E6RBFsEjwEs21FrO/UsrLrL15hUnpZZQxpU=
 github.com/decred/dcrtime/api/v2 v2.0.0-20200912200806-b1e4dbc46be9/go.mod h1:JdIX208vnNj4TdU6hDRaN+ccxmxp1I1R6sWGZNK1BAQ=
@@ -481,8 +481,8 @@ github.com/decred/go-socks v1.1.0 h1:dnENcc0KIqQo3HSXdgboXAHgqsCIutkqq6ntQjYtm2U
 github.com/decred/go-socks v1.1.0/go.mod h1:sDhHqkZH0X4JjSa02oYOGhcGHYp12FsY1jQ/meV8md0=
 github.com/decred/politeia v0.0.0-20191031182202-b33af07598f2/go.mod h1:biL6LECQ+6xwYHEJocudqMK+A1O0XbBshFkvFziFZgg=
 github.com/decred/politeia v1.0.1/go.mod h1:bWvCogzo8MzyPos4tX9V/5FXhVRUwcd6ycZhElcDLE0=
-github.com/decred/politeia v1.2.0 h1:i8j+RhQSa88+qncwmP+hlUH8ja2tlMqfVIiPvL5Wevc=
-github.com/decred/politeia v1.2.0/go.mod h1:IWytM75wWPGbQsEcQTEeHfX1KbcUt2dGDCtYbrrvqHI=
+github.com/decred/politeia v1.1.0 h1:pWn6c8EGW90r9hLbGtOyQ3Kn8hAsXsIiXAJe+mLYL6Y=
+github.com/decred/politeia v1.1.0/go.mod h1:IWytM75wWPGbQsEcQTEeHfX1KbcUt2dGDCtYbrrvqHI=
 github.com/decred/slog v1.0.0/go.mod h1:zR98rEZHSnbZ4WHZtO0iqmSZjDLKhkXfrPTZQKtAonQ=
 github.com/decred/slog v1.1.0/go.mod h1:kVXlGnt6DHy2fV5OjSeuvCJ0OmlmTF6LFpEPMu/fOY0=
 github.com/decred/slog v1.2.0 h1:soHAxV52B54Di3WtKLfPum9OFfWqwtf/ygf9njdfnPM=
