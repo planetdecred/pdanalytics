@@ -100,6 +100,7 @@ func (t TimeDef) UNIX() int64 {
 	return t.T.Unix()
 }
 
+// Format formats the time in the given layout.
 func (t TimeDef) Format(layout string) string {
 	return t.T.Format(layout)
 }
