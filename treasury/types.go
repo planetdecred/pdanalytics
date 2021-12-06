@@ -125,7 +125,7 @@ func (t *TimeDef) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// PrettyMDY formats the time down to day only, using 3 day month, unpadded day,
+// PrettyMDY formats the time down to day only, using 3 word month, unpadded day,
 // comma, and 4 digit year.
 func (t *TimeDef) PrettyMDY() string {
 	return t.T.Format("Jan 2, 2006")
