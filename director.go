@@ -22,6 +22,7 @@ import (
 	"github.com/planetdecred/pdanalytics/propagation"
 	"github.com/planetdecred/pdanalytics/stakingreward"
 	"github.com/planetdecred/pdanalytics/stats"
+	"github.com/planetdecred/pdanalytics/treasury"
 	"github.com/planetdecred/pdanalytics/vsp"
 	"github.com/planetdecred/pdanalytics/web"
 )
@@ -224,6 +225,13 @@ func setupModules(ctx context.Context, cfg *config, client *dcrd.Dcrd, server *w
 			return fmt.Errorf("Failed to ectivate the VSP modules, %s", err.Error())
 		}
 		log.Info("VSP module enabled")
+	}
+
+	if cfg.EnableTreasuryChart {
+		if err := treasury.Activate(server, xcBot, cfg.APIURL); err != nil {
+			return fmt.Errorf("Failed to activate treasury chart module, %s", err.Error())
+		}
+		log.Info("Treasury chart activated")
 	}
 
 	_, err = homepage.New(server, homepage.Mods{

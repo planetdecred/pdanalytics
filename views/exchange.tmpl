@@ -4,7 +4,7 @@
 {{ template "html-head" "Historic exhange information"}}
 {{template "navbar" . }}
 
-<div class="content">
+<div class="container main content">
     <div data-controller="exchange" class="container-fluid">
         <div class="control-wrapper">
             <div class="d-flex flex-row bottom-ctl">
@@ -216,9 +216,7 @@
             </div>
             <div data-target="exchange.messageView" class="d-hide">
             </div>
-            <div class="loading" data-target="exchange.loadingData">
-                <div class="loader"></div>
-            </div>
+            <div class="loader-v2 loading" data-target="exchange.loadingData"></div>
         </div>
     </div>
 
