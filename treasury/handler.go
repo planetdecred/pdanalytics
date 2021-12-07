@@ -118,10 +118,6 @@ func (trs *Treasury) TreasuryPage(w http.ResponseWriter, r *http.Request) {
 		BreadcrumbItems: []web.BreadcrumbItem{
 			{
 				HyperText: "Treasury",
-				Href:      "/treasury",
-			},
-			{
-				HyperText: "treasury",
 				Active:    true,
 			},
 		},
