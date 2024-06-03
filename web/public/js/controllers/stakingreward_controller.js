@@ -159,7 +159,7 @@ export default class extends Controller {
         fields[0].innerText = date.format('YYYY-MM-DD')
         fields[1].innerText = item.height
         fields[2].innerText = item.ticket_price.toFixed(2)
-        fields[3].innerText = item.returned_fund.toFixed(2)
+        fields[3].innerText = item.locked_fund.toFixed(2)
         fields[4].innerText = item.reward.toFixed(2)
         fields[5].innerText = item.dcr_balance.toFixed(2)
         fields[6].innerText = (100 * (item.dcr_balance - amount) / amount).toFixed(2)
